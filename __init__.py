@@ -47,6 +47,8 @@ from .framework import (
 from .utils.torch_tensor import (
     torch_dtype_to_np,
     torch_to_cp_dtype,
+    tensor_to_img,
+    img_to_tensor,
 )
 
 from .utils.tensor import *
@@ -94,6 +96,9 @@ __all__ = [
     "flip_r_b_channels",
     "to_nchw",
     "to_hwc",
+    "tensor_to_img",
+    "img_to_tensor",
+
     "MemcpyKind",
     "TrtEngine",
 ]

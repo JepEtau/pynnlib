@@ -30,11 +30,9 @@ else:
 
 
 class GenericSession(abc.ABC):
-    device: str = 'cpu'
 
     def __init__(self) -> None:
         super().__init__()
-        # self._fp16: bool = False
         self._device: str = 'cpu'
         self.model: NnModel | None = None
         self._dtype: torch.dtype = IdtypeToTorch['fp32']

@@ -38,7 +38,7 @@ class PyTorchSession(GenericSession):
 
     def __init__(self, model: PytorchModel):
         super().__init__()
-        self.model = model
+        self.model: PytorchModel = model
         self.device: torch.device = torch.device('cpu')
 
         self.model.module.load_state_dict(self.model.state_dict, strict=False)
