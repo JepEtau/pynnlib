@@ -42,12 +42,10 @@ from .framework import (
 
 from .utils.torch_tensor import (
     torch_dtype_to_np,
-    torch_to_cp_dtype,
     tensor_to_img,
     img_to_tensor,
 )
 
-from .utils.tensor import *
 from .utils.torch_tensor import (
     flip_r_b_channels,
     IdtypeToTorch,
@@ -85,7 +83,6 @@ __all__ = [
 
     # For advanced user and dev
     "HostDeviceMemory",
-    "torch_to_cp_dtype",
     "torch_dtype_to_np",
     "np_dtype_to_torch",
     "flip_r_b_channels",
@@ -94,6 +91,5 @@ __all__ = [
     "tensor_to_img",
     "img_to_tensor",
 
-    "MemcpyKind",
     "TrtEngine",
 ]
