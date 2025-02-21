@@ -27,7 +27,6 @@ class TrtLogger(trt.ILogger):
     }
 
     def __init__(self, min_severity):
-        print(red("Initialize a new TrtLogger"))
         trt.ILogger.__init__(self)
         self._min_severity = min_severity
 
@@ -103,7 +102,6 @@ class TensorRtSession(GenericSession):
 
         # Deserialize and create the context
         model_path = self.model.filepath
-        print(yellow("TensorRtSession::initialize"))
         trt_runtime = trt.Runtime(get_trt_logger())
         with torch.cuda.stream(self.infer_stream):
             if self.model.engine is None:
@@ -111,7 +109,6 @@ class TensorRtSession(GenericSession):
                     serialized_engine = f.read()
                 self.engine = trt_runtime.deserialize_cuda_engine(serialized_engine)
             else:
-                print("reuse engine")
                 self.engine = self.model.engine
             self.context = self.engine.create_execution_context()
 
