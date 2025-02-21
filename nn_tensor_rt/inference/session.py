@@ -84,7 +84,7 @@ class TensorRtSession(GenericSession):
         self._infer_stream = stream
 
 
-
+    @torch.inference_mode()
     def initialize(self,
         device: str = 'cuda:0',
         dtype: Idtype = 'fp32',
