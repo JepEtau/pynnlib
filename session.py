@@ -1,32 +1,12 @@
 from __future__ import annotations
 import abc
 from typing import TypeVar
-from warnings import warn
-
 import torch
 
 from .utils.torch_tensor import IdtypeToTorch
-from .import_libs import is_cuda_available
 from .nn_types import Idtype, NnFrameworkType
 from .model import NnModel
 
-if is_cuda_available():
-    import cupy as cp
-
-    def set_cupy_cuda_device(device: str = "cuda:0") -> None:
-        if not is_cuda_available():
-            print(f"[E] No cuda device found, cannot set {device}")
-            return
-        device_no: int = 0
-        try:
-            device_no = int(device.split(":")[1])
-        except:
-            pass
-        # print(f"[I] Use cuda device {device_no}")
-        cp.cuda.runtime.setDevice(device_no)
-else:
-    def set_cupy_cuda_device(device: str = "cuda:0") -> None:
-        pass
 
 
 class GenericSession(abc.ABC):

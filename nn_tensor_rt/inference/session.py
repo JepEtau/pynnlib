@@ -2,6 +2,7 @@ import numpy as np
 from pprint import pprint
 from pynnlib import is_tensorrt_available
 from pynnlib.nn_types import Idtype
+from pynnlib.session import GenericSession
 from utils.p_print import red, yellow
 if is_tensorrt_available():
     import tensorrt as trt
@@ -9,9 +10,7 @@ if is_tensorrt_available():
 import torch
 from pynnlib.logger import nnlogger
 from pynnlib.model import TrtModel
-from pynnlib.session import GenericSession, set_cupy_cuda_device
 from pynnlib.utils.torch_tensor import (
-    IdtypeToTorch,
     flip_r_b_channels,
     to_nchw,
     to_hwc,

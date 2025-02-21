@@ -1,5 +1,4 @@
 import sys
-import cupy as cp
 import numpy as np
 import torch
 from torch import Tensor
@@ -42,21 +41,6 @@ torch_dtype_to_np: dict[torch.dtype, np.dtype] = {
 #     torch.bfloat16: np.float32,
 #     torch.complex32: np.complex64
 # })
-
-
-torch_to_cp_dtype: dict[torch.dtype, cp.dtype] = {
-    torch.bool: cp.bool_,
-    torch.uint8: cp.uint8,
-    torch.int8: cp.int8,
-    torch.int16: cp.int16,
-    torch.int32: cp.int32,
-    torch.int64: cp.int64,
-    torch.float16: cp.float16,
-    torch.float32: cp.float32,
-    torch.float64: cp.float64,
-    torch.complex64: cp.complex64,
-    torch.complex128: cp.complex128,
-}
 
 
 IdtypeToTorch: dict[Idtype, torch.dtype] = {
@@ -141,6 +125,10 @@ def tensor_to_img(
     dtype: np.dtype,
     flip_r_b: bool = False,
 ) -> Tensor:
+    """Convert a 4D tensor to an image (h,w,c)
+    - dtype: image dtype
+    - flip_r_b: flip red and blue channels
+    """
 
     d_img: Tensor = to_hwc(tensor)
     if flip_r_b:

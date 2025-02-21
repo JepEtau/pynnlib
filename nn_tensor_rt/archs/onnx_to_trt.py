@@ -2,7 +2,6 @@ from copy import deepcopy
 import numpy as np
 from pynnlib.logger import nnlogger
 from pynnlib.nn_types import Idtype
-from pynnlib.session import set_cupy_cuda_device
 from pynnlib.utils.p_print import *
 import tensorrt as trt
 from pynnlib.model import OnnxModel
@@ -32,7 +31,6 @@ def onnx_to_trt_engine(
     has_bf16: bool = bool('bf16' in dtypes)
 
     network_flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
-    set_cupy_cuda_device(device)
     with (
         trt.Builder(TRT_LOGGER) as builder,
         builder.create_network(flags=network_flags) as network,

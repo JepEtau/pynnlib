@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from typing import Any, Type
 
-from pynnlib.session import set_cupy_cuda_device
 import tensorrt as trt
 from tensorrt import DataType as TrtDType
 
@@ -76,7 +75,6 @@ def get_shape_strategy(engine, tensor_name: str) -> ShapeStrategy:
 
 
 def parse_engine(model: TrtModel) -> None:
-    set_cupy_cuda_device(model.device)
     engine = None
     if os.path.exists(model.filepath):
         trt_runtime = trt.Runtime(TRT_LOGGER)

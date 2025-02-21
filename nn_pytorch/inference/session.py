@@ -15,7 +15,6 @@ from pynnlib.architecture import SizeConstraint
 from pynnlib.nn_types import Idtype
 from pynnlib.session import GenericSession
 from pynnlib.utils.torch_tensor import (
-    IdtypeToTorch,
     to_nchw,
     flip_r_b_channels,
     to_hwc
@@ -64,6 +63,16 @@ class PyTorchSession(GenericSession):
     @property
     def module(self) -> TorchNnModule:
         return self.model.module
+
+
+    @property
+    def infer_stream(self) -> torch.cuda.Stream:
+        return self._infer_stream
+
+
+    @infer_stream.setter
+    def infer_stream(self, stream: torch.cuda.Stream) -> None:
+        self._infer_stream = stream
 
 
     def initialize(

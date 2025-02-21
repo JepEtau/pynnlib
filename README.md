@@ -125,14 +125,12 @@ from pynnlib import (
 
 # PyTorch
 nnlib.set_session_constructor(
-    NnFrameworkType.PYTORCH,
-    PyTorchCuPySession
+    NnFrameworkType.PYTORCH, CustomPyTorchSession
 )
 
 # TensorRT
 nnlib.set_session_constructor(
-    NnFrameworkType.TENSORRT,
-    TensorRtCupySession
+    NnFrameworkType.TENSORRT, CustomPyTensorRtSession
 )
 
 ```

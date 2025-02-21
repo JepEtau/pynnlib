@@ -13,7 +13,6 @@ from .core import nn_lib as nnlib
 
 from .model import (
     OnnxModel,
-    PytorchModel,
     TrtModel,
     ModelExecutor,
     NnModel,
@@ -22,10 +21,7 @@ from .model import (
 
 from .nn_onnx.inference.session import OnnxSession
 from .nn_pytorch.inference.session import PyTorchSession
-from .session import (
-    set_cupy_cuda_device,
-    NnModelSession
-)
+from .session import NnModelSession
 
 try:
     from .nn_tensor_rt.inference.session import TensorRtSession
@@ -86,7 +82,6 @@ __all__ = [
 
     "is_cuda_available",
     "is_tensorrt_available",
-    "set_cupy_cuda_device",
 
     # For advanced user and dev
     "HostDeviceMemory",
