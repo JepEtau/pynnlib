@@ -81,8 +81,6 @@ __all__ = [
     "is_cuda_available",
     "is_tensorrt_available",
 
-    # For advanced user and dev
-    "HostDeviceMemory",
     "torch_dtype_to_np",
     "np_dtype_to_torch",
     "flip_r_b_channels",
