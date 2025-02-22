@@ -9,7 +9,7 @@ from torch.nn import functional as F
 
 from einops import rearrange
 from einops.layers.torch import Rearrange
-from timm.layers import DropPath, trunc_normal_
+from ..._shared.timm import DropPath, trunc_normal_
 
 
 def img2windows(img, H_sp, W_sp):

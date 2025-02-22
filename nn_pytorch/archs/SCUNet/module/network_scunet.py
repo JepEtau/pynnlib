@@ -9,7 +9,7 @@ import torch.nn as nn
 from torch import Tensor
 from einops import rearrange
 from einops.layers.torch import Rearrange
-from timm.layers import DropPath, trunc_normal_
+from ..._shared.timm import DropPath, trunc_normal_
 from ..._shared.pad import pad, unpad
 
 

@@ -6,8 +6,6 @@ if not is_cuda_available():
 
 if not is_tensorrt_available():
     print("Warning: no CUDA device detected, tensorRT is not available")
-else:
-    print("CUDA device detected, tensorRT is available")
 
 from .core import nn_lib as nnlib
 

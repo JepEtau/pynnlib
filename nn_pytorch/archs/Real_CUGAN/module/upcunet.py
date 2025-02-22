@@ -305,8 +305,7 @@ class UpCunet(nn.Module):
         x = torch.clamp(x, 0, 1)
 
         if not self.legacy:
-            # Should not be inplace operations if requires_grad=True
-            x.mul_(0.7).add(0.15)
+            x.mul(0.7).add(0.15)
         _x: Tensor = x
 
         pad_h, pad_w = [

@@ -21,7 +21,7 @@ except ModuleNotFoundError:
     nnlogger.debug("[W] Tensorrt package not found")
 
 try:
-    print(trt.__version__)
+    nnlogger.debug(f"[V] TensorRT version: {trt.__version__}")
     __is_tensorrt_available__ = True
 except:
     __is_tensorrt_available__ = False

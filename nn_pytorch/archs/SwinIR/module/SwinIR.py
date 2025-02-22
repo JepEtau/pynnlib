@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torch.utils.checkpoint as checkpoint
 from torch import Tensor
-from timm.layers import DropPath, trunc_normal_, to_2tuple
+from ..._shared.timm import DropPath, trunc_normal_, to_2tuple
 from ..._shared.pad import pad, unpad
 
 
