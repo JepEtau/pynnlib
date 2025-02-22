@@ -302,7 +302,6 @@ class UpCunet(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         size = x.shape[2:]
-        x = torch.clamp_(x, 0, 1)
 
         if not self.legacy:
             # Should not be inplace operations if requires_grad=True

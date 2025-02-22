@@ -44,7 +44,7 @@ class TrtLogger(trt.ILogger):
             print(f"{self.SEVERITY_LETTER_MAPPING[severity]} [TRT] {msg}")
 
 
-TRT_LOGGER = TrtLogger(trt.ILogger.INFO)
+TRT_LOGGER = TrtLogger(trt.ILogger.WARNING)
 
 def get_trt_logger():
     return TRT_LOGGER

@@ -87,7 +87,7 @@ class GenericModel:
     # is supported by this model.
     # PyTorch: use the dtypes specified by each arch
     # TODO: move this as a property like size_constraint
-    dtypes: set[NnModelDtype] = field(default_factory=set)
+    dtypes: list[NnModelDtype] = field(default_factory=list)
 
     # Object used to initialize an executor.
     # when in multiprocess. Useless otherwise
