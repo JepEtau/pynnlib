@@ -303,7 +303,7 @@ class NnLib:
         shape_strategy: ShapeStrategy,
         dtype: Idtype = '',
         optimization_level: int | None = None,
-        opset: int = 17,
+        opset: int = 20,
         device: str = "cuda:0",
         out_dir: str | Path | None = None,
         suffix: str | None = None,
@@ -327,6 +327,9 @@ class NnLib:
 
         if model.fwk_type == NnFrameworkType.TENSORRT:
             raise ValueError(f"This model is already a TensorRT model")
+
+        model.shape_strategy = shape_strategy
+        pprint(shape_strategy)
 
         trt_dtypes = set(['fp32'])
         if trt_dtypes:

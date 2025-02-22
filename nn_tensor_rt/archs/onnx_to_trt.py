@@ -1,4 +1,5 @@
 from copy import deepcopy
+from pprint import pprint
 import numpy as np
 from pynnlib.logger import nnlogger
 from pynnlib.nn_types import Idtype
@@ -25,10 +26,11 @@ def onnx_to_trt_engine(
         support only a single input tensor
 
     """
-    print("[V] Start converting to TRT")
 
     has_fp16: bool = bool('fp16' in dtypes)
     has_bf16: bool = bool('bf16' in dtypes)
+
+    print(f"[V] Start converting to TRT, request fp16={has_fp16}, bf16={has_bf16}")
 
     network_flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
     with (
@@ -58,7 +60,10 @@ def onnx_to_trt_engine(
             raise ValueError("Missing input tensor in model")
         input_name = input_tensor.name
         is_fp16 = True if trt.nptype(input_tensor.dtype) == np.float16 else has_fp16
+
         nnlogger.debug(f"is_fp16: {is_fp16}, to_fp16: {has_fp16}")
+        print(f"[V]   fp16={is_fp16}, bf16={has_bf16}")
+        print(f"[V]   input shape: {input_tensor.shape}")
 
         # builder.max_batch_size = 1
 
@@ -99,9 +104,22 @@ def onnx_to_trt_engine(
         if has_bf16:
             builder_config.set_flag(trt.BuilderFlag.BF16)
 
+        onnx_h, onnx_w = input_tensor.shape[2:]
+        static_onnx: bool = bool(onnx_h != -1 and onnx_w != -1)
 
-        # TODO create a list of profiles for each input
-        if not shape_strategy.static:
+        if static_onnx:
+            print(yellow("onnx_to_trt_engine: static onnx model"))
+            profile = builder.create_optimization_profile()
+            profile.set_shape(
+                input=input_name,
+                min=input_tensor.shape,
+                opt=input_tensor.shape,
+                max=input_tensor.shape,
+            )
+            builder_config.add_optimization_profile(profile)
+
+        elif not shape_strategy.static:
+            print(yellow("onnx_to_trt_engine: dynamic onnx model"))
             profile = builder.create_optimization_profile()
             batch_opt = 1
 
@@ -119,17 +137,11 @@ def onnx_to_trt_engine(
             )
             builder_config.add_optimization_profile(profile)
 
-
         nnlogger.info("[I] Building a TensortRT engine; this may take a while...")
-        # serialized_engine = builder.build_serialized_network(network, config)
         engine_bytes = builder.build_serialized_network(network, builder_config)
         if engine_bytes is None:
             raise RuntimeError("Failed to create Tensor RT engine")
         trt_engine = runtime.deserialize_cuda_engine(engine_bytes)
-
-        # buffer = trt_engine.serialize()
-        # with open("A:\\ml_models\\trt_engine_v10.engine", 'wb') as trt_engine_file:
-        #     trt_engine_file.write(buffer)
 
     return trt_engine
 

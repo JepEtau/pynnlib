@@ -45,20 +45,27 @@ def convert_to_tensorrt(
         sys.exit(red(f"[E] Erroneous option: {arguments.opt_size}"))
     shape_strategy.opt_size = opt_size
 
-    if not arguments.fixed_size:
-        min_size = _str_to_size(arguments.min_size)
-        if min_size is None:
-            sys.exit(red(f"[E] Erroneous option: {arguments.min_size}"))
-        shape_strategy.min_size = min_size
-
-        max_size = _str_to_size(arguments.max_size)
-        if max_size is None:
-            sys.exit(red(f"[E] Erroneous option: {arguments.max_size}"))
-        shape_strategy.max_size = max_size
-
-    else:
+    if arguments.static:
+        shape_strategy.static = True
         shape_strategy.min_size = shape_strategy.opt_size
         shape_strategy.max_size = shape_strategy.opt_size
+        print(red(shape_strategy))
+
+    else:
+        if not arguments.fixed_size:
+            min_size = _str_to_size(arguments.min_size)
+            if min_size is None:
+                sys.exit(red(f"[E] Erroneous option: {arguments.min_size}"))
+            shape_strategy.min_size = min_size
+
+            max_size = _str_to_size(arguments.max_size)
+            if max_size is None:
+                sys.exit(red(f"[E] Erroneous option: {arguments.max_size}"))
+            shape_strategy.max_size = max_size
+
+        else:
+            shape_strategy.min_size = shape_strategy.opt_size
+            shape_strategy.max_size = shape_strategy.opt_size
 
     if not shape_strategy.is_valid():
         sys.exit(red(f"[E] Erroneous sizes"))
@@ -273,7 +280,10 @@ format: WxH.
             print(f"[V] Convert {model.filepath} to TensorRT (c_dtype={c_dtype}): ")
             start_time = time.time()
             trt_model = convert_to_tensorrt(
-                arguments, model=model, device=device, dtype=c_dtype,
+                arguments,
+                model=model,
+                device=device,
+                dtype=c_dtype,
             )
             if trt_model is None:
                 print(red("[E] Failed to convert to a TensorRT engine"))

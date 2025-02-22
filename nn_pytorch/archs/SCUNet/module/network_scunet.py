@@ -10,7 +10,7 @@ from torch import Tensor
 from einops import rearrange
 from einops.layers.torch import Rearrange
 from ..._shared.timm import DropPath, trunc_normal_
-from ..._shared.pad import pad, unpad
+from ..._shared.pad import pad
 
 
 class WMSA(nn.Module):
@@ -92,7 +92,7 @@ class WMSA(nn.Module):
         return output
 
     def relative_embedding(self):
-        cord = torch.tensor(np.array([[i, j] for i in range(self.window_size) for j in range(self.window_size)]))
+        cord = Tensor(np.array([[i, j] for i in range(self.window_size) for j in range(self.window_size)]))
         relation = cord[:, None, :] - cord[None, :, :] + self.window_size -1
         # negative is allowed
         return self.relative_position_params[:, relation[:,:,0].long(), relation[:,:,1].long()]
@@ -236,8 +236,8 @@ class SCUNet(nn.Module):
 
 
     def forward(self, x0: Tensor) -> Tensor:
-        size = x0.shape[2:]
-        x0 = pad(x0, modulo=64, mode='reflect')
+        h, w = x0.shape[2:]
+        x0 = pad(x0, modulo=64, mode='reflect', value=None)
 
         x1 = self.m_head(x0)
         x2 = self.m_down1(x1)
@@ -249,8 +249,7 @@ class SCUNet(nn.Module):
         x = self.m_up1(x + x2)
         x = self.m_tail(x + x1)
 
-        x = unpad(x, size, scale=1)
-        return x
+        return x[:, :, :h, :w]
 
 
     def _init_weights(self, m):

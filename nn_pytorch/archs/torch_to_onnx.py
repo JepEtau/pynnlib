@@ -47,19 +47,28 @@ def to_onnx(
     session.initialize(device=device, dtype=dtype)
 
     # https://github.com/onnx/onnx/issues/654
-    if batch == 1:
+    if model.shape_strategy.static:
         dynamic_axes = {
-            'input': {2: "height", 3: "width"},
-            'output': {2: "height", 3: "width"},
+            'input': {0: 'batch_size'},
+            'output': {0: 'batch_size'}
         }
-    else:
-        dynamic_axes = {
-            'input': {0: "batch", 2: "height", 3: "width"},
-            'output': {0: "batch", 2: "height", 3: "width"},
-        }
+        w, h = model.shape_strategy.opt_size
 
-    size: SizeConstraint | None = model.size_constraint
-    w, h = size.min if size is not None and size.min is not None else (32, 32)
+    else:
+        if batch == 1:
+            dynamic_axes = {
+                'input': {2: "height", 3: "width"},
+                'output': {2: "height", 3: "width"},
+            }
+
+        else:
+            dynamic_axes = {
+                'input': {0: "batch", 2: "height", 3: "width"},
+                'output': {0: "batch", 2: "height", 3: "width"},
+            }
+
+        size: SizeConstraint | None = model.size_constraint
+        w, h = size.min if size is not None and size.min is not None else (32, 32)
 
     dummy_input = torch.rand(
         batch,

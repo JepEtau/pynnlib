@@ -98,6 +98,9 @@ class GenericModel:
     # Custom size constraints
     _size_constraint: SizeConstraint | None = None
 
+    # Shape strategy when converting to onnx/tensorrt
+    shape_strategy: ShapeStrategy = field(default_factory=ShapeStrategy)
+
 
     @property
     def fwk_type(self) -> NnFrameworkType:
@@ -202,8 +205,6 @@ class PytorchModel(GenericModel):
 @dataclass
 class TrtModel(GenericModel):
     engine: TrtEngine = None
-    # profiles: list[ShapeStrategy] = field(default_factory=[ShapeStrategy])
-    shape_strategy: ShapeStrategy = field(default_factory=ShapeStrategy)
     opset: int | None = None
     # Put here the device id? no? used for conversion load
     device: str = ""

@@ -14,6 +14,7 @@ from pynnlib.model import PytorchModel
 from pynnlib.architecture import SizeConstraint
 from pynnlib.nn_types import Idtype
 from pynnlib.session import GenericSession
+from pynnlib.utils.p_print import red
 from pynnlib.utils.torch_tensor import (
     to_nchw,
     flip_r_b_channels,
@@ -22,7 +23,6 @@ from pynnlib.utils.torch_tensor import (
 from ..torch_types import TorchNnModule
 if TYPE_CHECKING:
     from pynnlib.architecture import InferType
-import cupy as cp
 from torch import (
     from_dlpack,
     Tensor,
@@ -96,8 +96,8 @@ class PyTorchSession(GenericSession):
             param.requires_grad = False
 
         nnlogger.debug(f"[V] load model to {self.device}, {self.dtype}")
-        module.to(self.device)
-        module = module.to(dtype=self.dtype)
+        module = module.to(self.device).to(dtype=self.dtype)
+
         if warmup and 'cuda' in device:
             self.warmup(3)
 
@@ -128,6 +128,7 @@ class PyTorchSession(GenericSession):
         """Example of how to perform an inference session.
         This is an unoptimized function
         """
+        raise ValueError(red("Refactor this!"))
         torch_transfer: bool = False
         if torch_transfer:
             in_tensor = torch.from_numpy(np.ascontiguousarray(in_img))
