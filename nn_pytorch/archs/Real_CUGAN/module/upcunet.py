@@ -301,14 +301,21 @@ class UpCunet(nn.Module):
 
 
     def forward(self, x: Tensor) -> Tensor:
-        size = x.shape[2:]
+        h, w = x.shape[2:]
+        x = torch.clamp(x, 0, 1)
 
         if not self.legacy:
             # Should not be inplace operations if requires_grad=True
-            x.mul_(0.7).add_(0.15)
+            x.mul_(0.7).add(0.15)
         _x: Tensor = x
 
-        x = pad(x, modulo=self.modulo, mode='reflect')
+        pad_h, pad_w = [
+            self.pad + ((d - 1) // self.modulo + 1) * self.modulo - d
+            for d in (h, w)
+        ]
+        x = F.pad(
+            x, (self.pad, self.pad + pad_w, self.pad, self.pad + pad_h), 'reflect'
+        )
 
         x = self.unet1.forward(x)
         x0 = self.unet2.forward(x, self.alpha)
@@ -320,7 +327,8 @@ class UpCunet(nn.Module):
             x = F.pad(x, (-1, -1, -1, -1))
             x = self.ps(x)
 
-        x = unpad(x, size, scale=self.scale)
+        if pad_h != 0 or pad_w != 0:
+            x = x[:, :, :h * self.scale, :w * self.scale]
 
         if self.scale == 4:
             x += F.interpolate(_x, scale_factor=self.scale, mode="nearest")
