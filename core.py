@@ -246,8 +246,10 @@ class NnLib:
             return model
 
         # TODO: put the following code in an Try-Except block
-        nnlogger.debug(yellow(f"[I] Convert to onnx model:")
-             + f"device={device}, dtype={dtype}, opset={opset}, static={static}")
+        nnlogger.debug(yellow(f"[I] Convert to onnx model: ")
+             + f"device={device}, dtype={dtype}, opset={opset}, static={static}"
+             + f", shape={'x'.join([str(x) for x in model.shape_strategy.opt_size]) if static else ''}"
+        )
         if (
             model.arch is not None
             and (convert_fct := model.arch.to_onnx) is not None
