@@ -5,10 +5,8 @@ from typing import Any, TYPE_CHECKING
 
 from .utils import arg_list
 
-from .nn_pytorch.torch_types import (
-    StateDict,
-    TorchNnModule,
-)
+from torch import nn
+from .nn_pytorch.torch_types import StateDict
 from .nn_tensor_rt.trt_types import (
     ShapeStrategy,
     TrtEngine,
@@ -197,8 +195,8 @@ class PytorchModel(GenericModel):
     state_dict: StateDict = field(default_factory=StateDict)
     num_feat: int = 0
     num_conv: int = 0
-    ModuleClass: TorchNnModule | None = None
-    module: TorchNnModule | None = None
+    ModuleClass: nn.Module | None = None
+    module: nn.Module | None = None
 
 
 

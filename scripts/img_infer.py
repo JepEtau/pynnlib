@@ -230,6 +230,10 @@ Fallback to float if the execution provider does not support it
         model: NnModel = nnlib.open(model_filepath, device_for_parse)
     except:
         sys.exit(red(f"Failed to open model: {arguments.model}"))
+
+    if arguments.debug:
+        print(model)
+
     elapsed = time.time() - start_time
     print(lightcyan(f"Model:"), f"{model.filepath}")
     print(
@@ -289,11 +293,16 @@ Fallback to float if the execution provider does not support it
         session.initialize(
             device=device,
             dtype=i_dtype,
-            create_stream=True,
+            create_stream=False,
             warmup=bool(arguments.profiling)
         )
     except Exception as e:
-        session.initialize(device=device, dtype=i_dtype, create_stream=True, warmup=False)
+        session.initialize(
+            device=device,
+            dtype=i_dtype,
+            create_stream=False,
+            warmup=False
+        )
         sys.exit(red(f"Error: {e}"))
 
     print(lightcyan(f"Inference with"), f"{model.filepath}")

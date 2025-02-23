@@ -16,11 +16,12 @@ from pynnlib.nn_types import Idtype
 from pynnlib.session import GenericSession
 from pynnlib.utils.p_print import red
 from pynnlib.utils.torch_tensor import (
+    img_to_tensor,
+    tensor_to_img,
     to_nchw,
     flip_r_b_channels,
     to_hwc
 )
-from ..torch_types import TorchNnModule
 if TYPE_CHECKING:
     from pynnlib.architecture import InferType
 from torch import (
@@ -61,7 +62,7 @@ class PyTorchSession(GenericSession):
 
 
     @property
-    def module(self) -> TorchNnModule:
+    def module(self) -> nn.Module:
         return self.model.module
 
 
@@ -80,6 +81,7 @@ class PyTorchSession(GenericSession):
         device: str,
         dtype: Idtype | torch.dtype = 'fp32',
         warmup: bool = False,
+        **kwargs,
     ) -> None:
         module: nn.Module = self.module
         super().initialize(device=device, dtype=dtype)
@@ -96,7 +98,9 @@ class PyTorchSession(GenericSession):
             param.requires_grad = False
 
         nnlogger.debug(f"[V] load model to {self.device}, {self.dtype}")
-        module = module.to(self.device).to(dtype=self.dtype)
+        module = module.to(self.device)
+        module = module.half() if self.dtype == torch.float16 else module.float()
+        # module = module.to(self.device).to(dtype=self.dtype)
 
         if warmup and 'cuda' in device:
             self.warmup(3)
@@ -128,53 +132,28 @@ class PyTorchSession(GenericSession):
         """Example of how to perform an inference session.
         This is an unoptimized function
         """
-        raise ValueError(red("Refactor this!"))
-        torch_transfer: bool = False
-        if torch_transfer:
-            in_tensor = torch.from_numpy(np.ascontiguousarray(in_img))
-            h_tensor = torch.empty(in_tensor.shape, pin_memory=True)
-        else:
-            # HtoD
-            # allocate 2 times the image size for testing
-            cp_cuda_stream = cp.cuda.stream.Stream(non_blocking=True)
-            with cp_cuda_stream:
-                h_in_mem = cp.cuda.alloc_pinned_memory(
-                    2 * (math.prod(in_img.shape) * np.dtype(np.float32).itemsize)
-                )
+        in_dtype: np.dtype = in_img.dtype
+        in_img: Tensor = torch.from_numpy(np.ascontiguousarray(in_img))
+        d_in_img: Tensor = in_img.to(device=self.device)
+        d_in_tensor: Tensor = img_to_tensor(
+            d_img=d_in_img,
+            tensor_dtype=self.dtype,
+            flip_r_b=True,
+        )
+        print(red(d_in_tensor.dtype))
+        # print(red(self.module.dtype))
 
-                h_input = np.frombuffer(
-                    h_in_mem,
-                    dtype=in_img.dtype,
-                    count=math.prod(in_img.shape)
-                ).reshape(in_img.shape)
-                h_input[...] = np.ascontiguousarray(in_img)
-                d_cp_tensor = cp.empty(in_img.shape, in_img.dtype)
-                d_cp_tensor.set(h_input)
-                d_cp_tensor = d_cp_tensor.astype(in_img.dtype)
-                d_tensor: Tensor = from_dlpack(d_cp_tensor.toDlpack())
-            cp_cuda_stream.synchronize()
+        d_out_tensor: Tensor = self.module(d_in_tensor)
+        d_out_tensor = torch.clamp(d_out_tensor, 0., 1.)
 
+        print(red(d_in_tensor.dtype))
 
-        infer_stream: torch.cuda.Stream = torch.cuda.Stream(self.device)
-        with torch.cuda.stream(infer_stream):
-            if torch_transfer:
-                h_tensor.copy_(in_tensor).detach()
-                d_tensor: Tensor = h_tensor.to(
-                    self.device, dtype=self.torch_dtype, non_blocking=True
-                )
-                torch.cuda.synchronize()
-
-            in_tensor: Tensor = d_tensor.to(self.dtype)
-            in_tensor = flip_r_b_channels(in_tensor)
-            in_tensor = to_nchw(in_tensor).contiguous()
-
-            out_tensor: Tensor = self.module(in_tensor)
-            out_tensor = torch.clamp_(out_tensor, 0, 1)
-
-            out_tensor = to_hwc(out_tensor)
-            out_tensor = flip_r_b_channels(out_tensor)
-            out_tensor = out_tensor.float()
-            out_img: np.ndarray = out_tensor.detach().cpu().numpy()
+        d_out_img: Tensor = tensor_to_img(
+            tensor=d_out_tensor,
+            img_dtype=in_dtype,
+            flip_r_b=True,
+        )
+        out_img: np.ndarray = d_out_img.contiguous().detach().cpu().numpy()
 
         return out_img
 

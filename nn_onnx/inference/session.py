@@ -35,6 +35,7 @@ class OnnxSession(GenericSession):
         self,
         device: str = 'cpu',
         dtype: Idtype | torch.dtype = 'fp32',
+        **kwargs,
     ):
         super().initialize(device=device, dtype=dtype)
         self.execution_providers = ["CPUExecutionProvider"]
