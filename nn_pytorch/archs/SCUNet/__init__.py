@@ -1,9 +1,32 @@
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PytorchModel
+from pynnlib.nn_types import Idtype
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
 from ..helpers import get_max_indice
 from .module.network_scunet import SCUNet
+import onnx
+
+def _to_onnx(
+    model: PytorchModel,
+    dtype: Idtype,
+    opset: int,
+    static: bool = False,
+    device: str = 'cpu',
+    batch: int = 1,
+) -> onnx.ModelProto | None:
+    # Patch model because it doesn't support static.
+    # this should be removed because the generated filename is different
+    # from what has been checked
+    # model.shape_strategy.static = False
+    return to_onnx(
+        model=model,
+        dtype=dtype,
+        opset=opset,
+        static=True,
+        device=device,
+        batch=batch,
+    )
 
 
 def parse(model: PytorchModel) -> None:
@@ -41,7 +64,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "m_tail.0.weight"
         ),
         parse=parse,
-        to_onnx=to_onnx,
+        to_onnx=_to_onnx,
         dtypes=('fp32', 'fp16'),
         size_constraint=SizeConstraint(
             min=(64, 64)

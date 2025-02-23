@@ -25,7 +25,7 @@ def _to_onnx(
         model=model,
         dtype='fp32',
         opset=opset,
-        static=static,
+        static=False,
         device=device,
         batch=batch,
     )

@@ -70,6 +70,9 @@ def onnx_to_trt_engine(
         # Create a build configuration specifying how TensorRT should optimize the model
         builder_config = builder.create_builder_config()
 
+        # for debug
+        builder_config.profiling_verbosity = trt.ProfilingVerbosity.DETAILED
+
         # builder_config.set_flag(trt.BuilderFlag.REFIT)
         # 1GB
         # builder_config.max_workspace_size = 1 << 30
@@ -118,7 +121,7 @@ def onnx_to_trt_engine(
             )
             builder_config.add_optimization_profile(profile)
 
-        elif not shape_strategy.static:
+        else:
             print(yellow("onnx_to_trt_engine: dynamic onnx model"))
             profile = builder.create_optimization_profile()
             batch_opt = 1

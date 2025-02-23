@@ -25,6 +25,7 @@ def to_onnx(
     """Returns an Onnx model as a byte buffer
         if size is not None, use it to convert to a static shape
     """
+    # TODO use model.arch to determine if static is possible or not
     print(f"[V] PyTorch to ONNX")
 
     try:
@@ -47,7 +48,7 @@ def to_onnx(
     session.initialize(device=device, dtype=dtype)
 
     # https://github.com/onnx/onnx/issues/654
-    if model.shape_strategy.static:
+    if static and model.shape_strategy.static:
         dynamic_axes = {
             'input': {0: 'batch_size'},
             'output': {0: 'batch_size'}

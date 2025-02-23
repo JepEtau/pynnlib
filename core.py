@@ -246,7 +246,8 @@ class NnLib:
             return model
 
         # TODO: put the following code in an Try-Except block
-        nnlogger.debug(yellow(f"[I] Convert to onnx model: device={device}, dtype={dtype}, opset={opset}"))
+        nnlogger.debug(yellow(f"[I] Convert to onnx model:"),
+             "device={device}, dtype={dtype}, opset={opset}, static={static}")
         if (
             model.arch is not None
             and (convert_fct := model.arch.to_onnx) is not None
