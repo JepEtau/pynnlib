@@ -13,7 +13,7 @@ from ..torch_types import (
 from pynnlib.logger import nnlogger
 from pynnlib.architecture import NnPytorchArchitecture
 from pynnlib.utils.p_print import *
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from .helpers import parameters_to_args
 
 
@@ -82,7 +82,7 @@ def contains_any_keys(state_dict: StateDict, keys: tuple[str | tuple[str]]) -> b
     return any(key in state_dict for key in keys)
 
 
-def create_session(model: Type[PytorchModel]) -> Type[PytorchModel]:
+def create_session(model: Type[PyTorchModel]) -> Type[PyTorchModel]:
     TorchModule = model.ModuleClass
     args = parameters_to_args(model, TorchModule)
     model.module = TorchModule(**args)

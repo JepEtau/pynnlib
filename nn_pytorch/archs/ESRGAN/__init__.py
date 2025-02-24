@@ -5,7 +5,7 @@ from pprint import pprint
 import re
 from pynnlib.utils.p_print import *
 from pynnlib.architecture import NnPytorchArchitecture
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
 from ..helpers import get_max_indice
@@ -122,7 +122,7 @@ def _get_scale(state_dict: StateDict, min_part: int = 6) -> int:
 
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     state_dict = _convert_to_legacy_arch(state_dict)
 

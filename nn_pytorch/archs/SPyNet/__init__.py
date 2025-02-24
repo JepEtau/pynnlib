@@ -2,11 +2,11 @@ from pynnlib.architecture import (
     NnPytorchArchitecture,
     SizeConstraint,
 )
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from .module.SPyNet import SpyNet
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     # state_dict: StateDict = model.state_dict
     scale: int = 1
     in_nc: int = 3

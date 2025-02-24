@@ -1,7 +1,7 @@
 from pynnlib.utils.p_print import *
 from pynnlib.utils import path_split
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
 from .module.upcunet import UpCunet
@@ -64,7 +64,7 @@ def params_to_basename(pro: bool=True, scale: int=2, denoise: int=-1) -> str:
 
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict = model.state_dict
 
     in_nc: int = state_dict["unet1.conv1.conv.0.weight"].shape[1]

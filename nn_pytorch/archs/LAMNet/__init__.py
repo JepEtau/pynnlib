@@ -1,6 +1,6 @@
 import math
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ..helpers import get_max_indice
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
@@ -8,7 +8,7 @@ from .module.lamnet import LAMNet
 from .module.fsa_func import compile_fsa_ext
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     out_nc: int = 3
     in_nc: int = out_nc

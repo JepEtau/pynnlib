@@ -1,6 +1,6 @@
 import math
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ..helpers import (
     get_max_indice,
     get_pixelshuffle_params
@@ -10,7 +10,7 @@ from ..torch_to_onnx import to_onnx
 from ...torch_types import StateDict
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
 
     in_nc: int = state_dict["tail.1.weight"].shape[0]

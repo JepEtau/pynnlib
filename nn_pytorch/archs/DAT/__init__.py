@@ -3,7 +3,7 @@ from typing import Literal
 
 import onnx
 from pynnlib.architecture import NnPytorchArchitecture,SizeConstraint
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from pynnlib.nn_types import Idtype
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
@@ -12,7 +12,7 @@ from .module.dat_arch import DAT
 
 
 def _to_onnx(
-    model: PytorchModel,
+    model: PyTorchModel,
     dtype: Idtype,
     opset: int,
     static: bool = False,
@@ -31,7 +31,7 @@ def _to_onnx(
     )
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     in_nc: int
     state_dict: StateDict = model.state_dict
     scale: int = 1

@@ -10,12 +10,12 @@ from pynnlib.import_libs import is_cuda_available
 from pynnlib.nn_types import Idtype
 from ..inference.session import PyTorchSession
 if TYPE_CHECKING:
-    from pynnlib.model import PytorchModel
+    from pynnlib.model import PyTorchModel
 from pynnlib.utils.p_print import *
 
 
 def to_onnx(
-    model: PytorchModel,
+    model: PyTorchModel,
     dtype: Idtype,
     opset: int,
     static: bool = False,

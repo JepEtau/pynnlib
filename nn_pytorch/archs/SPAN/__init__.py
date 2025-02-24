@@ -1,14 +1,14 @@
 import torch
 from pynnlib.utils.p_print import *
 from pynnlib.architecture import NnPytorchArchitecture
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ...inference.session import PyTorchSession
 from ..helpers import get_scale_and_out_nc
 from ..torch_to_onnx import to_onnx
 from .module.span import SPAN
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     in_nc: int = 3
     state_dict = model.state_dict
 

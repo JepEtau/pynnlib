@@ -5,7 +5,7 @@ from pynnlib.architecture import (
     NnPytorchArchitecture,
     SizeConstraint,
 )
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from utils.p_print import *
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
@@ -14,7 +14,7 @@ from .module.tsm import TSN
 
 
 
-def _parse_tsn(model: PytorchModel) -> None:
+def _parse_tsn(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     in_nc: int = 3
     out_nc: int = in_nc
@@ -97,7 +97,7 @@ def _parse_tsn(model: PytorchModel) -> None:
 
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     in_nc: int = 3
     out_nc: int = in_nc

@@ -1,6 +1,6 @@
 import math
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from pynnlib.nn_pytorch.archs.RCAN import get_pixelshuffle_params
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
@@ -10,7 +10,7 @@ from ..helpers import (
 )
 from .module.atd import ATD
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
 
     embed_dim, in_nc = state_dict["conv_first.weight"].shape[:2]

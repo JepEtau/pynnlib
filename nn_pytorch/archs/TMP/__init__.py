@@ -1,5 +1,5 @@
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import (
     get_nsequences,
@@ -8,7 +8,7 @@ from ..torch_to_onnx import to_onnx
 from .module.TMP_arch import TMP
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
 
     # default

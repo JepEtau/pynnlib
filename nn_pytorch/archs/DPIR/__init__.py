@@ -1,12 +1,12 @@
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
 from ..helpers import get_max_indice
 from .module.network_unet import NonLocalUNet, UNetRes
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     out_nc: int = state_dict["m_tail.weight"].shape[0]
     in_nc: int = out_nc

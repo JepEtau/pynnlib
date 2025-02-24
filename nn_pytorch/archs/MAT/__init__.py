@@ -8,7 +8,7 @@ from pynnlib.architecture import (
     NnPytorchArchitecture,
 )
 from pynnlib import is_cuda_available
-from pynnlib.model import PytorchModel, SizeConstraint
+from pynnlib.model import PyTorchModel, SizeConstraint
 from ...inference.session import PyTorchSession
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
@@ -20,7 +20,7 @@ import onnx
 import torch
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     scale: int = 1
     in_nc: int = 3
@@ -47,7 +47,7 @@ def parse(model: PytorchModel) -> None:
 
 
 def to_onnx_inpaint(
-    model: PytorchModel,
+    model: PyTorchModel,
     dtype: Idtype,
     opset: int,
     static: bool = False,

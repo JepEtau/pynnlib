@@ -1,6 +1,6 @@
 import math
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ..helpers import (
     get_scale_and_out_nc,
     get_max_indice,
@@ -10,7 +10,7 @@ from ..torch_to_onnx import to_onnx
 from ...torch_types import StateDict
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
 
     state_dict_keys = set(state_dict.keys())

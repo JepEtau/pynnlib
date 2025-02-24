@@ -14,7 +14,7 @@ from typing import Any, Literal, Optional, overload
 from .model import (
     OnnxModel,
     NnModel,
-    PytorchModel,
+    PyTorchModel,
     SizeConstraint,
 )
 from .nn_types import (
@@ -87,7 +87,7 @@ class NnGenericArchitecture:
 
 
 ConvertToOnnxFct = Callable[
-    [PytorchModel, Idtype, int, bool, torch_device | str, int],
+    [PyTorchModel, Idtype, int, bool, torch_device | str, int],
     onnx.ModelProto
 ]
 """Convert a Pytorch model to an Onnx model.
@@ -103,7 +103,7 @@ ConvertToOnnxFct = Callable[
 
 
 ConvertToTensorrtFct = Callable[
-    [PytorchModel | OnnxModel, str, bool, Any, bool],
+    [PyTorchModel | OnnxModel, str, bool, Any, bool],
     bytes
 ]
 

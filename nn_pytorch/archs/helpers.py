@@ -4,7 +4,7 @@ import glob
 import inspect
 import math
 from torch import Tensor
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ..torch_types import StateDict
 
 
@@ -103,7 +103,7 @@ def get_pixelshuffle_params(
 
 
 def parameters_to_args(
-    model: PytorchModel,
+    model: PyTorchModel,
     model_class: type
 ) -> OrderedDict:
     arg_keywords = [kw for kw in inspect.signature(model_class.__init__).parameters.keys()][1:]

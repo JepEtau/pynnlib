@@ -1,5 +1,5 @@
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 
 from .module.network_rvrt import RVRT
 from ..torch_to_onnx import to_onnx
@@ -7,7 +7,7 @@ from ...torch_types import StateDict
 
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     if "feat_extract.1.weight" in state_dict:
         in_nc: int = state_dict["feat_extract.1.weight"].shape[1]

@@ -10,7 +10,7 @@ from torch import Tensor
 from typing import TYPE_CHECKING
 from pynnlib import is_cuda_available
 from pynnlib.logger import nnlogger
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from pynnlib.architecture import SizeConstraint
 from pynnlib.nn_types import Idtype
 from pynnlib.session import GenericSession
@@ -36,9 +36,9 @@ class PyTorchSession(GenericSession):
     It maybe be overloaded by a customized session
     """
 
-    def __init__(self, model: PytorchModel):
+    def __init__(self, model: PyTorchModel):
         super().__init__()
-        self.model: PytorchModel = model
+        self.model: PyTorchModel = model
         self.device: torch.device = torch.device('cpu')
 
         self.model.module.load_state_dict(self.model.state_dict, strict=True)

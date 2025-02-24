@@ -191,7 +191,7 @@ class OnnxModel(GenericModel):
 
 
 @dataclass
-class PytorchModel(GenericModel):
+class PyTorchModel(GenericModel):
     state_dict: StateDict = field(default_factory=StateDict)
     num_feat: int = 0
     num_conv: int = 0
@@ -208,4 +208,4 @@ class TrtModel(GenericModel):
     device: str = ""
 
 
-NnModel = OnnxModel | PytorchModel | TrtModel
+NnModel = OnnxModel | PyTorchModel | TrtModel

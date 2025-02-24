@@ -4,13 +4,13 @@ from pynnlib.architecture import (
     NnPytorchArchitecture,
     SizeConstraint,
 )
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from utils.p_print import *
 from ..torch_to_onnx import to_onnx
 from .module.vsr_arch import MSRSWVSR
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     recurrent_cell_shape = model.state_dict[f"recurrent_cell.conv_s1_first.0.weight"].shape
     in_nc: int = recurrent_cell_shape[3]
     num_feat: int = recurrent_cell_shape[0]

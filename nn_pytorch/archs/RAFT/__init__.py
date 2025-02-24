@@ -4,13 +4,13 @@ from pynnlib.architecture import (
     NnPytorchArchitecture,
     SizeConstraint,
 )
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from .module.raft import RAFT
 
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     scale: int = 1
     in_nc: int = 3

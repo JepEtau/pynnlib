@@ -1,14 +1,14 @@
 import math
 from pynnlib.utils.p_print import *
 from pynnlib.architecture import NnPytorchArchitecture
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
 from .module.realplksr_arch import RealPLKSR
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     scale: int = 0
     in_nc: int = 3

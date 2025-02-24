@@ -2,12 +2,12 @@ import math
 import re
 from pynnlib.utils.p_print import *
 from pynnlib.architecture import NnPytorchArchitecture
-from pynnlib.model import PytorchModel
+from pynnlib.model import PyTorchModel
 from ..torch_to_onnx import to_onnx
 from .module.SwinIR import SwinIR
 
 
-def parse(model: PytorchModel) -> None:
+def parse(model: PyTorchModel) -> None:
     # Defaults
     img_size: int = 64
     in_chans: int = 3

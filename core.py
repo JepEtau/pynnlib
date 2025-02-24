@@ -40,7 +40,7 @@ from .framework import (
 from .model import (
     NnModel,
     OnnxModel,
-    PytorchModel,
+    PyTorchModel,
     TrtModel,
 )
 from .nn_types import (
@@ -181,7 +181,7 @@ class NnLib:
     ) -> NnModel:
 
         if framework.type == NnFrameworkType.PYTORCH:
-            model = PytorchModel(
+            model = PyTorchModel(
                 filepath=nn_model_path,
                 framework=framework,
                 arch=model_arch,

@@ -12,6 +12,7 @@ from .core import nn_lib as nnlib
 from .model import (
     OnnxModel,
     TrtModel,
+    PyTorchModel,
     ModelExecutor,
     NnModel,
     TrtEngine,
