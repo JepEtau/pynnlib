@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from torch import Tensor
 
 
 def coords_grid(b, h, w, homogeneous=False, device=None):
@@ -72,7 +73,7 @@ def flow_warp(feature, flow, mask=False, padding_mode='zeros'):
                            return_mask=mask)
 
 
-def forward_backward_consistency_check(fwd_flow, bwd_flow,
+def forward_backward_consistency_check(fwd_flow: Tensor, bwd_flow: Tensor,
                                        alpha=0.01,
                                        beta=0.5
                                        ):
@@ -90,8 +91,8 @@ def forward_backward_consistency_check(fwd_flow, bwd_flow,
 
     threshold = alpha * flow_mag + beta
 
-    fwd_occ = (diff_fwd > threshold).float()  # [B, H, W]
-    bwd_occ = (diff_bwd > threshold).float()
+    fwd_occ = (diff_fwd > threshold).to(fwd_flow.dtype)  # [B, H, W]
+    bwd_occ = (diff_bwd > threshold).to(bwd_flow.dtype)
 
     return fwd_occ, bwd_occ
 

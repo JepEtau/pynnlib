@@ -28,9 +28,9 @@ def parse(model: PyTorchModel) -> None:
             and is_refine
         )
 
-    num_scale: int = 1
+    num_scales: int = 1
     if "backbone.trident_conv.weight" in state_dict:
-        num_scale = 2
+        num_scales = 2
         scale = 4
 
     if (
@@ -68,7 +68,7 @@ def parse(model: PyTorchModel) -> None:
         ModuleClass=UniMatch,
         task=task,
         reg_refine=is_refine,
-        num_scales=num_scale,
+        num_scales=num_scales,
         upsample_factor=scale,
         num_transformer_layers=num_transformer_layers,
         feature_channels=feature_channels

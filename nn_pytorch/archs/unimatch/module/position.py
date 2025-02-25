@@ -3,6 +3,7 @@
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 import math
 
 
@@ -23,7 +24,7 @@ class PositionEmbeddingSine(nn.Module):
             scale = 2 * math.pi
         self.scale = scale
 
-    def forward(self, x):
+    def forward(self, x: Tensor):
         # x = tensor_list.tensors  # [B, C, H, W]
         # mask = tensor_list.mask  # [B, H, W], input with padding, valid as 0
         b, c, h, w = x.size()
@@ -42,5 +43,5 @@ class PositionEmbeddingSine(nn.Module):
         pos_y = y_embed[:, :, :, None] / dim_t
         pos_x = torch.stack((pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()), dim=4).flatten(3)
         pos_y = torch.stack((pos_y[:, :, :, 0::2].sin(), pos_y[:, :, :, 1::2].cos()), dim=4).flatten(3)
-        pos = torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2)
+        pos = torch.cat((pos_y, pos_x), dim=3).permute(0, 3, 1, 2).to(x.dtype)
         return pos

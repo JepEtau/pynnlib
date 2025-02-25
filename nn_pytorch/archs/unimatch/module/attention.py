@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from torch import Tensor
 from .utils import split_feature, merge_splits, split_feature_1d, merge_splits_1d
 
 
@@ -181,7 +181,7 @@ class SelfAttnPropagation(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, feature0, flow,
+    def forward(self, feature0: Tensor, flow: Tensor,
                 local_window_attn=False,
                 local_window_radius=1,
                 **kwargs,
@@ -207,10 +207,10 @@ class SelfAttnPropagation(nn.Module):
         value = flow.view(b, flow.size(1), h * w).permute(0, 2, 1)  # [B, H*W, 2]
 
         scores = torch.matmul(query, key.permute(0, 2, 1)) / (c ** 0.5)  # [B, H*W, H*W]
-        prob = torch.softmax(scores, dim=-1)
+        prob = torch.softmax(scores, dim=-1).to(dtype=torch.float32)
 
         out = torch.matmul(prob, value)  # [B, H*W, 2]
-        out = out.view(b, h, w, value.size(-1)).permute(0, 3, 1, 2)  # [B, 2, H, W]
+        out = out.view(b, h, w, value.size(-1)).permute(0, 3, 1, 2).to(feature0.dtype)  # [B, 2, H, W]
 
         return out
 
