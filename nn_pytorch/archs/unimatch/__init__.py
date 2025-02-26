@@ -1,4 +1,3 @@
-import math
 from typing import Literal
 from warnings import warn
 from pynnlib.architecture import (
@@ -9,6 +8,7 @@ from pynnlib.model import PyTorchModel
 from pynnlib.utils.p_print import *
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
+from ..torch_to_onnx import to_onnx
 from .module.unimatch import UniMatch
 
 # Impossible to differentiate unimatch from GMFlow
