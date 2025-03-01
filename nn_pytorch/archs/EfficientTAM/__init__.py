@@ -40,15 +40,15 @@ def parse(model: PyTorchModel) -> None:
 
 
 efficient_tam_arch = NnPytorchArchitecture(
-        name="EfficientTAM",
-        category="segmentation",
-        detection_keys=("efficienttam"),
-        parse=parse,
-        dtypes=('fp32'),
-        size_constraint=SizeConstraint(
-            min=(8, 8)
-        )
-    ),
+    name="EfficientTAM",
+    category="segmentation",
+    detection_keys=("efficienttam"),
+    parse=parse,
+    dtypes=('fp32'),
+    size_constraint=SizeConstraint(
+        min=(8, 8)
+    )
+)
 
 MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
     efficient_tam_arch,
