@@ -2,6 +2,8 @@ from __future__ import annotations
 import json
 from warnings import warn
 
+from pynnlib.nn_pytorch.archs import MODEL_ARCHITECTURES
+
 from .import_libs import is_tensorrt_available
 from .logger import nnlogger
 from datetime import datetime
@@ -437,6 +439,26 @@ class NnLib:
         if framework == NnFrameworkType.TENSORRT and not is_tensorrt_available():
             raise ValueError("[E] Framework not supported: cannot set a custom session function")
         self.frameworks[framework].Session = ModelSession
+
+
+    def load_model(
+        self,
+        model_name: str = 'efficienttam_s_512x512',
+        device: str = 'cuda:0'
+    ) -> NnModel:
+        # PoC
+        from nn_pytorch.archs.EfficientTAM import PREDEFINED_MODEL_ARCHITECTURES
+        predefined_models: dict[str, dict] = {
+            'efficienttam_s_512x512': PREDEFINED_MODEL_ARCHITECTURES['efficienttam_s_512x512']
+        }
+
+        model = self._create_model(
+            nn_model_path="",
+            framework=self.frameworks[NnFrameworkType.PYTORCH],
+            model_arch=predefined_models[model_name],
+            model_obj=None,
+            device=device,
+        )
 
 
 nn_lib: NnLib = NnLib()

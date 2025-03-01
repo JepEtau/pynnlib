@@ -17,14 +17,12 @@ def parse(model: PyTorchModel) -> None:
     checkpoint_fp = os.path.join(model_dir, "efficienttam_s_512x512.pt")
     config_fp = os.path.join(model_dir, "efficienttam_s_512x512.yaml")
 
-    device = "cuda:0"
-
     del model.state_dict
 
     module = build_efficienttam_video_predictor(
         config_fp,
         ckpt_path=checkpoint_fp,
-        device=device,
+        device=model.device,
         mode="eval",
         hydra_overrides_extra=[],
         apply_postprocessing=True,
@@ -41,8 +39,7 @@ def parse(model: PyTorchModel) -> None:
     )
 
 
-MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
-    NnPytorchArchitecture(
+efficient_tam_arch = NnPytorchArchitecture(
         name="EfficientTAM",
         category="segmentation",
         detection_keys=("efficienttam"),
@@ -52,4 +49,11 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             min=(8, 8)
         )
     ),
+
+MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
+    efficient_tam_arch,
 )
+
+PREDEFINED_MODEL_ARCHITECTURES: dict[str, NnPytorchArchitecture] = {
+    "EfficientTAM": efficient_tam_arch,
+}
