@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple, Type
 
 import torch
 
-from efficient_track_anything.modeling.efficienttam_utils import LayerNorm2d, MLP
+from ..efficienttam_utils import LayerNorm2d, MLP
 from torch import nn
 
 

@@ -9,6 +9,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
+from torch import Tensor
 
 from .modeling.efficienttam_base import (
     EfficientTAMBase,
@@ -17,7 +18,7 @@ from .modeling.efficienttam_base import (
 from .utils.misc import (
     concat_points,
     fill_holes_in_mask_scores,
-    load_video_frames,
+    # load_video_frames,
 )
 
 
@@ -39,47 +40,57 @@ class EfficientTAMVideoPredictor(EfficientTAMBase):
         **kwargs,
     ):
         super().__init__(**kwargs)
+
+        if isinstance(self.device, str):
+            self.device = torch.device(self.device)
+
         self.fill_hole_area = fill_hole_area
         self.non_overlap_masks = non_overlap_masks
         self.clear_non_cond_mem_around_input = clear_non_cond_mem_around_input
         self.add_all_frames_to_correct_as_cond = add_all_frames_to_correct_as_cond
 
+
     @torch.inference_mode()
     def init_state(
         self,
-        video_path,
-        offload_video_to_cpu=False,
-        offload_state_to_cpu=False,
-        async_loading_frames=False,
+        cached_tensors: list[Tensor],
+        video_shape: tuple[int, int],
     ):
-        """Initialize an inference state."""
-        compute_device = self.device  # device of the model
-        images, video_height, video_width = load_video_frames(
-            video_path=video_path,
-            image_size=self.image_size,
-            offload_video_to_cpu=offload_video_to_cpu,
-            async_loading_frames=async_loading_frames,
-            compute_device=compute_device,
-        )
+        h, w, _ = video_shape
+
+        first_tensor: Tensor = cached_tensors[0]
+        dtype: torch.dtype = first_tensor.dtype
+        device: torch.device = first_tensor.device
+        if first_tensor.device != device:
+            raise(f"Error: first tensor is not on {self.device}")
+
+        mean = torch.tensor(
+            (0.485, 0.456, 0.406), dtype=dtype, device=device
+        )[:, None, None]
+        std = torch.tensor(
+            (0.229, 0.224, 0.225), dtype=dtype, device=device
+        )[:, None, None]
+
+        all_tensors = torch.stack(cached_tensors, dim=0)
+        all_tensors -= mean
+        all_tensors /= std
+
         inference_state = {}
-        inference_state["images"] = images
-        inference_state["num_frames"] = len(images)
+        inference_state["images"] = all_tensors
+        inference_state["num_frames"] = len(all_tensors)
         # whether to offload the video frames to CPU memory
         # turning on this option saves the GPU memory with only a very small overhead
-        inference_state["offload_video_to_cpu"] = offload_video_to_cpu
+        inference_state["offload_video_to_cpu"] = False
         # whether to offload the inference state to CPU memory
         # turning on this option saves the GPU memory at the cost of a lower tracking fps
         # (e.g. in a test case of 768x768 model, fps dropped from 27 to 24 when tracking one object
         # and from 24 to 21 when tracking two objects)
-        inference_state["offload_state_to_cpu"] = offload_state_to_cpu
+        inference_state["offload_state_to_cpu"] = False
         # the original video height and width, used for resizing final output scores
-        inference_state["video_height"] = video_height
-        inference_state["video_width"] = video_width
-        inference_state["device"] = compute_device
-        if offload_state_to_cpu:
-            inference_state["storage_device"] = torch.device("cpu")
-        else:
-            inference_state["storage_device"] = compute_device
+        inference_state["video_height"] = h
+        inference_state["video_width"] = w
+        inference_state["device"] = self.device
+        inference_state["storage_device"] = self.device
         # inputs on each frame
         inference_state["point_inputs_per_obj"] = {}
         inference_state["mask_inputs_per_obj"] = {}
@@ -103,6 +114,67 @@ class EfficientTAMVideoPredictor(EfficientTAMBase):
         # Warm up the visual backbone and cache the image feature on frame 0
         self._get_image_feature(inference_state, frame_idx=0, batch_size=1)
         return inference_state
+
+
+    # @torch.inference_mode()
+    # def init_state(
+    #     self,
+    #     video_path,
+    #     offload_video_to_cpu=False,
+    #     offload_state_to_cpu=False,
+    #     async_loading_frames=False,
+    # ):
+    #     """Initialize an inference state."""
+    #     compute_device = self.device  # device of the model
+    #     images, video_height, video_width = load_video_frames(
+    #         video_path=video_path,
+    #         image_size=self.image_size,
+    #         offload_video_to_cpu=offload_video_to_cpu,
+    #         async_loading_frames=async_loading_frames,
+    #         compute_device=compute_device,
+    #     )
+    #     inference_state = {}
+    #     inference_state["images"] = images
+    #     inference_state["num_frames"] = len(images)
+    #     # whether to offload the video frames to CPU memory
+    #     # turning on this option saves the GPU memory with only a very small overhead
+    #     inference_state["offload_video_to_cpu"] = offload_video_to_cpu
+    #     # whether to offload the inference state to CPU memory
+    #     # turning on this option saves the GPU memory at the cost of a lower tracking fps
+    #     # (e.g. in a test case of 768x768 model, fps dropped from 27 to 24 when tracking one object
+    #     # and from 24 to 21 when tracking two objects)
+    #     inference_state["offload_state_to_cpu"] = offload_state_to_cpu
+    #     # the original video height and width, used for resizing final output scores
+    #     inference_state["video_height"] = video_height
+    #     inference_state["video_width"] = video_width
+    #     inference_state["device"] = compute_device
+    #     if offload_state_to_cpu:
+    #         inference_state["storage_device"] = torch.device("cpu")
+    #     else:
+    #         inference_state["storage_device"] = compute_device
+    #     # inputs on each frame
+    #     inference_state["point_inputs_per_obj"] = {}
+    #     inference_state["mask_inputs_per_obj"] = {}
+    #     # visual features on a small number of recently visited frames for quick interactions
+    #     inference_state["cached_features"] = {}
+    #     # values that don't change across frames (so we only need to hold one copy of them)
+    #     inference_state["constants"] = {}
+    #     # mapping between client-side object id and model-side object index
+    #     inference_state["obj_id_to_idx"] = OrderedDict()
+    #     inference_state["obj_idx_to_id"] = OrderedDict()
+    #     inference_state["obj_ids"] = []
+    #     # Slice (view) of each object tracking results, sharing the same memory with "output_dict"
+    #     inference_state["output_dict_per_obj"] = {}
+    #     # A temporary storage to hold new outputs when user interact with a frame
+    #     # to add clicks or mask (it's merged into "output_dict" before propagation starts)
+    #     inference_state["temp_output_dict_per_obj"] = {}
+    #     # Frames that already holds consolidated outputs from click or mask inputs
+    #     # (we directly use their consolidated outputs during tracking)
+    #     # metadata for each tracking frame (e.g. which direction it's tracked)
+    #     inference_state["frames_tracked_per_obj"] = {}
+    #     # Warm up the visual backbone and cache the image feature on frame 0
+    #     self._get_image_feature(inference_state, frame_idx=0, batch_size=1)
+    #     return inference_state
 
     @classmethod
     def from_pretrained(cls, model_id: str, **kwargs) -> "EfficientTAMVideoPredictor":
@@ -588,7 +660,7 @@ class EfficientTAMVideoPredictor(EfficientTAMBase):
             )
             processing_order = range(start_frame_idx, end_frame_idx + 1)
 
-        for frame_idx in tqdm(processing_order, desc="propagate in video"):
+        for frame_idx in processing_order:
             pred_masks_per_obj = [None] * batch_size
             for obj_idx in range(batch_size):
                 obj_output_dict = inference_state["output_dict_per_obj"][obj_idx]
@@ -636,6 +708,7 @@ class EfficientTAMVideoPredictor(EfficientTAMBase):
                 inference_state, all_pred_masks
             )
             yield frame_idx, obj_ids, video_res_masks
+
 
     @torch.inference_mode()
     def clear_all_prompts_in_frame(
@@ -717,8 +790,8 @@ class EfficientTAMVideoPredictor(EfficientTAMBase):
         )
         if backbone_out is None:
             # Cache miss -- we will run inference on a single image
-            device = inference_state["device"]
-            image = inference_state["images"][frame_idx].to(device).float().unsqueeze(0)
+            # image = inference_state["images"][frame_idx].to(device).float().unsqueeze(0)
+            image = inference_state["images"][frame_idx].unsqueeze(0)
             backbone_out = self.forward_image(image)
             # Cache the most recent frame's feature (for repeated interactions with
             # a frame; we can use an LRU cache for more frames in the future).

@@ -447,9 +447,9 @@ class NnLib:
         device: str = 'cuda:0'
     ) -> NnModel:
         # PoC
-        from nn_pytorch.archs.EfficientTAM import PREDEFINED_MODEL_ARCHITECTURES
+        from pynnlib.nn_pytorch.archs.EfficientTAM import PREDEFINED_MODEL_ARCHITECTURES
         predefined_models: dict[str, dict] = {
-            'efficienttam_s_512x512': PREDEFINED_MODEL_ARCHITECTURES['efficienttam_s_512x512']
+            'efficienttam_s_512x512': PREDEFINED_MODEL_ARCHITECTURES['efficienttam_s_512x512'],
         }
 
         model = self._create_model(
@@ -459,6 +459,7 @@ class NnLib:
             model_obj=None,
             device=device,
         )
+        return model
 
 
 nn_lib: NnLib = NnLib()

@@ -6,7 +6,11 @@
 
 import logging
 import os
+from pprint import pprint
+import sys
 
+# pprint(sys.modules)
+# import pynnlib.nn_pytorch.archs.EfficientTAM.efficient_track_anything as efficient_track_anything
 import efficient_track_anything
 
 import torch
@@ -101,10 +105,10 @@ def build_efficienttam_video_predictor(
     vos_optimized=False,
     **kwargs,
 ):
-    if not torch.cuda.is_available() or torch.cuda.get_device_properties(0).major < 8:
-        print("Disable torch compile due to unsupported GPU.")
-        hydra_overrides_extra = ["++model.compile_image_encoder=False"]
-        vos_optimized = False
+    # if not torch.cuda.is_available() or torch.cuda.get_device_properties(0).major < 8:
+        # print("Disable torch compile due to unsupported GPU.")
+    hydra_overrides_extra = ["++model.compile_image_encoder=False"]
+    vos_optimized = False
 
     hydra_overrides = [
         "++model._target_=efficient_track_anything.efficienttam_video_predictor.EfficientTAMVideoPredictor",
@@ -142,6 +146,7 @@ def build_efficienttam_video_predictor(
 
 
 def _hf_download(model_id):
+    raise
     from huggingface_hub import hf_hub_download
 
     config_name, checkpoint_name = HF_MODEL_ID_TO_FILENAMES[model_id]

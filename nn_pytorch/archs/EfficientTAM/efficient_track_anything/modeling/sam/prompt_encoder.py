@@ -8,9 +8,8 @@ from typing import Optional, Tuple, Type
 
 import torch
 
-from efficient_track_anything.modeling.efficienttam_utils import LayerNorm2d
-
-from efficient_track_anything.modeling.position_encoding import PositionEmbeddingRandom
+from ..efficienttam_utils import LayerNorm2d
+from ..position_encoding import PositionEmbeddingRandom
 from torch import nn
 
 

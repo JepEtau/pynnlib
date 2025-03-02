@@ -10,9 +10,8 @@ from typing import Tuple, Type
 
 import torch
 import torch.nn.functional as F
-from efficient_track_anything.modeling.efficienttam_utils import MLP
-
-from efficient_track_anything.modeling.position_encoding import (
+from ..efficienttam_utils import MLP
+from ..position_encoding import (
     apply_rotary_enc,
     compute_axial_cis,
 )
