@@ -1,7 +1,7 @@
 import sys
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
-from module.etam import _VirtualEfficientTAM
+from .module.etam import _VirtualEfficientTAM
 import os
 
 # models: https://huggingface.co/yunyangx/efficient-track-anything/tree/main
