@@ -1,7 +1,6 @@
 from collections import OrderedDict
 import functools
 import math
-from pprint import pprint
 import re
 from pynnlib.utils.p_print import *
 from pynnlib.architecture import NnPytorchArchitecture
