@@ -1,6 +1,5 @@
 from __future__ import annotations
 from collections.abc import Callable
-import math
 from pprint import pprint
 import cv2
 import numpy as np
@@ -24,10 +23,7 @@ from pynnlib.utils.torch_tensor import (
 )
 if TYPE_CHECKING:
     from pynnlib.architecture import InferType
-from torch import (
-    from_dlpack,
-    Tensor,
-)
+from torch import Tensor
 
 
 class PyTorchSession(GenericSession):
@@ -41,7 +37,12 @@ class PyTorchSession(GenericSession):
         self.model: PyTorchModel = model
         self.device: torch.device = torch.device('cpu')
 
-        self.model.module.load_state_dict(self.model.state_dict, strict=True)
+        try:
+            self.model.module.load_state_dict(self.model.state_dict, strict=True)
+        except:
+            print(red(f"stupid model/arch: {self.model.arch.name}"))
+            self.model.module.load_state_dict(self.model.state_dict, strict=False)
+
         for _, v in self.model.module.named_parameters():
             v.requires_grad = False
 
