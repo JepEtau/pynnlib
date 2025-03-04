@@ -11,7 +11,6 @@ from pynnlib import is_cuda_available
 from pynnlib.model import PyTorchModel, SizeConstraint
 from ...inference.session import PyTorchSession
 from ...torch_types import StateDict
-from ..torch_to_onnx import to_onnx
 from .module.mat import MAT
 from .module.bias_act import compile_bias_act_ext
 from .module.upfirdn2d import compile_upfirdn2d_ext
@@ -26,9 +25,9 @@ def parse(model: PyTorchModel) -> None:
     in_nc: int = 3
     out_nc: int = 3
 
-    verbose: bool = False
-    compile_bias_act_ext(verbose=verbose)
-    compile_upfirdn2d_ext(verbose=verbose)
+    verbose: bool = True
+    # compile_bias_act_ext(verbose=verbose)
+    # compile_upfirdn2d_ext(verbose=verbose)
 
     for k in list(state_dict.keys()).copy():
         if k.startswith(("synthesis.", "mapping.")):
