@@ -30,3 +30,10 @@ class ShapeStrategy:
             if min([values[i+1] - values[i] for i in range(len(values)-1)]) < 0:
                 return False
         return True
+
+    def is_fixed(self):
+        w, h = self.opt_size
+        for size in (self.min_size, self.max_size):
+            if size[0] != w or size[1] != h:
+                return False
+        return True

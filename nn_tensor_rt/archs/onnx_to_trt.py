@@ -62,6 +62,7 @@ def onnx_to_trt_engine(
         is_fp16 = True if trt.nptype(input_tensor.dtype) == np.float16 else has_fp16
 
         nnlogger.debug(f"is_fp16: {is_fp16}, to_fp16: {has_fp16}")
+        print(f"is_fp16: {is_fp16}, to_fp16: {has_fp16}")
         print(f"[V]   fp16={is_fp16}, bf16={has_bf16}")
         print(f"[V]   input shape: {input_tensor.shape}")
 
@@ -101,6 +102,7 @@ def onnx_to_trt_engine(
         if is_fp16 or has_fp16:
             if builder.platform_has_fast_fp16:
                 builder_config.set_flag(trt.BuilderFlag.FP16)
+                print(f"[V]   set fp16 flag")
             else:
                 raise RuntimeError("Error: fp16 is requested but this platform does not support it")
 
@@ -109,24 +111,29 @@ def onnx_to_trt_engine(
 
         onnx_h, onnx_w = input_tensor.shape[2:]
         static_onnx: bool = bool(onnx_h != -1 and onnx_w != -1)
+        strategy: ShapeStrategy = deepcopy(shape_strategy)
+        fixed_trt: bool = shape_strategy.is_fixed()
+        batch_opt = 1
 
+        profile = builder.create_optimization_profile()
         if static_onnx:
             print(yellow("onnx_to_trt_engine: static onnx model"))
-            profile = builder.create_optimization_profile()
             profile.set_shape(
                 input=input_name,
                 min=input_tensor.shape,
                 opt=input_tensor.shape,
                 max=input_tensor.shape,
             )
-            builder_config.add_optimization_profile(profile)
+
+        elif fixed_trt:
+            print(yellow("onnx_to_trt_engine: fixed trt"))
+            shape = (batch_opt, model.in_nc, *reversed(strategy.opt_size))
+            profile.set_shape(
+                input=input_name, min=shape, opt=shape, max=shape,
+            )
 
         else:
             print(yellow("onnx_to_trt_engine: dynamic onnx model"))
-            profile = builder.create_optimization_profile()
-            batch_opt = 1
-
-            strategy = deepcopy(shape_strategy)
             if strategy.min_size == (0, 0):
                 strategy.min_size = strategy.opt_size
             if strategy.max_size == (0, 0):
@@ -138,7 +145,8 @@ def onnx_to_trt_engine(
                 opt=(batch_opt, model.in_nc, *reversed(strategy.opt_size)),
                 max=(batch_opt, model.in_nc, *reversed(strategy.max_size)),
             )
-            builder_config.add_optimization_profile(profile)
+
+        builder_config.add_optimization_profile(profile)
 
         nnlogger.info("[I] Building a TensortRT engine; this may take a while...")
         engine_bytes = builder.build_serialized_network(network, builder_config)
