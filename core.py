@@ -223,7 +223,7 @@ class NnLib:
     def convert_to_onnx(
         self,
         model: NnModel,
-        opset: int = 17,
+        opset: int = 20,
         dtype: Idtype = 'fp32',
         static: bool = False,
         device: str = 'cpu',
@@ -312,6 +312,7 @@ class NnLib:
         device: str = "cuda:0",
         out_dir: str | Path | None = None,
         suffix: str | None = None,
+        force: bool = False,
     ) -> TrtModel:
         """Convert a model into a tensorrt model.
         Returns a new instance of model.
@@ -334,7 +335,6 @@ class NnLib:
             raise ValueError(f"This model is already a TensorRT model")
 
         model.shape_strategy = shape_strategy
-        pprint(shape_strategy)
 
         trt_dtypes = set(['fp32'])
         if trt_dtypes:
@@ -367,8 +367,11 @@ class NnLib:
             suffix = suffix if suffix is not None else ''
             filepath = os.path.join(out_dir, f"{trt_basename}{suffix}.engine")
             if os.path.exists(filepath):
-                nnlogger.debug(f"[I] Engine {filepath} already exists, do not convert")
-                return self.open(filepath, device)
+                if not force:
+                    nnlogger.debug(f"[I] Engine {filepath} already exists, do not convert")
+                    return self.open(filepath, device)
+                else:
+                    os.remove(filepath)
             else:
                 nnlogger.debug(f"[I] Engine {filepath} does not exist")
             del _model
@@ -378,7 +381,7 @@ class NnLib:
         onnx_model: OnnxModel = self.convert_to_onnx(
             model=model,
             opset=opset,
-            dtype='fp32',
+            dtype='fp16' if dtype == 'fp16' else 'fp32',
             static=shape_strategy.static,
             device=device,
             out_dir=out_dir,

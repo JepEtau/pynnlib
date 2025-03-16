@@ -29,7 +29,7 @@ def parse(model: PyTorchModel) -> None:
         dim=dim,
         config=config,
         drop_path_rate=0,
-        input_resolution=256
+        input_resolution=1
     )
 
 

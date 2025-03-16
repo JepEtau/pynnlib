@@ -5,6 +5,7 @@ from pynnlib.logger import nnlogger
 from pynnlib.nn_types import Idtype
 from pynnlib.utils.p_print import *
 import tensorrt as trt
+import torch
 from pynnlib.model import OnnxModel
 from ..inference.session import TRT_LOGGER
 from ..trt_types import ShapeStrategy, TrtEngine
@@ -26,7 +27,6 @@ def onnx_to_trt_engine(
         support only a single input tensor
 
     """
-
     has_fp16: bool = bool('fp16' in dtypes)
     has_bf16: bool = bool('bf16' in dtypes)
 
@@ -74,27 +74,9 @@ def onnx_to_trt_engine(
         # for debug
         builder_config.profiling_verbosity = trt.ProfilingVerbosity.DETAILED
 
-        # builder_config.set_flag(trt.BuilderFlag.REFIT)
         # 1GB
-        # builder_config.max_workspace_size = 1 << 30
+        # 2025-03-15: don"t limit the memory pool bc of DAT2 (bf16)
         # builder_config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, 1 << 30)
-        # builder_config.avg_timing_iterations = 10
-
-        # tactic_source = builder_config.get_tactic_sources() & ~(1 << int(trt.TacticSource.CUDNN))
-        # builder_config.set_tactic_sources(tactic_source)
-
-        # builder_config.set_preview_feature(
-        #     trt.PreviewFeature.DISABLE_EXTERNAL_TACTIC_SOURCES_FOR_CORE_0805, False)
-
-        # Set config:
-        # config.
-        #   num_optimization_profiles
-        #   profiling_verbosity
-        #   engine_capability
-        #   builder_optimization_level
-        #   hardware_compatibility_level
-        #   flags
-        # config.flag
 
         # optimization level: default=3
         # builder.builder_optimization_level = 5

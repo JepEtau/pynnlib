@@ -293,14 +293,14 @@ Fallback to float if the execution provider does not support it
         session.initialize(
             device=device,
             dtype=i_dtype,
-            create_stream=False,
+            create_stream=True,
             warmup=bool(arguments.profiling)
         )
     except Exception as e:
         session.initialize(
             device=device,
             dtype=i_dtype,
-            create_stream=False,
+            create_stream=True,
             warmup=False
         )
         sys.exit(red(f"Error: {e}"))
@@ -323,7 +323,7 @@ Fallback to float if the execution provider does not support it
 
     start_time= time.time()
     for _ in range(inferences):
-        out_img: np.ndarray = session.process(in_img)
+        out_img: np.ndarray = session.infer(in_img)
     elapsed = time.time() - start_time
 
     if inferences > 1:

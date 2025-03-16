@@ -30,6 +30,7 @@ def convert_to_tensorrt(
     model: NnModel,
     device: str,
     dtype: Idtype,
+    force: bool = False,
 ) -> TrtModel | None:
     trt_model: TrtModel | None = None
 
@@ -82,6 +83,7 @@ def convert_to_tensorrt(
         opset=arguments.opset,
         device=device,
         out_dir=path_split(model.filepath)[0],
+        force=force,
     )
 
     return trt_model
@@ -100,6 +102,16 @@ def main():
         default='',
         required=True,
         help="""Model (PyTorch, ONNX) to convert.
+\n"""
+    )
+
+    parser.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        required=False,
+        default=False,
+        help="""Force to regenerate model
 \n"""
     )
 
@@ -221,6 +233,7 @@ format: WxH.
     )
 
     arguments = parser.parse_args()
+    force: bool = arguments.force
 
     if not arguments.trt and not arguments.onnx:
         sys.exit(red(f"[E] at least --onnx or --trt must be specified"))
@@ -284,6 +297,7 @@ format: WxH.
                 model=model,
                 device=device,
                 dtype=c_dtype,
+                force=force,
             )
             if trt_model is None:
                 print(red("[E] Failed to convert to a TensorRT engine"))
