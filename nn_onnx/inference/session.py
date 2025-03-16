@@ -122,7 +122,7 @@ class OnnxSession(GenericSession):
         return np.ascontiguousarray(out_img)
 
 
-    def process(self, in_img: np.ndarray) -> np.ndarray:
+    def infer(self, in_img: np.ndarray) -> np.ndarray:
         if in_img.dtype != np.float32:
             raise ValueError("np.float32 img only")
 

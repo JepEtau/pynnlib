@@ -99,8 +99,9 @@ class PyTorchSession(GenericSession):
             param.requires_grad = False
 
         nnlogger.debug(f"[V] load model to {self.device}, {dtype} -> {self.dtype}")
-        module = module.to(self.device).to(dtype=self.dtype)
-        module = module.half() if self.dtype == torch.float16 else module.float()
+        module = module.to(self.device)
+        module = module.to(dtype=self.dtype)
+        # module = module.half() if self.dtype == torch.float16 else module.float()
 
         if warmup and 'cuda' in device:
             self.warmup(3)
@@ -123,7 +124,7 @@ class PyTorchSession(GenericSession):
             self._process_fct(*imgs)
 
 
-    def process(self, in_img: np.ndarray, *args, **kwargs) -> np.ndarray:
+    def infer(self, in_img: np.ndarray, *args, **kwargs) -> np.ndarray:
         return self._process_fct(in_img, *args, **kwargs)
 
 
@@ -140,13 +141,9 @@ class PyTorchSession(GenericSession):
             tensor_dtype=self.dtype,
             flip_r_b=True,
         )
-        print(red(d_in_tensor.dtype))
-        # print(red(self.module.dtype))
 
         d_out_tensor: Tensor = self.module(d_in_tensor)
         d_out_tensor = torch.clamp(d_out_tensor, 0., 1.)
-
-        print(red(d_in_tensor.dtype))
 
         d_out_img: Tensor = tensor_to_img(
             tensor=d_out_tensor,

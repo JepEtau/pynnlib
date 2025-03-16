@@ -388,7 +388,7 @@ Fallback to float if the execution provider does not support it
     for _ in range(inferences):
         # in_img = in_img[:1024,:1024,:]
         # in_mask = in_mask[:1024,:1024]
-        out_img: np.ndarray = session.process(in_img, in_mask)
+        out_img: np.ndarray = session.infer(in_img, in_mask)
     elapsed = time.time() - start_time
 
     if inferences > 1:

@@ -43,7 +43,7 @@ class TrtLogger(trt.ILogger):
             print(f"{self.SEVERITY_LETTER_MAPPING[severity]} [TRT] {msg}")
 
 
-TRT_LOGGER = TrtLogger(trt.ILogger.WARNING)
+TRT_LOGGER = TrtLogger(trt.ILogger.INFO)
 
 def get_trt_logger():
     return TRT_LOGGER
@@ -132,10 +132,10 @@ class TensorRtSession(GenericSession):
         nnlogger.debug(f"[V] warmup ({count}x) with a random img ({shape})")
         img = np.random.random(shape).astype(np.float32)
         for _ in range(count):
-            self.process(img)
+            self.infer(img)
 
 
-    def process(self, in_img: np.ndarray) -> np.ndarray | None:
+    def infer(self, in_img: np.ndarray) -> np.ndarray | None:
         """This is the worst optimized inference function to perform inference
         of TensorRT engines.
         """
