@@ -22,13 +22,34 @@ A library I use as a **submodule** for my other projects.
 Unzip the code in a directory name `pynnlib`
 or clone at the root of a project
 ```
-git clone https://github.com/herlegon/pynnlib.git
+git clone https://github.com/JepEtau/pynnlib.git
 ```
 ## As a submodule in a git project
 ```
 git submodule init
-git submodule add https://github.com/herlegon/pynnlib.git
+git submodule add https://github.com/JepEtau/pynnlib.git
 ```
+
+<br/>
+
+## Parse models
+example:
+`python -m scripts.parse_models -d ~/ml_models --filter pytorch`
+
+
+## Convert a model
+example, fixed shape
+`python -m scripts.convert_model -trt -m A:\ml_models\2x_Pooh_DAT-2_Candidate_1_305k.pth -opt 640x480 -fixed -bf16`
+append `-f` or `--force` to overwrite existing engine
+
+## Single image inference
+- TensorRT
+`python -m scripts.img_infer -i .\img_640x480.png  -m  A:\ml_models\2x_Pooh_DAT-2_Candidate_1_305k_cc8.9_op20_fp32_bf16_640x480_640x480_640x480_10.9.0.34.engine -bf16`
+
+
+- CUDA
+`python -m scripts.img_infer --img img.png --model 2x-LD-Anime-Compact.pth --cuda`
+
 
 <br/>
 
@@ -47,17 +68,6 @@ from pynnlib import (
 
 model: NnModel = nnlib.open(model_filepath)
 ```
-
-## Parse models
-example:
-`python -m scripts.parse_models -d ~/ml_models --filter pytorch`
-
-
-## Single image inference
-example:
-`python -m pynnlib.scripts.img_infer --img ~/imgs/img.png --model ~/ml_models/2x-LD-Anime-Compact.pth --cuda`
-
-
 
 ## Dev: convert a model to a TensorRT model
 ...and save the engine

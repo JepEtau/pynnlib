@@ -142,6 +142,10 @@ class TensorRtSession(GenericSession):
         if in_img.dtype != np.float32:
             raise ValueError("np.float32 img only")
 
+        tensor_dtype: torch.dtype = self.dtype
+        if self.dtype == torch.bfloat16:
+            tensor_dtype = torch.float32
+
         context, engine = self.context, self.engine
         device = self.device
         in_h, in_w, c = in_img.shape
@@ -155,14 +159,14 @@ class TensorRtSession(GenericSession):
 
         with torch.cuda.stream(self.infer_stream):
             in_tensor: torch.Tensor = torch.from_numpy(np.ascontiguousarray(in_img))
-            in_tensor = in_tensor.to(device=device, dtype=self.dtype)
+            in_tensor = in_tensor.to(device=device, dtype=tensor_dtype)
             in_tensor = flip_r_b_channels(in_tensor)
             in_tensor = to_nchw(in_tensor)
             in_tensor_shape = in_tensor.shape
             in_tensor = in_tensor.ravel()
             out_tensor: torch.Tensor = torch.empty(
                 out_tensor_shape,
-                dtype=self.dtype,
+                dtype=tensor_dtype,
                 device=device
             )
 
