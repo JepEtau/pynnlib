@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pprint import pprint
 import onnx
 from pathlib import Path
+
 try:
     import torch
     torch_device = torch.device
@@ -20,7 +21,7 @@ from .model import (
 from .nn_types import (
     Idtype,
     NnArchitectureType,
-    NnModelDtype,
+    ShapeStrategy,
 )
 from .session import NnModelSession
 
@@ -87,7 +88,15 @@ class NnGenericArchitecture:
 
 
 ConvertToOnnxFct = Callable[
-    [PyTorchModel, Idtype, int, bool, torch_device | str, int],
+    [
+        PyTorchModel,
+        Idtype,
+        int,
+        bool,
+        torch_device | str,
+        ShapeStrategy,
+        int
+    ],
     onnx.ModelProto
 ]
 """Convert a Pytorch model to an Onnx model.

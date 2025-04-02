@@ -4,7 +4,7 @@ from typing import Literal
 import onnx
 from pynnlib.architecture import NnPytorchArchitecture,SizeConstraint
 from pynnlib.model import PyTorchModel
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Idtype, ShapeStrategy
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
@@ -16,6 +16,7 @@ def _to_onnx(
     dtype: Idtype,
     opset: int,
     static: bool = False,
+    shape_strategy: ShapeStrategy | None = None,
     device: str = 'cpu',
     batch: int = 1,
 ) -> onnx.ModelProto | None:
@@ -26,6 +27,7 @@ def _to_onnx(
         dtype='fp32',
         opset=opset,
         static=False,
+        shape_strategy=shape_strategy,
         device=device,
         batch=batch,
     )

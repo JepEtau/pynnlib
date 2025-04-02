@@ -7,10 +7,8 @@ import re
 
 from ...utils import is_access_granted
 from ...utils.p_print import *
-from pynnlib.model import (
-    ShapeStrategy,
-    TrtModel,
-)
+from pynnlib.model import TrtModel
+from pynnlib.nn_types import ShapeStrategy
 import tensorrt as trt
 _has_herlegon_system_ = False
 try:

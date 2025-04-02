@@ -6,6 +6,7 @@ from pynnlib.nn_pytorch.archs import MODEL_ARCHITECTURES
 
 from .import_libs import is_tensorrt_available
 from .logger import nnlogger
+from .nn_types import ShapeStrategy
 from datetime import datetime
 import onnx
 nnlogger.debug(f"[I] ONNX package loaded (version {onnx.__version__})")
@@ -16,7 +17,6 @@ import re
 import time
 
 try:
-    from .nn_tensor_rt.trt_types import ShapeStrategy
     from .nn_tensor_rt.archs.save import generate_tensorrt_basename
 except:
     # nnlogger.debug("[W] TensorRT is not supported: model cannot be converted")
@@ -227,6 +227,7 @@ class NnLib:
         dtype: Idtype = 'fp32',
         static: bool = False,
         device: str = 'cpu',
+        shape_strategy: ShapeStrategy | None = None,
         out_dir: str | Path | None = None,
         suffix: str | None = None,
     ) -> OnnxModel:
@@ -250,7 +251,7 @@ class NnLib:
         # TODO: put the following code in an Try-Except block
         nnlogger.debug(yellow(f"[I] Convert to onnx model: ")
              + f"device={device}, dtype={dtype}, opset={opset}, static={static}"
-             + f", shape={'x'.join([str(x) for x in model.shape_strategy.opt_size]) if static else ''}"
+             + f", shape={'x'.join([str(x) for x in shape_strategy.opt_size]) if static else ''}"
         )
         if (
             model.arch is not None
@@ -259,7 +260,8 @@ class NnLib:
             onnx_model_object: onnx.ModelProto = convert_fct(
                 model=model,
                 dtype=dtype,
-                static=static,
+                static=static, # <- replace by shape_strategy.static
+                shape_strategy=shape_strategy,
                 opset=opset,
                 device=device,
             )
@@ -285,6 +287,9 @@ class NnLib:
             onnx_model.dtypes = set(['bf16'])
         else:
             onnx_model.dtypes = set(['fp32'])
+
+        # Add shape strategy
+        onnx_model.shape_strategy = shape_strategy
 
         # Add some info (metadata)
         onnx_model.alt_arch_name = model.arch_name

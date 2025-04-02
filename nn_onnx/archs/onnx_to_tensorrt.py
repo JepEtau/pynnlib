@@ -1,9 +1,9 @@
 from __future__ import annotations
 from pynnlib.import_libs import is_tensorrt_available
 from pynnlib.model import OnnxModel
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Idtype, ShapeStrategy
 if is_tensorrt_available():
-    from pynnlib.nn_tensor_rt.trt_types import ShapeStrategy, TensorrtModel
+    from pynnlib.nn_tensor_rt.trt_types import TensorrtModel
     from pynnlib.nn_tensor_rt.archs.onnx_to_trt import onnx_to_trt_engine
 else:
     # print("[W] TensorRT is not supported: model cannot be converted")

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from dataclasses import dataclass
 from enum import Enum
 import os
 import onnx
@@ -34,4 +35,59 @@ NnModelDtype = Literal['fp32', 'fp16', 'bf16']
 
 # Datatype for inference
 Idtype = Literal['fp32', 'fp16', 'bf16']
+
+
+ShapeStrategyType = Literal[
+    # Conversion to:
+    #   ONNX: static, opt size must be specified
+    #   TensorRT: Static or dynamic Onnx, depends on ONNX strategy, fixed TensorRT shapes
+    'static',
+
+    # Only for TensorRT: static or dynamic Onnx, fixed TensorRT shapes
+    #   (if used with conversion to ONNX -> static ONNX strategy)
+    'fixed',
+
+    # Only for TensorRT: forced static ONNX, fixed TensorRT shapes
+    #   to be deprecated as it is a special case of 'fixed'
+    'static_fixed',
+
+    # Use dynamic shapes for both ONNX and tensorRT
+    'dynamic'
+]
+
+
+@dataclass
+class ShapeStrategy:
+    """Shapes: (width, height)
+    """
+    static: bool = False
+    type: ShapeStrategyType = 'dynamic'
+    min_size: tuple[int, int] = (0, 0)
+    opt_size: tuple[int, int] = (0, 0)
+    max_size: tuple[int, int] = (0, 0)
+
+
+    def __post_init__(self):
+        if self.static:
+            self.type = 'static'
+        self._modulo: int = 1
+
+
+    def is_valid(self) -> bool:
+        for d in range(2):
+            values = [x[d] for x in (self.min_size, self.opt_size, self.max_size)]
+            if min([values[i+1] - values[i] for i in range(len(values)-1)]) < 0:
+                return False
+        return True
+
+
+    def is_fixed(self):
+        if self.type != 'dynamic':
+            return True
+
+        w, h = self.opt_size
+        for size in (self.min_size, self.max_size):
+            if size[0] != w or size[1] != h:
+                return False
+        return True
 

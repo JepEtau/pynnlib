@@ -7,11 +7,8 @@ from .utils import arg_list
 
 from torch import nn
 from .nn_pytorch.torch_types import StateDict
-from .nn_tensor_rt.trt_types import (
-    ShapeStrategy,
-    TrtEngine,
-)
-from .nn_types import Idtype, NnFrameworkType
+from .nn_tensor_rt.trt_types import TrtEngine
+from .nn_types import Idtype, NnFrameworkType, ShapeStrategy
 if TYPE_CHECKING:
     from .architecture import NnArchitecture, SizeConstraint
     from .nn_types import NnModelDtype, NnFrameworkType

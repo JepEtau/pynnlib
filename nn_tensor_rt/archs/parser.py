@@ -6,9 +6,9 @@ import tensorrt as trt
 from tensorrt import DataType as TrtDType
 
 from pynnlib.architecture import detect_model_arch
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Idtype, ShapeStrategy
 from pynnlib.utils.p_print import *
-from pynnlib.model import ShapeStrategy, TrtModel
+from pynnlib.model import TrtModel
 from pynnlib.logger import nnlogger
 from ..trt_types import TrtEngine
 from ..inference.session import (

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from pynnlib.architecture import SizeConstraint
 from pynnlib.import_libs import is_cuda_available
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Idtype, ShapeStrategy
 from ..inference.session import PyTorchSession
 if TYPE_CHECKING:
     from pynnlib.model import PyTorchModel
@@ -19,6 +19,7 @@ def to_onnx(
     dtype: Idtype,
     opset: int,
     static: bool = False,
+    shape_strategy: ShapeStrategy | None = None,
     device: str = 'cpu',
     batch: int = 1,
 ) -> onnx.ModelProto | None:
@@ -48,14 +49,20 @@ def to_onnx(
     session.initialize(device=device, dtype=dtype)
 
     # https://github.com/onnx/onnx/issues/654
-    if static and model.shape_strategy.static:
-        dynamic_axes = {
-            'input': {0: 'batch_size'},
-            'output': {0: 'batch_size'}
-        }
-        w, h = model.shape_strategy.opt_size
+    dynamic_axes: dict[str, str] | None = None
+    print(f"[V]  shape strategy: {shape_strategy}")
+    if shape_strategy is not None:
+        print("[V]  shape strategy is not None")
+        if static or shape_strategy.static:
+            print("[V]  shape strategy is static")
+            dynamic_axes = {
+                'input': {0: 'batch_size'},
+                'output': {0: 'batch_size'}
+            }
+            w, h = shape_strategy.opt_size
 
-    else:
+    if dynamic_axes is None:
+        print("[V]  shape strategy is dynamic or fixed")
         if batch == 1:
             dynamic_axes = {
                 'input': {2: "height", 3: "width"},
@@ -80,6 +87,7 @@ def to_onnx(
         requires_grad=True
     )
     dummy_input = dummy_input.half() if fp16 else dummy_input.float()
+    print(f"[V]   use a dummy input: {dummy_input.shape}, {dummy_input.dtype}")
 
     model_proto: onnx.ModelProto
     with BytesIO() as bytes_io:

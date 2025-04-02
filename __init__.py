@@ -27,12 +27,11 @@ try:
 except:
     TensorRtSession = None
 
-from .nn_tensor_rt.trt_types import ShapeStrategy
-
 from .nn_types import (
     NnFrameworkType,
     NnModelObject,
     Idtype,
+    ShapeStrategy,
 )
 
 from .framework import (

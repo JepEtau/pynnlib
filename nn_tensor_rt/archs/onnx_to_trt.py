@@ -2,13 +2,13 @@ from copy import deepcopy
 from pprint import pprint
 import numpy as np
 from pynnlib.logger import nnlogger
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Idtype, ShapeStrategy
 from pynnlib.utils.p_print import *
 import tensorrt as trt
 import torch
 from pynnlib.model import OnnxModel
 from ..inference.session import TRT_LOGGER
-from ..trt_types import ShapeStrategy, TrtEngine
+from ..trt_types import TrtEngine
 
 
 

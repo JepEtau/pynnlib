@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
+import logging
 import os
 import re
 import signal
@@ -19,10 +20,16 @@ from pynnlib import (
     ShapeStrategy,
     is_cuda_available,
     is_tensorrt_available,
+    nnlogger,
 )
 from pynnlib.utils import absolute_path, path_split
 from pynnlib.utils.p_print import *
 
+
+def _str_to_size(size_str: str) -> tuple[int, int] | None:
+    if (match := re.match(re.compile(r"^(\d+)x(\d+)$"), size_str)):
+        return (int(match.group(1)), int(match.group(2)))
+    return None
 
 
 def convert_to_tensorrt(
@@ -36,10 +43,6 @@ def convert_to_tensorrt(
 
     # Shape strategy
     shape_strategy: ShapeStrategy = ShapeStrategy()
-    def _str_to_size(size_str: str) -> tuple[int, int] | None:
-        if (match := re.match(re.compile(r"^(\d+)x(\d+)$"), size_str)):
-            return (int(match.group(1)), int(match.group(2)))
-        return None
 
     opt_size = _str_to_size(arguments.opt_size)
     if opt_size is None:
@@ -184,6 +187,16 @@ def main():
 \n"""
     )
     parser.add_argument(
+        "-size",
+        "--size",
+        type=str,
+        default='0x0',
+        required=False,
+        help="""(ONNX) size used to generate a ONNX static model. Mandatory if static is selected
+format: WxH
+\n"""
+    )
+    parser.add_argument(
         "-min",
         "--min_size",
         type=str,
@@ -232,8 +245,22 @@ format: WxH.
 \n"""
     )
 
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        required=False,
+        default=False,
+        help="""Verbose.
+\n"""
+    )
+
     arguments = parser.parse_args()
     force: bool = arguments.force
+
+    if arguments.verbose:
+        nnlogger.addHandler(logging.StreamHandler(sys.stdout))
+        nnlogger.setLevel("DEBUG")
 
     if not arguments.trt and not arguments.onnx:
         sys.exit(red(f"[E] at least --onnx or --trt must be specified"))
@@ -256,11 +283,11 @@ format: WxH.
     print(model)
 
     if arguments.fp16 and not 'fp16' in model.arch.dtypes:
-        sys.exit(red(f"[W] This arch does not support conversion with fp16 support"))
+        sys.exit(red(f"[E] This arch does not support conversion with fp16 support"))
     fp16: bool = arguments.fp16 and 'fp16' in model.arch.dtypes
 
     if arguments.bf16 and not 'bf16' in model.arch.dtypes:
-        sys.exit(red(f"[W] This arch does not support conversion with bf16 support, supported dtypes: {model.arch.dtypes}"))
+        sys.exit(red(f"[E] This arch does not support conversion with bf16 support, supported dtypes: {model.arch.dtypes}"))
     bf16: bool = arguments.bf16 and 'bf16' in model.arch.dtypes
 
     # bf16 has the priority if multiple types are provided
@@ -271,6 +298,16 @@ format: WxH.
         c_dtype = 'bf16'
 
     # Model conversion
+    static: bool = arguments.static
+    shape_strategy: ShapeStrategy | None = None
+    if static and arguments.size == "0x0":
+        sys.exit(red(f"[E] A size has to be specified to convert to static ONNX"))
+    elif static:
+        shape_strategy: ShapeStrategy = ShapeStrategy(
+            static=True,
+            opt_size=_str_to_size(arguments.size)
+        )
+
     model = model
     if arguments.onnx:
         print(f"[V] Convert {model.filepath} to ONNX (dtype={c_dtype}): ")
@@ -279,7 +316,8 @@ format: WxH.
             model=model,
             opset=arguments.opset,
             dtype=c_dtype,
-            static=arguments.static,
+            static=shape_strategy.static,
+            shape_strategy=shape_strategy,
             device=device,
             out_dir=path_split(model.filepath)[0],
         )
