@@ -316,7 +316,7 @@ format: WxH.
             model=model,
             opset=arguments.opset,
             dtype=c_dtype,
-            static=shape_strategy.static,
+            static=shape_strategy.static if shape_strategy is not None else False,
             shape_strategy=shape_strategy,
             device=device,
             out_dir=path_split(model.filepath)[0],

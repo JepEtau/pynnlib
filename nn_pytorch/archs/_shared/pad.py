@@ -7,7 +7,7 @@ def pad(
     x: torch.Tensor,
     modulo: int,
     mode: Literal['constant', 'reflect', 'replicate', 'circular'] = 'constant',
-    value: float = 0
+    value: float = 0,
 ) -> Tensor:
     h, w = x.shape[2:]
     pad_h = (modulo - h % modulo) % modulo
@@ -17,6 +17,18 @@ def pad(
         return F.pad(x, (0, pad_w, 0, pad_h), mode=mode, value=value)
 
     return x
+
+
+def pad_no_test(
+    x: torch.Tensor,
+    modulo: int,
+    mode: Literal['constant', 'reflect', 'replicate', 'circular'] = 'constant',
+    value: float = 0,
+) -> Tensor:
+    h, w = x.shape[2:]
+    pad_h = (modulo - h % modulo) % modulo
+    pad_w = (modulo - w % modulo) % modulo
+    return F.pad(x, (0, pad_w, 0, pad_h), mode=mode, value=value)
 
 
 def unpad(x: Tensor, size: tuple[int, int], scale: int = 1) -> Tensor:

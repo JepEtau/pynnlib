@@ -278,6 +278,7 @@ class NnLib:
             model_obj=onnx_model_object,
         )
         onnx_model.opset = opset
+        onnx_model.arch_name = model.arch.name
 
         # TODO: clean this
         onnx_dtype = list(model.arch.dtypes)[0]
@@ -289,7 +290,13 @@ class NnLib:
             onnx_model.dtypes = set(['fp32'])
 
         # Add shape strategy
-        onnx_model.shape_strategy = shape_strategy
+        if shape_strategy is None:
+            onnx_model.shape_strategy = ShapeStrategy(
+                static=static,
+                type='static' if static else 'dynamic'
+            )
+        else:
+            onnx_model.shape_strategy = shape_strategy
 
         # Add some info (metadata)
         onnx_model.alt_arch_name = model.arch_name
