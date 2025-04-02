@@ -395,6 +395,7 @@ class NnLib:
             opset=opset,
             dtype='fp16' if dtype == 'fp16' else 'fp32',
             static=shape_strategy.static,
+            shape_strategy=shape_strategy,
             device=device,
             out_dir=out_dir,
         )
