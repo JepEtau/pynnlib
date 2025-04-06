@@ -2,7 +2,7 @@ from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
-from ..helpers import get_max_indice
+from ..helpers import get_max_indice, get_nsequences
 from .module.network_scunet import SCUNet
 
 
@@ -13,7 +13,7 @@ def parse(model: PyTorchModel) -> None:
         get_max_indice(state_dict, "m_down1"),
         get_max_indice(state_dict, "m_down2"),
         get_max_indice(state_dict, "m_down3"),
-        get_max_indice(state_dict, "m_body") + 1,
+        get_nsequences(state_dict, "m_body"),
         get_max_indice(state_dict, "m_up3"),
         get_max_indice(state_dict, "m_up2"),
         get_max_indice(state_dict, "m_up1")
@@ -28,8 +28,8 @@ def parse(model: PyTorchModel) -> None:
         ModuleClass=SCUNet,
         dim=dim,
         config=config,
-        drop_path_rate=0,
-        input_resolution=1
+        drop_path_rate=0.,
+        input_resolution=256
     )
 
 
@@ -44,7 +44,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
         size_constraint=SizeConstraint(
-            min=(64, 64)
+            min=(64, 64),
+            modulo=1
         )
     ),
 )

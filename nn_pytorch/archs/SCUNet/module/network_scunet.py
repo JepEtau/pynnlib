@@ -9,6 +9,7 @@ import torch.nn as nn
 from torch import Tensor
 from einops import rearrange
 from einops.layers.torch import Rearrange
+# from timm.layers import DropPath, trunc_normal_
 from ..._shared.timm import DropPath, trunc_normal_
 from ..._shared.pad import pad
 
@@ -92,7 +93,15 @@ class WMSA(nn.Module):
         return output
 
     def relative_embedding(self):
-        cord = Tensor(np.array([[i, j] for i in range(self.window_size) for j in range(self.window_size)]))
+        cord = torch.tensor(
+            np.array(
+                [
+                    [i, j]
+                    for i in range(self.window_size)
+                    for j in range(self.window_size)
+                ]
+            )
+        )
         relation = cord[:, None, :] - cord[None, :, :] + self.window_size -1
         # negative is allowed
         return self.relative_position_params[:, relation[:,:,0].long(), relation[:,:,1].long()]
@@ -182,6 +191,10 @@ class SCUNet(nn.Module):
         self.head_dim = 32
         self.window_size = 8
 
+        print(f"config: {config}")
+        print(f"dim: {dim}")
+        print(f"input_resolution: {input_resolution}")
+
         # drop path rate for each layer
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(config))]
 
@@ -236,8 +249,15 @@ class SCUNet(nn.Module):
 
 
     def forward(self, x0: Tensor) -> Tensor:
-        h, w = x0.shape[2:]
-        x0 = pad(x0, modulo=64, mode='reflect', value=None)
+        # h, w = x0.shape[2:]
+        # x0 = pad(x0, modulo=64, mode='reflect', value=None)
+
+        h, w = x0.size()[-2:]
+        paddingBottom = int(np.ceil(h/64)*64-h)
+        paddingRight = int(np.ceil(w/64)*64-w)
+        x0 = nn.ReplicationPad2d((0, paddingRight, 0, paddingBottom))(x0)
+
+
 
         x1 = self.m_head(x0)
         x2 = self.m_down1(x1)
@@ -249,7 +269,8 @@ class SCUNet(nn.Module):
         x = self.m_up1(x + x2)
         x = self.m_tail(x + x1)
 
-        return x[:, :, :h, :w]
+        x = x[:, :, :h, :w]
+        return x
 
 
     def _init_weights(self, m):

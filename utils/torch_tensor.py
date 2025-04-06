@@ -121,7 +121,7 @@ def img_to_tensor(
     if not isinstance(img_dtype, torch.dtype):
         raise TypeError(f"img_to_tensor: erroneous image dtype: {img_dtype}")
     if not isinstance(tensor_dtype, torch.dtype):
-        raise TypeError(f"img_to_tensor: erroneous image dtype: {tensor_dtype}")
+        raise TypeError(f"img_to_tensor: erroneous tensor dtype: {tensor_dtype}")
     divisor: float = (
         _torch_max_value[img_dtype]
         if tensor_dtype != d_img.dtype
@@ -130,7 +130,7 @@ def img_to_tensor(
     if divisor != 1.:
         d_tensor = d_tensor.to(dtype=torch.float32) / divisor
 
-    d_tensor = d_tensor.to(tensor_dtype)
+    d_tensor = d_tensor.to(dtype=tensor_dtype)
     return d_tensor.contiguous()
 
 
@@ -162,7 +162,7 @@ def tensor_to_img(
         multiplier: float = num / denum
 
     if multiplier != 1.:
-        d_img = d_img.to(dtype=torch.float32, copy=False)
+        d_img = d_img.to(dtype=torch.float32)
         d_img = d_img * multiplier
 
-    return d_img.to(img_dtype).contiguous()
+    return d_img.to(dtype=img_dtype).contiguous()

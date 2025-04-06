@@ -91,8 +91,7 @@ class TensorRtSession(GenericSession):
         create_stream: bool = False,
     ):
         super().initialize(device=device, dtype=dtype)
-
-        # nnlogger.debug(f"[I] Use {device} to load the tensorRT Engine")
+        nnlogger.debug(f"[I] Use {device} to load the tensorRT Engine")
 
         if create_stream:
             self.infer_stream: torch.cuda.Stream = torch.cuda.Stream(self.device)

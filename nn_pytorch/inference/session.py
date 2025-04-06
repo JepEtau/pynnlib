@@ -66,6 +66,9 @@ class PyTorchSession(GenericSession):
     def module(self) -> nn.Module:
         return self.model.module
 
+    @module.setter
+    def module(self, module: nn.Module) -> None:
+        self.model.module = module
 
     @property
     def infer_stream(self) -> torch.cuda.Stream:
@@ -84,7 +87,7 @@ class PyTorchSession(GenericSession):
         warmup: bool = False,
         **kwargs,
     ) -> None:
-        module: nn.Module = self.module
+        # module: nn.Module = self.module
         super().initialize(device=device, dtype=dtype)
 
         if not is_cuda_available() or dtype not in self.model.arch.dtypes:
@@ -94,14 +97,18 @@ class PyTorchSession(GenericSession):
         nnlogger.debug(f"[V] Initialize a PyTorch inference session ({self.dtype})")
         torch.backends.cudnn.enabled = True
 
-        module.eval()
-        for param in module.parameters():
+        self.module = self.module.eval()
+        for param in self.module.parameters():
             param.requires_grad = False
 
-        nnlogger.debug(f"[V] load model to {self.device}, {dtype} -> {self.dtype}")
-        module = module.to(self.device)
-        module = module.to(dtype=self.dtype)
-        # module = module.half() if self.dtype == torch.float16 else module.float()
+        nnlogger.debug(f"[V] load model to {self.device}, {dtype}, dtype={self.dtype}")
+        self.module = self.module.to(self.device)
+        self.module = self.module.to(dtype=self.dtype)
+        # self.module = (
+        #     self.module.half()
+        #     if self.dtype == torch.float16
+        #     else self.module.float()
+        # )
 
         if warmup and 'cuda' in device:
             self.warmup(3)
@@ -123,7 +130,7 @@ class PyTorchSession(GenericSession):
         for _ in range(count):
             self._process_fct(*imgs)
 
-
+    @torch.inference_mode()
     def infer(self, in_img: np.ndarray, *args, **kwargs) -> np.ndarray:
         return self._process_fct(in_img, *args, **kwargs)
 
@@ -133,6 +140,7 @@ class PyTorchSession(GenericSession):
         """Example of how to perform an inference session.
         This is an unoptimized function
         """
+        nnlogger.debug(f"[V] inference: img: {in_img.shape}, {in_img.dtype}")
         in_dtype: np.dtype = in_img.dtype
         in_img: Tensor = torch.from_numpy(np.ascontiguousarray(in_img))
         d_in_img: Tensor = in_img.to(device=self.device)
@@ -141,16 +149,20 @@ class PyTorchSession(GenericSession):
             tensor_dtype=self.dtype,
             flip_r_b=True,
         )
+        nnlogger.debug(f"[V]   in tensor: {d_in_tensor.shape}, {d_in_tensor.dtype}")
 
         d_out_tensor: Tensor = self.module(d_in_tensor)
+        # d_out_tensor = d_in_tensor
         d_out_tensor = torch.clamp(d_out_tensor, 0., 1.)
 
+        nnlogger.debug(f"[V]   out tensor: {d_out_tensor.shape}, {d_out_tensor.dtype}")
         d_out_img: Tensor = tensor_to_img(
             tensor=d_out_tensor,
             img_dtype=in_dtype,
             flip_r_b=True,
         )
-        out_img: np.ndarray = d_out_img.contiguous().detach().cpu().numpy()
+        out_img: np.ndarray = d_out_img.contiguous().cpu().numpy()
+        nnlogger.debug(f"[V]   out img: {out_img.shape}, {out_img.dtype}")
 
         return out_img
 

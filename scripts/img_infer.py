@@ -102,9 +102,10 @@ def main():
 
     parser.add_argument(
         "--cuda",
+        "-cuda",
         action="store_true",
         required=False,
-        default=True,
+        default=False,
         help="""Use the first cuda device as the execution provider.
 Fallback to cpu if no CUDA device found.
 \n"""
@@ -112,6 +113,7 @@ Fallback to cpu if no CUDA device found.
 
     parser.add_argument(
         "--cpu",
+        "-cpu",
         action="store_true",
         required=False,
         default=False,
@@ -282,7 +284,7 @@ Fallback to float if the execution provider does not support it
         print("Create a session")
     session: NnModelSession = nnlib.session(model)
     if arguments.verbose:
-        print("Initialize the session")
+        print(f"Initialize the session with device={device}")
 
     i_dtype: Idtype = 'fp32'
     if fp16:
@@ -293,14 +295,14 @@ Fallback to float if the execution provider does not support it
         session.initialize(
             device=device,
             dtype=i_dtype,
-            create_stream=True,
+            create_stream=False,
             warmup=bool(arguments.profiling)
         )
     except Exception as e:
         session.initialize(
             device=device,
             dtype=i_dtype,
-            create_stream=True,
+            create_stream=False,
             warmup=False
         )
         sys.exit(red(f"Error: {e}"))
@@ -319,7 +321,6 @@ Fallback to float if the execution provider does not support it
     if arguments.profiling:
         print("start", flush=True)
         time.sleep(3)
-
 
     start_time= time.time()
     for _ in range(inferences):
