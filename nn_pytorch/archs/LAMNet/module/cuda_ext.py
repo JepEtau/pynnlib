@@ -10,7 +10,7 @@ import importlib
 import hashlib
 
 from ...helpers import find_compiler_bindir
-from utils.p_print import *
+from pynnlib.utils.p_print import *
 
 
 _lamnet_cuda_ext: dict[str, Any] = {}

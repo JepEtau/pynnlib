@@ -13,7 +13,7 @@ import importlib
 import hashlib
 
 from ...helpers import find_compiler_bindir
-from utils.p_print import *
+from pynnlib.utils.p_print import *
 
 
 

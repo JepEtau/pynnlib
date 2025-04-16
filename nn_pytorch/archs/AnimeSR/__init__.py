@@ -5,7 +5,7 @@ from pynnlib.architecture import (
     SizeConstraint,
 )
 from pynnlib.model import PyTorchModel
-from utils.p_print import *
+from pynnlib.utils.p_print import *
 from ..torch_to_onnx import to_onnx
 from .module.vsr_arch import MSRSWVSR
 
