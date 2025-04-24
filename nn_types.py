@@ -60,6 +60,7 @@ ShapeStrategyType = Literal[
 class ShapeStrategy:
     """Shapes: (width, height)
     """
+    # TODO: deprecate 'static' boolean
     static: bool = False
     type: ShapeStrategyType = 'dynamic'
     min_size: tuple[int, int] = (0, 0)

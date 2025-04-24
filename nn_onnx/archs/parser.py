@@ -5,7 +5,7 @@ import onnx
 import onnxruntime as ort
 
 from pynnlib.logger import nnlogger
-from pynnlib.nn_types import NnModelDtype
+from pynnlib.nn_types import NnModelDtype, ShapeStrategy
 nnlogger.debug(f"[I] ONNX runtime package loaded (version {ort.__version__})")
 
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidGraph
@@ -206,15 +206,27 @@ def parse(
     nnlogger.debug(f"[V] shapes: in={in_shape}, out={out_shape}")
     if len(out_shape) != 4 or len(in_shape) != 4:
         raise ValueError("ONNX model: shape must contains batch, channels, width, height")
+    shape_strategy: ShapeStrategy = ShapeStrategy()
 
     in_shape_order, in_h, in_w, in_nc = guess_shape(in_shape)
     out_shape_order, out_h, out_w, out_nc = guess_shape(out_shape)
 
     # Calculate scales if possible
     nnlogger.debug(f"[V] shape order: in={in_shape_order}, out={out_shape_order}")
+
     is_scale_valid: bool = False
-    if scale is not None and scale > 0:
+    if all(x != 0 for x in [out_h, in_h, out_w, in_w]):
+        scale_h, scale_w = out_h // in_h, out_w // in_w
+        shape_strategy.static = True
+        shape_strategy.type = "static"
+        shape_strategy.opt_size = (in_w, in_h)
+        shape_strategy.min_size = shape_strategy.opt_size
+        shape_strategy.max_size = shape_strategy.opt_size
         is_scale_valid = True
+
+    elif scale is not None and scale > 0:
+        is_scale_valid = True
+
     else:
         try:
             if not any(x < 0 for x in [out_h, in_h, out_w, in_w]):
@@ -271,6 +283,7 @@ def parse(
 
         # exact_size=exact_size,
         in_shape_order=in_shape_order,
+        shape_strategy=shape_strategy,
     )
 
 

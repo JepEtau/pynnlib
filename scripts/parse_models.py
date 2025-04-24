@@ -38,11 +38,20 @@ def main():
         formatter_class=RawTextHelpFormatter
     )
     parser.add_argument(
+        "-m",
+        "--model",
+        type=str,
+        default="",
+        required=False,
+        help="model"
+    )
+
+    parser.add_argument(
         "-d",
         "--dir",
         type=str,
-        default='',
-        required=True,
+        default="",
+        required=False,
         help="Directory"
     )
 
@@ -62,7 +71,7 @@ def main():
             'onnx',
             'trt'
         ],
-        default='',
+        default="",
         required=False,
         help="Filter by model extension or by framework"
     )
@@ -106,6 +115,32 @@ def main():
             filtered_exts = (arguments.filter)
     trt_extensions: tuple[int] = get_supported_model_extensions(NnFrameworkType.TENSORRT)
 
+    model_fp: str = arguments.model
+    if model_fp:
+        model_fp = absolute_path(model_fp)
+        ext = get_extension(model_fp)
+        if ext not in filtered_exts:
+            print(f"[E] Unsupported model: {arguments.model} cannot be loaded")
+        if ext in trt_extensions and not is_tensorrt_available():
+            print(f"[E] Unsupported hardware: {arguments.model} cannot be loaded")
+        device = 'cuda' if ext in trt_extensions else 'cpu'
+
+        try:
+            start_time= time.time()
+            model: NnModel = nnlib.open(model_fp, device)
+            elapsed = time.time() - start_time
+            print(
+                f"\tarch:", lightcyan(model.arch_name),
+                f"scale:", lightcyan(model.scale),
+                f"\t\t({1000 * elapsed:.1f}ms)"
+            )
+            if arguments.verbose:
+                print(model)
+        except Exception as e:
+            # For debug:
+            model: NnModel = nnlib.open(filepath, device)
+            print(e)
+        return
 
     ml_models_path: str = absolute_path(arguments.dir)
     for root, _, files in os.walk(ml_models_path):
