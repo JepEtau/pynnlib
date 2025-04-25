@@ -16,6 +16,7 @@ from .model import (
     ModelExecutor,
     NnModel,
     TrtEngine,
+    SizeConstraint,
 )
 
 from .nn_onnx.inference.session import OnnxSession
@@ -88,4 +89,6 @@ __all__ = [
     "img_to_tensor",
 
     "TrtEngine",
+
+    "SizeConstraint",
 ]
