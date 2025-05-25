@@ -295,8 +295,8 @@ Fallback to float if the execution provider does not support it
         session.initialize(
             device=device,
             dtype=i_dtype,
-            create_stream=False,
-            warmup=bool(arguments.profiling)
+            create_stream=True,
+            warmup=bool(arguments.profiling),
         )
     except Exception as e:
         session.initialize(
