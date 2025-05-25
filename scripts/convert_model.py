@@ -51,8 +51,10 @@ def convert_to_tensorrt(
 
     if arguments.static:
         shape_strategy.static = True
-        shape_strategy.min_size = shape_strategy.opt_size
-        shape_strategy.max_size = shape_strategy.opt_size
+        static_size = _str_to_size(arguments.size)
+        shape_strategy.min_size = static_size
+        shape_strategy.opt_size = static_size
+        shape_strategy.max_size = static_size
         print(red(shape_strategy))
 
     else:
@@ -303,10 +305,12 @@ format: WxH.
     if static and arguments.size == "0x0":
         sys.exit(red(f"[E] A size has to be specified to convert to static ONNX"))
     elif static:
+        print(f"Static strategy: {arguments.size}")
         shape_strategy: ShapeStrategy = ShapeStrategy(
             static=True,
             opt_size=_str_to_size(arguments.size)
         )
+        model.shape_strategy = shape_strategy
 
     model = model
     if arguments.onnx:
