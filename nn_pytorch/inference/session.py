@@ -1,6 +1,7 @@
 from __future__ import annotations
 from collections.abc import Callable
 from pprint import pprint
+from warnings import warn
 import cv2
 import numpy as np
 import torch
@@ -40,7 +41,7 @@ class PyTorchSession(GenericSession):
         try:
             self.model.module.load_state_dict(self.model.state_dict, strict=True)
         except:
-            print(red(f"stupid model/arch: {self.model.arch.name}"))
+            print(red(f"Try loading {self.model.arch.name} with `strict=False`, correct this!"))
             self.model.module.load_state_dict(self.model.state_dict, strict=False)
 
         for _, v in self.model.module.named_parameters():

@@ -154,11 +154,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         parse=parse,
         to_onnx=_to_onnx,
-        dtypes=['fp32', 'bf16'],
-        size_constraint=SizeConstraint(
-            min=(16, 16)
-        )
+        dtypes=('fp32', 'bf16'),
+        size_constraint=SizeConstraint(min=(16, 16))
         # fixed size for conversion to pth->onnx->trt
-
     ),
 )
