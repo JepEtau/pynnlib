@@ -3,7 +3,6 @@ from pprint import pprint
 from pynnlib import is_tensorrt_available
 from pynnlib.nn_types import Idtype
 from pynnlib.session import GenericSession
-from utils.p_print import red, yellow
 if is_tensorrt_available():
     import tensorrt as trt
 

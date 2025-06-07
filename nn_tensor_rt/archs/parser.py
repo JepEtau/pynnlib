@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Any, Type
+from warnings import warn
 
 import tensorrt as trt
 from tensorrt import DataType as TrtDType
@@ -89,7 +90,9 @@ def parse_engine(model: TrtModel) -> None:
         engine = model.engine
 
     if engine is None:
-        raise ValueError("[E] Not a compatible engine")
+        raise ValueError("[W] Not a compatible engine")
+        return
+        # raise ValueError("[E] Not a compatible engine")
 
     tensor_shapes_dtype = get_shapes_dtype(engine)
     if len(tensor_shapes_dtype['inputs']) != 1:

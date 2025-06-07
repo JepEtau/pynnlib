@@ -155,7 +155,10 @@ class NnLib:
                 model_path.replace(".pth", "_rlg.pth")
             )
 
-        if any(x <= 0 for x in (model.scale, model.in_nc, model.out_nc)):
+        if (
+            model is not None
+            and any(x <= 0 for x in (model.scale, model.in_nc, model.out_nc))
+        ):
             nnlogger.debug("warning: at least a property has not been found, unsupported model")
             # return None
 
@@ -213,10 +216,11 @@ class NnLib:
         # Parse a model object
         model.arch_name = model_arch.name
         # TODO: put the following code in an Try-Except block
-        # try:
-        model_arch.parse(model)
-        # except:
-        #     pass
+        try:
+            model_arch.parse(model)
+        except:
+            warn(f"_create_model: failed to parse {nn_model_path}")
+            return None
         return model
 
 
