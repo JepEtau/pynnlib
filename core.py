@@ -182,7 +182,8 @@ class NnLib:
         framework: NnFramework,
         model_arch: NnArchitecture,
         model_obj: NnModelObject,
-        device: str = 'cpu'
+        device: str = 'cpu',
+        debug: bool = False
     ) -> NnModel:
 
         if framework.type == NnFrameworkType.PYTORCH:
@@ -215,11 +216,14 @@ class NnLib:
 
         # Parse a model object
         model.arch_name = model_arch.name
-        # TODO: put the following code in an Try-Except block
+
         try:
             model_arch.parse(model)
-        except:
+        except Exception as e:
             warn(f"_create_model: failed to parse {nn_model_path}")
+            print(type(e))
+            if debug:
+                model_arch.parse(model)
             return None
         return model
 
