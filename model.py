@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 import onnx
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Literal
 
 from .utils import arg_list
 
@@ -71,6 +71,10 @@ class GenericModel:
     scale: int = 0
     in_nc: int = 0
     out_nc: int = 0
+    # list IO dtypes, consider a single input/output
+    io_dtypes: dict[Literal['input', 'output']: NnModelDtype] = (
+        field(default_factory=dict)
+    )
 
     filepath: str | None = None
 

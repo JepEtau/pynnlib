@@ -1,15 +1,19 @@
 from __future__ import annotations
 from pprint import pprint
 import re
+from typing import Literal
 import onnxruntime as ort
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 from pynnlib.import_libs import is_cuda_available
 from pynnlib.model import OnnxModel
 from pynnlib.nn_types import Idtype
 from pynnlib.session import GenericSession
 from pynnlib.utils.torch_tensor import (
+    IdtypeToNumpy,
+    IdtypeToTorch,
     flip_r_b_channels,
     to_nchw,
     to_hwc,
@@ -27,18 +31,21 @@ class OnnxSession(GenericSession):
         self.execution_providers: list[str | tuple[str, int]] = [
             "CPUExecutionProvider"
         ]
-        self.device: str = 'cpu'
+        self.device_type: str = 'cpu'
         self.cuda_device_id: int = 0
 
 
     def initialize(
         self,
-        device: str = 'cpu',
+        device: Literal['cpu', 'dml'] = 'cpu',
         dtype: Idtype | torch.dtype = 'fp32',
         **kwargs,
     ):
         super().initialize(device=device, dtype=dtype)
-        self.execution_providers = ["CPUExecutionProvider"]
+        self.execution_providers = [
+            "CPUExecutionProvider",
+            "DmlExecutionProvider",
+        ]
 
         self.cuda_device_id: int = 0
         if 'cuda' in device:
@@ -55,14 +62,15 @@ class OnnxSession(GenericSession):
                     self.execution_providers.insert(
                         0, ('CUDAExecutionProvider', {"device_id": self.cuda_device_id})
                     )
-                    self.device = 'cuda'
+                    self.device_type = 'cuda'
             else:
                 raise ValueError("Unsupported hardware: cuda")
 
         elif device == 'dml':
+            self.device_type = 'dml'
             if 'DmlExecutionProvider' in ort.get_available_providers():
                 self.execution_providers.insert(
-                    0, ('DmlExecutionProvider', {"device_id": self.cuda_device_id})
+                    0, ('DmlExecutionProvider', {"device_id": 0})
                 )
             else:
                 raise ValueError("Unsupported hardware: DirectML")
@@ -89,11 +97,18 @@ class OnnxSession(GenericSession):
         fp16: bool = bool(dtype == 'fp16' and 'fp16' in self.model.dtypes)
         if fp16 and 'fp16' not in self.model.dtypes:
             raise ValueError("Half datatype (fp16) is not supported by this model")
-        if 'fp32' not in self.model.dtypes and device == 'cpu':
+
+        if (
+            device == 'cpu'
+            and 'fp32' not in self.model.dtypes
+        ):
             raise ValueError(f"The execution provider ({device}) does not support the datatype of this model (fp16)")
 
         self.input_name: str = self.session.get_inputs()[0].name
         self.output_name: str = self.session.get_outputs()[0].name
+
+
+
 
 
     def run_np(self, in_img: np.ndarray) -> np.ndarray:
@@ -127,51 +142,71 @@ class OnnxSession(GenericSession):
             raise ValueError("np.float32 img only")
 
         in_h, in_w, c = in_img.shape
-        out_shape = (
-            in_h * self.model.scale,
-            in_w * self.model.scale,
-            c
-        )
-        in_tensor_shape = (1, c, *in_img.shape[:2])
-        out_tensor_shape = (1, c, *out_shape[:2])
-        tensor_dtype = self.dtype
-        tensor_np_dtype = torch_dtype_to_np[self.dtype]
-        session: ort.InferenceSession = self.session
-        tensor_device = self.device
+        in_tensor_dtype: torch.dtype = IdtypeToTorch[self.model.io_dtypes['input']]
 
+        out_shape = (in_h * self.model.scale, in_w * self.model.scale, c)
+        out_tensor_shape = (1, self.model.out_nc, *out_shape[:2])
+        out_tensor_dtype: torch.dtype = IdtypeToTorch[self.model.io_dtypes['output']]
+
+        device: str = 'cpu'
+        if self.device_type == 'cuda':
+            device = f"cuda:{self.cuda_device_id}"
+
+        # Image to tensor
         in_tensor: torch.Tensor = torch.from_numpy(np.ascontiguousarray(in_img))
-        in_tensor = in_tensor.to(tensor_device, dtype=self.dtype)
+        in_tensor = in_tensor.to(device=device, dtype=in_tensor_dtype)
+        print(in_tensor.shape)
         in_tensor = flip_r_b_channels(in_tensor)
         in_tensor = to_nchw(in_tensor)
+        if c == 4:
+            alpha = in_tensor[:, 3:4, :, :]
+            in_tensor = in_tensor[:, :3, :, :]
         in_tensor = in_tensor.contiguous()
 
+        # Move input to CPU
+        if 'cuda' in in_tensor.device.type:
+            in_tensor = in_tensor.cpu()
+
+        # Allocate memory
         out_tensor: torch.Tensor = torch.empty(
-            out_tensor_shape,
-            dtype=tensor_dtype,
-            device=tensor_device
+            out_tensor_shape, dtype=out_tensor_dtype, device=device,
         ).contiguous()
 
-        binding = session.io_binding()
-        binding.bind_input(
+        # IO bindings
+        session: ort.InferenceSession = self.session
+        io_binding = session.io_binding()
+        io_binding.bind_input(
             name=self.input_name,
-            device_type=tensor_device,
-            device_id=self.cuda_device_id,
-            element_type=tensor_np_dtype,
-            shape=tuple(in_tensor_shape),
+            device_type=self.device_type,
+            device_id=0 if device == 'cpu' else self.cuda_device_id,
+            element_type=IdtypeToNumpy[self.model.io_dtypes['input']],
+            shape=tuple(in_tensor.shape),
             buffer_ptr=in_tensor.data_ptr(),
         )
-        binding.bind_output(
+        io_binding.bind_output(
             name=self.output_name,
-            device_type=tensor_device,
-            device_id=self.cuda_device_id,
-            element_type=tensor_np_dtype,
-            shape=tuple(out_tensor_shape),
+            device_type=self.device_type,
+            device_id=0 if device == 'cpu' else self.cuda_device_id,
+            element_type=IdtypeToNumpy[self.model.io_dtypes['output']],
+            shape=tuple(out_tensor.shape),
             buffer_ptr=out_tensor.data_ptr(),
         )
 
-        session.run_with_iobinding(binding)
+        # Inference
+        session.run_with_iobinding(io_binding)
 
         out_tensor = torch.clamp_(out_tensor, 0, 1)
+        if c == 4:
+            scale = out_tensor.shape[-1] // alpha.shape[-1]
+            alpha = F.interpolate(
+                alpha,
+                scale_factor=scale,
+                mode='bilinear',
+                align_corners=False
+            )
+            out_tensor = torch.cat([out_tensor, alpha], dim=1)
+            out_tensor = out_tensor.contiguous()
+
         out_tensor = to_hwc(out_tensor)
         out_tensor = flip_r_b_channels(out_tensor)
         out_tensor = out_tensor.float()

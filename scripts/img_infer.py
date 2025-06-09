@@ -124,6 +124,7 @@ Ignored if the model is a TensorRT engine."
 
     parser.add_argument(
         "--dml",
+        "-dml",
         action="store_true",
         required=False,
         default=False,

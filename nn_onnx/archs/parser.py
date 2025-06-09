@@ -3,6 +3,7 @@ import math
 from warnings import warn
 import onnx
 import onnxruntime as ort
+from onnx import TensorProto
 
 from pynnlib.logger import nnlogger
 from pynnlib.nn_types import NnModelDtype, ShapeStrategy
@@ -26,6 +27,11 @@ from pynnlib.utils.p_print import *
 
 
 OnnxShapeOrder = Literal['NCHW', 'NHWC']
+_onnx_dtype_to_str: dict[str, NnModelDtype] = {
+    'TensorProto.FLOAT': 'fp32',
+    'TensorProto.FLOAT16': 'fp16',
+    'TensorProto.BFLOAT16': 'bf16',
+}
 
 
 def get_opset_version(model_proto: onnx.ModelProto) -> int:
@@ -33,23 +39,48 @@ def get_opset_version(model_proto: onnx.ModelProto) -> int:
 
 
 
-def get_input_datatype(model: onnx.ModelProto):
+def get_input_dtype(model_proto: onnx.ModelProto) -> NnModelDtype:
     """Returns the datatype of the first input of the model.
     It may return an erroneous datatype when there are multiple inputs"""
-    input = model.graph.input[0]
+    if len(model_proto.graph.output) > 1:
+        warn(yellow("More than 1 input is not supported yet"))
+    input = model_proto.graph.input[0]
     dim_0 = str(input.type.tensor_type.elem_type).split()[0]
     try:
-        return onnx.helper.tensor_dtype_to_string(int(dim_0))
+        return _onnx_dtype_to_str[
+            onnx.helper.tensor_dtype_to_string(int(dim_0))
+        ]
     except:
         pass
-    return None
+    return ""
 
-    # nnlogger.debug("onnx.TensorProto.DataType")
-    # nnlogger.debug(onnx.TensorProto.DataType)
-    # onnx.TensorProto.DataType.Float16
-    # if tensor_dtype is not None:
-    #     np_dtype = onnx.helper.tensor_dtype_to_np_dtype(tensor_dtype)
-    # return np_dtype
+
+
+def get_output_dtype(model_proto: onnx.ModelProto) -> NnModelDtype:
+    """Returns the datatype of the first input of the model.
+    It may return an erroneous datatype when there are multiple inputs"""
+    if len(model_proto.graph.output) > 1:
+        warn(yellow("More than 1 output is not supported yet"))
+    output = model_proto.graph.output[0]
+    dim_0 = str(output.type.tensor_type.elem_type).split()[0]
+    try:
+        return _onnx_dtype_to_str[
+            onnx.helper.tensor_dtype_to_string(int(dim_0))
+        ]
+    except:
+        pass
+    return ""
+
+
+
+def get_initializer_dtypes(model_proto: onnx.ModelProto) -> list[NnModelDtype]:
+    warn(red("To be validated"))
+    types = set()
+    for init in model_proto.graph.initializer:
+        types.add(_onnx_dtype_to_str[
+            onnx.helper.tensor_dtype_to_string(init.data_type)
+        ])
+    return list(types)
 
 
 
@@ -257,22 +288,14 @@ def parse(
     if isinstance(out_nc, str):
         out_nc = 3
 
-    # Required size
-    # exact_size = None
-    # if req_width is not None:
-    #     exact_size = req_width, req_height or req_width
-    # elif req_height is not None:
-    #     exact_size = req_width or req_height, req_height
+    # Model dtype
+    supported_dtypes = get_initializer_dtypes(model_proto)
 
-    # TODO, one day: get datatype for all inputs
-    onnx_dtype_to_str: dict[str, NnModelDtype] = {
-        'TensorProto.FLOAT': 'fp32',
-        'TensorProto.FLOAT16': 'fp16',
-        'TensorProto.BFLOAT16': 'bf16',
+    # IO dtypes
+    io_dtypes = {
+        'input': get_input_dtype(model_proto),
+        'output': get_output_dtype(model_proto),
     }
-    supported_dtypes = set(
-        [onnx_dtype_to_str[get_input_datatype(model_proto)]]
-    )
 
     model.update(
         scale=scale,
@@ -280,15 +303,12 @@ def parse(
         out_nc=out_nc,
         opset=get_opset_version(model_proto),
         dtypes=supported_dtypes,
+        io_dtypes=io_dtypes,
 
         # exact_size=exact_size,
         in_shape_order=in_shape_order,
         shape_strategy=shape_strategy,
     )
-
-
-
-    # nnlogger.debug(purple(f"opset: {model.opset} [{f', '.join(model.dtypes)}]"))
 
 
 

@@ -60,7 +60,10 @@ IdtypeToTorch: dict[Idtype, torch.dtype] = {
     'fp16': torch.float16,
     'bf16': torch.bfloat16,
 }
-
+IdtypeToNumpy: dict[Idtype, torch.dtype] = {
+    'fp32': np.float32,
+    'fp16': np.float16,
+}
 
 def to_nchw(t: Tensor) -> Tensor:
     shape_size = len(t.shape)
@@ -88,19 +91,11 @@ def to_hwc(t: Tensor) -> Tensor:
 def flip_r_b_channels(t: Tensor) -> Tensor:
     if t.shape[2] == 3:
         # (H, W, C) RGB -> BGR
-        return t.flip(2)
+        return t[:, :, [2, 1, 0]].contiguous()
 
     elif t.shape[2] == 4:
         # (H, W, C) RGBA -> BGRA
-        return torch.cat(
-            (
-                t[:, :, 2],
-                t[:, :, 1],
-                t[:, :, 0],
-                t[:, :, 3]
-            ),
-            axis=2
-        )
+        return t[:, :, [2, 1, 0, 3]].contiguous()
 
     return t
 
