@@ -28,6 +28,7 @@ from pynnlib.utils.p_print import *
 
 OnnxShapeOrder = Literal['NCHW', 'NHWC']
 _onnx_dtype_to_str: dict[str, NnModelDtype] = {
+    'TensorProto.INT64': 'int64',
     'TensorProto.FLOAT': 'fp32',
     'TensorProto.FLOAT16': 'fp16',
     'TensorProto.BFLOAT16': 'bf16',
