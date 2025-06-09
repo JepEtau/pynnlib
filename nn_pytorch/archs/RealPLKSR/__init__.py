@@ -28,8 +28,18 @@ def parse(model: PyTorchModel) -> None:
 
     use_dysample = "to_img.init_pos" in state_dict
 
+    variant: str = ""
+    if dim == 96:
+        variant = " Large"
+    elif (n_blocks == 12 and kernel_size == 13 and not use_ea):
+        variant = " Small"
+
+    arch_name = f"{model.arch_name}{variant}"
+    if use_dysample:
+        arch_name = f"{arch_name} DySample"
+
     model.update(
-        arch_name=f"{model.arch_name} DySample" if use_dysample else model.arch_name,
+        arch_name=arch_name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
