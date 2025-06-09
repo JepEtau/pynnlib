@@ -76,15 +76,17 @@ class OnnxSession(GenericSession):
                 raise ValueError("Unsupported hardware: DirectML")
 
         model_proto = self.model.model_proto
-        # TODO: optimize model?
-        # seems not faster for:
-        #   - realPKLSR
-        # model_proto = optimize_model(model_proto)
         byte_model: bytes = model_proto.SerializeToString()
 
-        # https://onnxruntime.ai/docs/performance/tune-performance/threading.html
         session_options = ort.SessionOptions()
-        # session_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
+        session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        if device == 'dml':
+            session_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
+            session_options.add_session_config_entry("session.use_dml", "1")
+            session_options.add_session_config_entry("session.use_arena_allocator", "1")
+            session_options.add_session_config_entry("session.use_arena", "1")
+            # https://onnxruntime.ai/docs/performance/tune-performance/threading.html
+            # session_options.intra_op_num_threads = 4
         try:
             self.session = ort.InferenceSession(
                 byte_model,
