@@ -3,6 +3,7 @@ from pprint import pprint
 import re
 from typing import Literal
 import onnxruntime as ort
+# ort.set_default_logger_severity(0)
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -44,7 +45,6 @@ class OnnxSession(GenericSession):
         super().initialize(device=device, dtype=dtype)
         self.execution_providers = [
             "CPUExecutionProvider",
-            "DmlExecutionProvider",
         ]
 
         self.cuda_device_id: int = 0
@@ -79,7 +79,7 @@ class OnnxSession(GenericSession):
         byte_model: bytes = model_proto.SerializeToString()
 
         session_options = ort.SessionOptions()
-        session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        # session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         if device == 'dml':
             session_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
             session_options.add_session_config_entry("session.use_dml", "1")
@@ -139,7 +139,7 @@ class OnnxSession(GenericSession):
         return np.ascontiguousarray(out_img)
 
 
-    def infer(self, in_img: np.ndarray) -> np.ndarray:
+    def infer(self, in_img: np.ndarray, *args, **kwargs) -> np.ndarray:
         if in_img.dtype != np.float32:
             raise ValueError("np.float32 img only")
 
@@ -157,7 +157,6 @@ class OnnxSession(GenericSession):
         # Image to tensor
         in_tensor: torch.Tensor = torch.from_numpy(np.ascontiguousarray(in_img))
         in_tensor = in_tensor.to(device=device, dtype=in_tensor_dtype)
-        print(in_tensor.shape)
         in_tensor = flip_r_b_channels(in_tensor)
         in_tensor = to_nchw(in_tensor)
         if c == 4:
@@ -165,39 +164,90 @@ class OnnxSession(GenericSession):
             in_tensor = in_tensor[:, :3, :, :]
         in_tensor = in_tensor.contiguous()
 
+        # directml uses 'cuda' even if not a cuda device
+        device_type: str = 'cuda' if self.device_type == 'dml' else self.device_type
+        device_type = 'cpu'
         # Move input to CPU
         if 'cuda' in in_tensor.device.type:
             in_tensor = in_tensor.cpu()
 
-        # Allocate memory
-        out_tensor: torch.Tensor = torch.empty(
-            out_tensor_shape, dtype=out_tensor_dtype, device=device,
-        ).contiguous()
+        in_tensor = in_tensor.numpy()
 
-        # IO bindings
         session: ort.InferenceSession = self.session
-        io_binding = session.io_binding()
-        io_binding.bind_input(
-            name=self.input_name,
-            device_type=self.device_type,
-            device_id=0 if device == 'cpu' else self.cuda_device_id,
-            element_type=IdtypeToNumpy[self.model.io_dtypes['input']],
-            shape=tuple(in_tensor.shape),
-            buffer_ptr=in_tensor.data_ptr(),
-        )
-        io_binding.bind_output(
-            name=self.output_name,
-            device_type=self.device_type,
-            device_id=0 if device == 'cpu' else self.cuda_device_id,
-            element_type=IdtypeToNumpy[self.model.io_dtypes['output']],
-            shape=tuple(out_tensor.shape),
-            buffer_ptr=out_tensor.data_ptr(),
-        )
 
-        # Inference
-        session.run_with_iobinding(io_binding)
+        # Access provider options and device info
+        # providers = session.get_providers()
+        # print("Execution Providers:", providers)
 
-        out_tensor = torch.clamp_(out_tensor, 0, 1)
+        # provider_options = session.get_provider_options()
+        # print("Provider Options:", provider_options)
+
+
+        output_name = session.get_outputs()[0].name
+        outputs = session.run([output_name], {self.input_name: in_tensor})
+        out_tensor = outputs[0]
+        # print(out_tensor.shape)
+        # print(out_tensor.dtype)
+        # print(type(out_tensor))
+        out_tensor = torch.from_numpy(out_tensor)
+
+        # # Allocate memory
+        # out_tensor: torch.Tensor = torch.empty(
+        #     out_tensor_shape, dtype=out_tensor_dtype, device=device,
+        # ).contiguous()
+        # out_tensor = out_tensor.numpy()
+
+
+        # print(self.input_name)
+        # print(in_tensor.shape)
+        # print(self.output_name)
+        # print(out_tensor.shape)
+        # print(device_type)
+
+        # # IO bindings
+        # session: ort.InferenceSession = self.session
+        # io_binding = session.io_binding()
+        # in_ort_tensor = ort.OrtValue.ortvalue_from_numpy(in_tensor, 'cpu', 0)
+        # io_binding.bind_input(
+        #     name=self.input_name,
+        #     device_type=device_type,
+        #     device_id=0 if device in ('cpu', 'dml') else self.cuda_device_id,
+        #     element_type=IdtypeToNumpy[self.model.io_dtypes['input']],
+        #     shape=in_tensor.shape,
+        #     buffer_ptr=in_ort_tensor.data_ptr(),
+        # )
+        # print("binded input")
+        # out_ort_tensor = ort.OrtValue.ortvalue_from_numpy(out_tensor, 'cpu', 0)
+
+        # io_binding.bind_output(
+        #     name=self.output_name,
+        #     device_type='cuda',
+        #     device_id=0 if device in ('cpu', 'dml') else self.cuda_device_id,
+        #     element_type=IdtypeToNumpy[self.model.io_dtypes['output']],
+        #     shape=out_tensor.shape,
+        #     buffer_ptr=out_ort_tensor.data_ptr(),
+        # )
+
+        # print("Output names:", session.get_outputs())
+        # print("Bindings:", io_binding.get_outputs())
+        # print(ort.get_device())
+
+        # # Inference
+        # print("Session provider:", session.get_providers())
+        # print("run")
+        # print(self.device_type)
+        # pprint(io_binding)
+        # print(IdtypeToNumpy[self.model.io_dtypes['input']])
+        # print(IdtypeToNumpy[self.model.io_dtypes['output']])
+        # print(in_tensor.device)
+        # print(in_tensor.dtype)
+        # try:
+        #     session.run_with_iobinding(io_binding)
+        # except Exception as e:
+        #     print(f"Error during inference: {e}")
+        # print("done")
+
+        out_tensor = torch.clamp(out_tensor, 0, 1)
         if c == 4:
             scale = out_tensor.shape[-1] // alpha.shape[-1]
             alpha = F.interpolate(

@@ -290,7 +290,7 @@ def parse(
         out_nc = 3
 
     # Model dtype
-    supported_dtypes = get_initializer_dtypes(model_proto)
+    supported_dtypes = get_input_dtype(model_proto)
 
     # IO dtypes
     io_dtypes = {

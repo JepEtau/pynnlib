@@ -45,7 +45,7 @@ def to_onnx(
         fp16 = False
 
     # https://learn.microsoft.com/en-us/windows/ai/windows-ml/tutorials/pytorch-analysis-convert-model
-    print(f"[V] PyTorch to ONNX: initialize a session, device={device}, fp16={fp16}, opset={opset}")
+    print(f"[V] PyTorch to ONNX: initialize a session, device={device}, dtype={dtype}, fp16={fp16}, opset={opset}")
     session.initialize(device=device, dtype=dtype)
 
     # https://github.com/onnx/onnx/issues/654
