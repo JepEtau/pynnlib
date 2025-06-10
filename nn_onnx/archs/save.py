@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 import json
 import onnx
+from onnx import helper
 import os
 from pathlib import Path
 import time
@@ -46,8 +47,8 @@ def save(
 
     # Append metadata
     metadata = {
-        'converting application': 'pynnlib',
-        'architecture': model.arch_name,
+        'application': 'pynnlib',
+        'arch_name': model.arch_name,
         'name': basename,
         'scale': f"{model.scale}",
         'datetime': datetime.strptime(
@@ -57,9 +58,16 @@ def save(
         'author': model.metadata.get('author', ''),
         'version': model.metadata.get('version', ''),
     }
-    entry = model_proto.metadata_props.add()
-    entry.key = 'info'
-    entry.value = json.dumps(metadata).encode('utf-8')
+    # entry = model_proto.metadata_props.add()
+    # entry.key = 'info'
+    # entry.value = json.dumps(metadata).encode('utf-8')
+    for k, v in metadata.items():
+        if not isinstance(v, str):
+            v = str(v)
+        entry = model_proto.metadata_props.add()
+        entry.key = k
+        entry.value = v
+
 
     try:
         onnx.checker.check_model(model=model_proto)

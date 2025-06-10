@@ -107,6 +107,16 @@ class NnLib:
             device=device
         )
 
+        # Parse metadata
+        if model.framework.type == NnFrameworkType.PYTORCH:
+            if 'metadata' in state_dict and isinstance(state_dict['metadata'], dict):
+                model.metadata = state_dict['metadata']
+        elif model.framework.type == NnFrameworkType.ONNX:
+            pass
+        elif model.framework.type == NnFrameworkType.TENSORRT:
+            pass
+
+
         try:
             resave = model.resave
         except:
