@@ -27,7 +27,7 @@ def parse_metadata_(model: NnModel) -> None:
     pass
 
 
-def set_metadata_(model: NnModel, metadata: dict[str, Any]) -> None:
+def set_metadata_(model: NnModel, metadata: dict[str, Any] = {}) -> None:
 
     builtin_metadata = {
         'date_modified': datetime.strptime(
@@ -47,7 +47,7 @@ def set_metadata_(model: NnModel, metadata: dict[str, Any]) -> None:
         if model.arch_name.lower() not in ('unknown', 'generic'):
             metadata['arch_name'] = model.arch_name
         model_proto: onnx.ModelProto = model.model_proto
-        model_proto.metadata_props[:] = []
+        del model_proto.metadata_props[:]
         for k, v in metadata.items():
             if not isinstance(v, str):
                 try:

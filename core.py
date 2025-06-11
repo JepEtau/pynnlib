@@ -1,20 +1,17 @@
 from __future__ import annotations
-import json
-from warnings import warn
-
-from pynnlib.nn_pytorch.archs import MODEL_ARCHITECTURES
-
-from .import_libs import is_tensorrt_available
-from .logger import nnlogger
-from .nn_types import ShapeStrategy
-from datetime import datetime
-import onnx
-nnlogger.debug(f"[I] ONNX package loaded (version {onnx.__version__})")
 import os
 from pathlib import Path
 from pprint import pprint
 import re
-import time
+from warnings import warn
+
+from .import_libs import is_tensorrt_available
+from .logger import nnlogger
+from .metadata import set_metadata_
+from .nn_types import ShapeStrategy
+
+import onnx
+nnlogger.debug(f"[I] ONNX package loaded (version {onnx.__version__})")
 
 try:
     from .nn_tensor_rt.archs.save import generate_tensorrt_basename
@@ -272,6 +269,8 @@ class NnLib:
         if onnx_model.scale == 0:
             onnx_model.scale = model.scale
 
+        set_metadata_(model=onnx_model, metadata={})
+
         # Save this model
         if out_dir is not None:
             basename = os_path_basename(model.filepath)
@@ -287,7 +286,7 @@ class NnLib:
     def convert_to_tensorrt(self,
         model: NnModel,
         shape_strategy: ShapeStrategy,
-        dtype: Idtype = '',
+        dtype: Idtype = 'fp32',
         optimization_level: int | None = None,
         opset: int = 20,
         device: str = "cuda:0",
@@ -318,7 +317,7 @@ class NnLib:
         model.shape_strategy = shape_strategy
 
         trt_dtypes = set(['fp32'])
-        if trt_dtypes:
+        if dtype:
             trt_dtypes.add(dtype)
 
         # Remove suffixes from ONNX basename
@@ -358,11 +357,12 @@ class NnLib:
             del _model
 
         # Convert to Onnx
-        nnlogger.debug(yellow(f"[I] Convert to onnx (fp32, {dtype})"))
+        # Always use fp32 when converting to onnx
+        nnlogger.debug(yellow(f"[I] Convert to onnx (fp32)"))
         onnx_model: OnnxModel = self.convert_to_onnx(
             model=model,
             opset=opset,
-            dtype='fp16' if dtype == 'fp16' else 'fp32',
+            dtype='fp32',
             static=shape_strategy.static,
             shape_strategy=shape_strategy,
             device=device,
@@ -397,9 +397,9 @@ class NnLib:
         )
 
         # Add specific params
+        trt_model.arch_name = model.arch_name
         trt_model.opset = opset
         trt_model.shape_strategy = shape_strategy
-        trt_model.dtypes.add('fp16')
         trt_model.scale = model.scale
         trt_model.dtypes = trt_dtypes.copy()
 

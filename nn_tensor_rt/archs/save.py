@@ -8,6 +8,8 @@ import re
 from warnings import warn
 import zipfile
 
+from pynnlib.metadata import set_metadata_
+
 from ...utils import is_access_granted
 from ...utils.p_print import *
 from pynnlib.model import TrtModel
@@ -118,15 +120,19 @@ def save(
     basename = generate_tensorrt_basename(model, basename)
     suffix = suffix if suffix is not None else ''
     ext = '.trtzip'
-
     model.filepath = os.path.join(directory, f"{basename}{suffix}{ext}")
+
+    set_metadata_(model, {})
+
+    print(model)
+
     try:
         with zipfile.ZipFile(
             model.filepath, "w", compression=zipfile.ZIP_DEFLATED
         ) as trtzip_file:
             trtzip_file.writestr(
                 f"{basename}{suffix}.engine",
-                trt_engine.serialize()
+                bytes(trt_engine.serialize())
             )
             trtzip_file.writestr(
                 "metadata.json",

@@ -22,34 +22,6 @@ from ..inference.session import (
 
 
 
-def extract_trtzip(filepath: str, output_dir: str = ".") -> dict:
-    """
-    Extracts a .trtzip file and returns the metadata.
-    """
-    if not os.path.isfile(filepath):
-        raise FileNotFoundError(f"TRTZip file not found: {filepath}")
-
-    with zipfile.ZipFile(filepath, "r") as zf:
-        zf.extractall(output_dir)
-        metadata = json.loads(zf.read("metadata.json"))
-
-    print(f"[✔] Extracted to: {output_dir}")
-    return metadata
-
-
-def read_trtzip_metadata(filepath: str) -> Optional[dict]:
-    """
-    Reads only the metadata from a .trtzip file without extracting.
-    """
-    with zipfile.ZipFile(filepath, "r") as zf:
-        return json.loads(zf.read("metadata.json"))
-
-
-
-
-
-
-
 def get_model_arch(
     nn_model_path: str | Path,
     nn_arch_database: dict[str, dict],
@@ -108,24 +80,28 @@ def get_shape_strategy(engine, tensor_name: str) -> ShapeStrategy:
 
 def parse_engine(model: TrtModel) -> None:
     engine = None
+    # Load an engine from storage
     if os.path.exists(model.filepath):
         trt_runtime = trt.Runtime(TRT_LOGGER)
 
         ext = get_extension(model.filepath)
-        if ext in ('.trtzip', '.trtz'):
+        if ext == '.trtzip':
             with zipfile.ZipFile(model.filepath, 'rb') as trtzip_file:
                 engine_bytes = trtzip_file.read("model.engine")
                 metadata = json.loads(trtzip_file.read("metadata.json"))
+            model.metadata = metadata
 
-        elif ext in ('.engine', '.trt'):
+        elif ext == '.engine':
             with open(model.filepath, 'rb') as f:
-                engine_data = f.read()
+                engine_bytes = f.read()
+            model.metadata = {}
 
         try:
-            engine = trt_runtime.deserialize_cuda_engine(engine_data)
+            engine = trt_runtime.deserialize_cuda_engine(engine_bytes)
         except:
             print("[E] Not a valid engine")
 
+    # The engine has already been deserialized
     elif model.engine is not None:
         engine = model.engine
 

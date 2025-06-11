@@ -48,6 +48,8 @@ def save(
 
     set_metadata_(model, {})
 
+    # TODO, remove this, for debug only
+    print(model)
     try:
         onnx.checker.check_model(model=model_proto)
         onnx.save(model_proto, filepath)
