@@ -170,7 +170,7 @@ def import_frameworks() -> dict[NnFrameworkType, NnFramework]:
 framework_to_extensions: dict[NnFrameworkType, tuple[str]] = {
     NnFrameworkType.ONNX : ['.onnx'],
     NnFrameworkType.PYTORCH : ['.pt', '.pth', '.ckpt', '.safetensors'],
-    NnFrameworkType.TENSORRT : ['.engine', '.trt'],
+    NnFrameworkType.TENSORRT : ['.engine', '.trt', '.trtzip', '.trtz'],
 }
 extensions_to_framework: dict[str, NnFrameworkType] = swap_keys_values(framework_to_extensions)
 

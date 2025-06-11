@@ -1,9 +1,12 @@
 
 from copy import deepcopy
+import json
 import os
 from pathlib import Path
 from pprint import pprint
 import re
+from warnings import warn
+import zipfile
 
 from ...utils import is_access_granted
 from ...utils.p_print import *
@@ -94,11 +97,12 @@ def basename_to_config(
     return config
 
 
+
 def save(
     model: TrtModel,
     directory: str | Path,
     basename: str,
-    suffix: str | None = None
+    suffix: str | None = None,
 ) -> bool:
     try:
         trt_engine = model.engine
@@ -107,17 +111,28 @@ def save(
 
     directory = str(directory) if isinstance(directory, Path) else directory
     if not is_access_granted(directory, 'w'):
-        raise PermissionError(f"{directory} is read only")
+        raise PermissionError(red(f"[E] \'{directory}\' is read only"))
 
     if basename == '':
         return False
     basename = generate_tensorrt_basename(model, basename)
     suffix = suffix if suffix is not None else ''
-    filepath = os.path.join(directory, f"{basename}{suffix}.engine")
-    model.filepath = filepath
+    ext = '.trtzip'
 
-    buffer = trt_engine.serialize()
-    with open(filepath, 'wb') as trt_engine_file:
-        trt_engine_file.write(buffer)
+    model.filepath = os.path.join(directory, f"{basename}{suffix}{ext}")
+    try:
+        with zipfile.ZipFile(
+            model.filepath, "w", compression=zipfile.ZIP_DEFLATED
+        ) as trtzip_file:
+            trtzip_file.writestr(
+                f"{basename}{suffix}.engine",
+                trt_engine.serialize()
+            )
+            trtzip_file.writestr(
+                "metadata.json",
+                json.dumps(model.metadata, indent=2)
+            )
+    except Exception as e:
+        raise ValueError(red(f"[E] Failed to save engine as \'{model.filepath}\': {e}"))
 
     return True

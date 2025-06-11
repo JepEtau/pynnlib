@@ -1,7 +1,9 @@
+import json
 import os
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Optional, Type
 from warnings import warn
+import zipfile
 
 import tensorrt as trt
 from tensorrt import DataType as TrtDType
@@ -9,6 +11,7 @@ from tensorrt import DataType as TrtDType
 from pynnlib.architecture import detect_model_arch
 from pynnlib.nn_types import Idtype, ShapeStrategy
 from pynnlib.utils.p_print import *
+from pynnlib.utils import get_extension
 from pynnlib.model import TrtModel
 from pynnlib.logger import nnlogger
 from ..trt_types import TrtEngine
@@ -16,6 +19,34 @@ from ..inference.session import (
     TensorRtSession,
     TRT_LOGGER,
 )
+
+
+
+def extract_trtzip(filepath: str, output_dir: str = ".") -> dict:
+    """
+    Extracts a .trtzip file and returns the metadata.
+    """
+    if not os.path.isfile(filepath):
+        raise FileNotFoundError(f"TRTZip file not found: {filepath}")
+
+    with zipfile.ZipFile(filepath, "r") as zf:
+        zf.extractall(output_dir)
+        metadata = json.loads(zf.read("metadata.json"))
+
+    print(f"[✔] Extracted to: {output_dir}")
+    return metadata
+
+
+def read_trtzip_metadata(filepath: str) -> Optional[dict]:
+    """
+    Reads only the metadata from a .trtzip file without extracting.
+    """
+    with zipfile.ZipFile(filepath, "r") as zf:
+        return json.loads(zf.read("metadata.json"))
+
+
+
+
 
 
 
@@ -79,8 +110,17 @@ def parse_engine(model: TrtModel) -> None:
     engine = None
     if os.path.exists(model.filepath):
         trt_runtime = trt.Runtime(TRT_LOGGER)
-        with open(model.filepath, 'rb') as f:
-            engine_data = f.read()
+
+        ext = get_extension(model.filepath)
+        if ext in ('.trtzip', '.trtz'):
+            with zipfile.ZipFile(model.filepath, 'rb') as trtzip_file:
+                engine_bytes = trtzip_file.read("model.engine")
+                metadata = json.loads(trtzip_file.read("metadata.json"))
+
+        elif ext in ('.engine', '.trt'):
+            with open(model.filepath, 'rb') as f:
+                engine_data = f.read()
+
         try:
             engine = trt_runtime.deserialize_cuda_engine(engine_data)
         except:

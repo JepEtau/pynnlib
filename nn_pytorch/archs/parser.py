@@ -47,49 +47,48 @@ def get_model_arch(
 ) -> tuple[str, StateDict | None]:
     state_dict = None
     arch_name: str = ''
-    extension = get_extension(model_path)
+    ext = get_extension(model_path)
 
     # Overwrite device because faster to parse model
     device: str = 'cpu'
 
     state_dict = None
     try:
-        if extension == ".pt":
-            script_module: torch.jit.ScriptModule = torch.jit.load(
-                model_path,
-                map_location=device
-            )
-            state_dict = script_module.state_dict()
-            # state_dict = torch.load(
-            #     model_path,
-            #     map_location=device,
-            #     pickle_module=RestrictedUnpickle,
-            # )
+        if ext == ".pt":
+            try:
+                # Try loading as a ScriptModule
+                script_module: torch.jit.ScriptModule = torch.jit.load(
+                    model_path,
+                    map_location=device
+                )
+                state_dict = script_module.state_dict()
 
+            except RuntimeError:
+                # Fall back to regular load
+                state_dict = torch.load(
+                    model_path,
+                    map_location=device,
+                    pickle_module=RestrictedUnpickle,
+                )
 
-        elif extension == ".pth":
+        elif ext in (".pth", ".ckpt"):
             state_dict = torch.load(
                 model_path,
                 map_location=device,
                 pickle_module=RestrictedUnpickle,
             )
 
-        elif extension == ".ckpt":
-            state_dict = torch.load(
-                model_path,
-                map_location=device,
-                pickle_module=RestrictedUnpickle,
-            )
-
-        elif extension == ".safetensors":
+        elif ext == ".safetensors":
             state_dict = load_file(
                 model_path,
-                device=device)
+                device=device
+            )
 
         else:
             raise ValueError(
-                f"Unsupported model file extension {extension}. Please try a supported model type."
+                f"Unsupported model file extension \'{ext}\'. Please try a supported model type."
             )
+
     except:
         state_dict = None
 

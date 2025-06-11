@@ -6,6 +6,7 @@ from onnx import helper
 import os
 from pathlib import Path
 import time
+from pynnlib.metadata import set_metadata_
 from pynnlib.utils import is_access_granted
 from pynnlib.model import OnnxModel
 
@@ -45,29 +46,7 @@ def save(
     filepath = os.path.join(directory, f"{basename}.onnx")
     model.filepath = filepath
 
-    # Append metadata
-    metadata = {
-        'application': 'pynnlib',
-        'arch_name': model.arch_name,
-        'name': basename,
-        'scale': f"{model.scale}",
-        'datetime': datetime.strptime(
-            time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime()),
-            '%Y-%m-%dT%H:%M:%S%z').isoformat(),
-        'license': model.metadata.get('license', ''),
-        'author': model.metadata.get('author', ''),
-        'version': model.metadata.get('version', ''),
-    }
-    # entry = model_proto.metadata_props.add()
-    # entry.key = 'info'
-    # entry.value = json.dumps(metadata).encode('utf-8')
-    for k, v in metadata.items():
-        if not isinstance(v, str):
-            v = str(v)
-        entry = model_proto.metadata_props.add()
-        entry.key = k
-        entry.value = v
-
+    set_metadata_(model, {})
 
     try:
         onnx.checker.check_model(model=model_proto)

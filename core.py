@@ -116,55 +116,6 @@ class NnLib:
         elif model.framework.type == NnFrameworkType.TENSORRT:
             pass
 
-
-        try:
-            resave = model.resave
-        except:
-            resave = False
-        resave = False
-        if resave:
-            nnlogger.debug("resave")
-            state_dict = torch.load(
-                model_path,
-                map_location='cpu',
-                pickle_module=RestrictedUnpickle,
-            )
-
-            metadata = {
-                # 'by': 'Herlegon',
-                # 'pro': 1 if model.pro else 0,
-                # 'denoise': model.denoise,
-                'datetime': datetime.strptime(
-                    time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime()),
-                    '%Y-%m-%dT%H:%M:%S%z').isoformat(),
-                'an_int': 3,
-                'a_tuple': (2,3,4),
-                'a_dict': dict(a=1,b=2,c=3)
-            }
-            print(json.dumps(metadata))
-            try:
-                del state_dict['pro']
-            except:
-                pass
-            state_dict[f'metadata'] = {}
-            for k, v in metadata.items():
-                state_dict[f'metadata'][k] = json.dumps(v)
-                # print(json.dumps(v))
-
-            metadata = {
-                'datetime': datetime.strptime(
-                    time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime()),
-                    '%Y-%m-%dT%H:%M:%S%z').isoformat(),
-                'an_int': 3,
-                'a_tuple': (2,3,4),
-                'a_dict': dict(a=1,b=2,c=3)
-            }
-            state_dict[f'metadata'] = json.dumps(metadata)
-
-            torch.save(state_dict,
-                model_path.replace(".pth", "_rlg.pth")
-            )
-
         if (
             model is not None
             and any(x <= 0 for x in (model.scale, model.in_nc, model.out_nc))
@@ -395,7 +346,7 @@ class NnLib:
                 _model, basename,
             )
             suffix = suffix if suffix is not None else ''
-            filepath = os.path.join(out_dir, f"{trt_basename}{suffix}.engine")
+            filepath = os.path.join(out_dir, f"{trt_basename}{suffix}.trtzip")
             if os.path.exists(filepath):
                 if not force:
                     nnlogger.debug(f"[I] Engine {filepath} already exists, do not convert")
