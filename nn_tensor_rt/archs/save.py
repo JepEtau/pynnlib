@@ -8,7 +8,7 @@ import re
 from warnings import warn
 import zipfile
 
-from pynnlib.metadata import set_metadata_
+from pynnlib.metadata import generate_metadata
 
 from ...utils import is_access_granted
 from ...utils.p_print import *
@@ -100,7 +100,7 @@ def basename_to_config(
 
 
 
-def save(
+def save_as(
     model: TrtModel,
     directory: str | Path,
     basename: str,
@@ -122,7 +122,7 @@ def save(
     ext = '.trtzip'
     model.filepath = os.path.join(directory, f"{basename}{suffix}{ext}")
 
-    set_metadata_(model, {})
+    generate_metadata(model, {})
 
     print(model)
 

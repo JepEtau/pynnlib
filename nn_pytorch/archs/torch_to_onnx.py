@@ -1,9 +1,10 @@
 from __future__ import annotations
 from io import BytesIO
 from pprint import pprint
+from typing import TYPE_CHECKING
+
 import onnx
 import torch
-from typing import TYPE_CHECKING
 
 from pynnlib.architecture import SizeConstraint
 from pynnlib.import_libs import is_cuda_available

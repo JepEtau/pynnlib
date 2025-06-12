@@ -131,13 +131,31 @@ class GenericModel:
 
     def __str__(self) -> str:
         class_str = f"{self.__class__}: {'{'}\n"
+        indent: str = "    "
         for k, v in self.__dict__.items():
+            # Do not print content if too complex
             if k in ['model_proto', 'state_dict', 'engine', 'arch', 'framework']:
                 class_str += (
-                    f"\t{k}: {f'{type(v).__name__} ...' if v is not None else 'None'}\n"
+                    f"{indent}{k}: {f'{type(v).__name__} ...' if v is not None else 'None'}\n"
                 )
                 continue
-            class_str += f"\t{k}: {type(v).__name__} = {v}\n"
+            # For dict
+            if isinstance(v, dict):
+                class_str += f"{indent}{k}: {type(v).__name__} = {'{'}\n{indent}{indent}"
+                items = []
+                for key, value in v.items():
+                    items.append(
+                        f"\'{key}\': \'{value}\'"
+                        if isinstance(value, str)
+                        else f"\'{key}\': {value}"
+                    )
+                class_str += f",\n{indent}{indent}".join(items)
+                class_str += f"\n{indent}{'}'}\n"
+
+            else:
+                v_str = f"\'{v}\'" if isinstance(v, str) else f"{v}"
+                class_str += f"{indent}{k}: {type(v).__name__} = {v_str}\n"
+
         class_str += "}\n"
         return class_str
 

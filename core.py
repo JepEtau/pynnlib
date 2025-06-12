@@ -7,7 +7,7 @@ from warnings import warn
 
 from .import_libs import is_tensorrt_available
 from .logger import nnlogger
-from .metadata import set_metadata_
+from .metadata import generate_metadata
 from .nn_types import ShapeStrategy
 
 import onnx
@@ -191,12 +191,12 @@ class NnLib:
         model: NnModel,
         opset: int = 20,
         dtype: Idtype = 'fp32',
-        static: bool = False,
+        # static: bool = False,
         device: str = 'cpu',
         shape_strategy: ShapeStrategy | None = None,
-        out_dir: str | Path | None = None,
-        suffix: str | None = None,
-    ) -> OnnxModel:
+        out_dir: str | Path = "",
+        suffix: str = "",
+    ) -> str | OnnxModel:
         """Convert a model into an onnx model.
 
         Args:
@@ -205,20 +205,19 @@ class NnLib:
             dtype: Idtype
             device: device used for this conversion. the converted model will not use fp16
                     if this device does not support it.
-            outdir: directory to save the onnx model. If set to None,
-                    the model is not saved
+            outdir: directory to save the onnx model. If not set, the model is not saved
         """
-        onnx_model: OnnxModel = None
-
         if model.fwk_type == NnFrameworkType.ONNX:
             nnlogger.debug(f"This model is already an ONNX model")
             return model
 
-        # TODO: put the following code in an Try-Except block
+        onnx_model: OnnxModel = None
+
         nnlogger.debug(yellow(f"[I] Convert to onnx model: ")
              + f"device={device}, dtype={dtype}, opset={opset}, static={static}"
              + f", shape={'x'.join([str(x) for x in shape_strategy.opt_size]) if static else ''}"
         )
+        # TODO: put the following code in an Try-Except block
         if (
             model.arch is not None
             and (convert_fct := model.arch.to_onnx) is not None
@@ -232,7 +231,7 @@ class NnLib:
                 device=device,
             )
         else:
-            raise RuntimeError(f"Cannot convert from {model.arch_name} to ONNX (unsupported)")
+            raise RuntimeError(f"Cannot convert from {model.arch_name} to ONNX (not supported)")
 
         # Instantiate a new model
         onnx_fwk = self.frameworks[NnFrameworkType.ONNX]
@@ -255,30 +254,31 @@ class NnLib:
         else:
             onnx_model.dtypes = set(['fp32'])
 
-        # Add shape strategy
-        if shape_strategy is None:
-            onnx_model.shape_strategy = ShapeStrategy(
-                static=static,
-                type='static' if static else 'dynamic'
-            )
-        else:
+        # Add shape strategy, it will use
+        if shape_strategy is not None:
             onnx_model.shape_strategy = shape_strategy
+        else:
+            onnx_model.shape_strategy = ShapeStrategy(type='dynamic')
 
-        # Add some info (metadata)
+        # Copy info
         onnx_model.alt_arch_name = model.arch_name
         if onnx_model.scale == 0:
             onnx_model.scale = model.scale
 
-        set_metadata_(model=onnx_model, metadata={})
+        # Remove metadata from proto and generate new ones in the model
+        del onnx_model.model_proto.metadata_props[:]
+        onnx_model.metadata = generate_metadata(model, {})
 
         # Save this model
-        if out_dir is not None:
+        filepath: str = ""
+        if out_dir:
             basename = os_path_basename(model.filepath)
-            success = onnx_fwk.save(onnx_model, out_dir, basename, suffix)
-            if success:
-                nnlogger.debug(f"[I] Onnx model saved as {onnx_model.filepath}")
+            filepath = onnx_fwk.save(onnx_model, out_dir, basename, suffix)
+            if filepath:
+                nnlogger.debug(f"[I] Onnx model saved as {filepath}")
+                onnx_model.filepath = filepath
             else:
-                nnlogger.debug(f"[E] Failed to save the Onnx model as {onnx_model.filepath}")
+                nnlogger.debug(f"[E] Failed to save the Onnx model")
 
         return onnx_model
 
@@ -287,12 +287,12 @@ class NnLib:
         model: NnModel,
         shape_strategy: ShapeStrategy,
         dtype: Idtype = 'fp32',
-        optimization_level: int | None = None,
+        optimization_level: int = 3,
         opset: int = 20,
         device: str = "cuda:0",
         out_dir: str | Path | None = None,
-        suffix: str | None = None,
-        force: bool = False,
+        suffix: str = "",
+        overwrite: bool = False,
     ) -> TrtModel:
         """Convert a model into a tensorrt model.
         Returns a new instance of model.
@@ -347,7 +347,7 @@ class NnLib:
             suffix = suffix if suffix is not None else ''
             filepath = os.path.join(out_dir, f"{trt_basename}{suffix}.trtzip")
             if os.path.exists(filepath):
-                if not force:
+                if not overwrite:
                     nnlogger.debug(f"[I] Engine {filepath} already exists, do not convert")
                     return self.open(filepath, device)
                 else:
