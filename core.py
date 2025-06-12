@@ -94,7 +94,7 @@ class NnLib:
             # model_arch, model_obj = fwk.find_model_arch(model_path, device)
             warn(f"{red("[E] Erroneous model or unsupported architecture:")}: {model_path}")
             return None
-        # nnlogger.debug(yellow(f"fwk={fwk.type.value}, arch={model_arch.name}"))
+        nnlogger.debug(yellow(f"fwk={fwk.type.value}, arch={model_arch.name}"))
 
         model = self._create_model(
             nn_model_path=model_path,
@@ -103,6 +103,9 @@ class NnLib:
             model_obj=model_obj,
             device=device
         )
+        if model is None:
+            warn(f"{red("[E] Erroneous model or unsupported architecture:")}: {model_path}")
+            return None
 
         # Parse metadata
         if model.framework.type == NnFrameworkType.PYTORCH:
@@ -191,7 +194,6 @@ class NnLib:
         model: NnModel,
         opset: int = 20,
         dtype: Idtype = 'fp32',
-        # static: bool = False,
         device: str = 'cpu',
         shape_strategy: ShapeStrategy | None = None,
         out_dir: str | Path = "",
@@ -212,7 +214,9 @@ class NnLib:
             return model
 
         onnx_model: OnnxModel = None
-
+        static: bool = bool(
+            shape_strategy is not None and shape_strategy.type == 'static'
+        )
         nnlogger.debug(yellow(f"[I] Convert to onnx model: ")
              + f"device={device}, dtype={dtype}, opset={opset}, static={static}"
              + f", shape={'x'.join([str(x) for x in shape_strategy.opt_size]) if static else ''}"
@@ -363,11 +367,11 @@ class NnLib:
             model=model,
             opset=opset,
             dtype='fp32',
-            static=shape_strategy.static,
-            shape_strategy=shape_strategy,
             device=device,
+            shape_strategy=shape_strategy,
             out_dir=out_dir,
         )
+        print(onnx_model)
 
         convert_to_tensorrt_fct = onnx_model.arch.to_tensorrt
         # TODO: put the following code in an Try-Except block
@@ -402,6 +406,7 @@ class NnLib:
         trt_model.shape_strategy = shape_strategy
         trt_model.scale = model.scale
         trt_model.dtypes = trt_dtypes.copy()
+        trt_model.metadata = generate_metadata(trt_model)
 
         # Save this engine as a model
         if out_dir is not None:

@@ -50,11 +50,8 @@ def convert_to_tensorrt(
     shape_strategy.opt_size = opt_size
 
     if arguments.static:
-        shape_strategy.static = True
-        static_size = _str_to_size(arguments.size)
-        shape_strategy.min_size = static_size
-        shape_strategy.opt_size = static_size
-        shape_strategy.max_size = static_size
+        shape_strategy.type = 'static'
+        shape_strategy.opt_size = _str_to_size(arguments.size)
         print(red(shape_strategy))
 
     else:
@@ -70,6 +67,7 @@ def convert_to_tensorrt(
             shape_strategy.max_size = max_size
 
         else:
+            shape_strategy.type = 'fixed'
             shape_strategy.min_size = shape_strategy.opt_size
             shape_strategy.max_size = shape_strategy.opt_size
 
@@ -307,7 +305,7 @@ format: WxH.
     elif static:
         print(f"Static strategy: {arguments.size}")
         shape_strategy: ShapeStrategy = ShapeStrategy(
-            static=True,
+            type='static',
             opt_size=_str_to_size(arguments.size)
         )
         model.shape_strategy = shape_strategy
@@ -320,7 +318,6 @@ format: WxH.
             model=model,
             opset=arguments.opset,
             dtype=c_dtype,
-            static=shape_strategy.static if shape_strategy is not None else False,
             shape_strategy=shape_strategy,
             device=device,
             out_dir=path_split(model.filepath)[0],

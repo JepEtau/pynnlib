@@ -33,7 +33,7 @@ def generate_tensorrt_basename(
     dtypes = '_'.join([fp for fp in ('fp32', 'fp16', 'bf16') if fp in model.dtypes])
     opset = f"op{model.opset}"
     shape: str
-    if model.shape_strategy.static:
+    if model.shape_strategy.type == 'static':
         shape = "static_" + 'x'.join([str(x) for x in model.shape_strategy.opt_size])
     else:
         shape_strategy = deepcopy(model.shape_strategy)

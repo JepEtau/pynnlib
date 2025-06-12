@@ -61,8 +61,6 @@ ShapeStrategyType = Literal[
 class ShapeStrategy:
     """Shapes: (width, height)
     """
-    # TODO: deprecate 'static' boolean
-    static: bool = False
     type: ShapeStrategyType = 'dynamic'
     min_size: tuple[int, int] = (0, 0)
     opt_size: tuple[int, int] = (0, 0)
@@ -70,16 +68,18 @@ class ShapeStrategy:
 
 
     def __post_init__(self):
-        if self.static:
-            self.type = 'static'
         self._modulo: int = 1
 
 
     def is_valid(self) -> bool:
-        for d in range(2):
-            values = [x[d] for x in (self.min_size, self.opt_size, self.max_size)]
-            if min([values[i+1] - values[i] for i in range(len(values)-1)]) < 0:
+        if self.type == 'static':
+            if any(x == 0 for x in self.opt_size):
                 return False
+        else:
+            for d in range(2):
+                values = [x[d] for x in (self.min_size, self.opt_size, self.max_size)]
+                if min([values[i+1] - values[i] for i in range(len(values)-1)]) < 0:
+                    return False
         return True
 
 

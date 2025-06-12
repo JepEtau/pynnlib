@@ -109,7 +109,7 @@ def main():
             filtered_exts = get_supported_model_extensions(NnFrameworkType.ONNX)
         elif arguments.filter == 'pytorch':
             filtered_exts = get_supported_model_extensions(NnFrameworkType.PYTORCH)
-        elif arguments.filter == 'trt':
+        elif arguments.filter in  ('trt', 'trtzip'):
             filtered_exts = get_supported_model_extensions(NnFrameworkType.TENSORRT)
         else:
             filtered_exts = (arguments.filter)
@@ -138,7 +138,7 @@ def main():
                 print(model)
         except Exception as e:
             # For debug:
-            model: NnModel = nnlib.open(filepath, device)
+            model: NnModel = nnlib.open(model_fp, device)
             print(e)
         return
 

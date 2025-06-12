@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Optional, Type
+from typing import Any, Type
 from warnings import warn
 import zipfile
 
@@ -19,6 +19,13 @@ from ..inference.session import (
     TensorRtSession,
     TRT_LOGGER,
 )
+
+
+TrtDType_to_Idtype: dict[TrtDType, str] = {
+    TrtDType.FLOAT: 'fp32',
+    TrtDType.HALF: 'fp16',
+    TrtDType.BF16: 'bf16',
+}
 
 
 
@@ -74,6 +81,10 @@ def get_shape_strategy(engine, tensor_name: str) -> ShapeStrategy:
     shape_strategy.min_size = tuple(reversed(min_shapes[2:]))
     shape_strategy.opt_size = tuple(reversed(opt_shapes[2:]))
     shape_strategy.max_size = tuple(reversed(max_shapes[2:]))
+    print(f"min_shapes: {min_shapes}, opt_shapes: {opt_shapes}, max_shapes: {max_shapes}")
+    if min_shapes == opt_shapes == max_shapes:
+        shape_strategy.type = 'fixed'
+
     return shape_strategy
 
 
@@ -86,10 +97,18 @@ def parse_engine(model: TrtModel) -> None:
 
         ext = get_extension(model.filepath)
         if ext == '.trtzip':
-            with zipfile.ZipFile(model.filepath, 'rb') as trtzip_file:
-                engine_bytes = trtzip_file.read("model.engine")
+            with zipfile.ZipFile(model.filepath, 'r') as trtzip_file:
+                engine_filename: str = next(
+                    (s for s in trtzip_file.namelist() if s.endswith('.engine')),
+                    None
+                )
+                if engine_filename is None:
+                    raise ValueError("[E] Not a valid trtzip file")
+                engine_bytes = trtzip_file.read(engine_filename)
                 metadata = json.loads(trtzip_file.read("metadata.json"))
             model.metadata = metadata
+
+            model.arch_name = model.metadata.get("arch_name", model.arch_name)
 
         elif ext == '.engine':
             with open(model.filepath, 'rb') as f:
@@ -119,11 +138,16 @@ def parse_engine(model: TrtModel) -> None:
     in_b, in_nc, in_h, in_w = shape
     _, shape, out_dtype = tensor_shapes_dtype['outputs'][0]
     _, out_nc, out_h, out_w = shape
+
+    model.io_dtypes = {
+        'input': TrtDType_to_Idtype[in_dtype],
+        'output': TrtDType_to_Idtype[out_dtype],
+    }
     if in_dtype != out_dtype:
         raise NotImplementedError("TensorRT: IO, dtypes are not the same")
 
     dtypes: set[Idtype] = set()
-    if in_dtype == TrtDType.FLOAT :
+    if in_dtype == TrtDType.FLOAT:
         dtypes.add('fp32')
     elif in_dtype == TrtDType.HALF:
         dtypes.add('fp16')
@@ -133,7 +157,13 @@ def parse_engine(model: TrtModel) -> None:
         raise ValueError(f"TensorRT: datatype {in_dtype} is not supported")
 
     # TODO: get shape strategy for each profile?
+    print(yellow(f"num_optimization_profile:"), f"{engine.num_optimization_profiles}")
+    if engine.num_optimization_profiles == 0:
+        print(red("STATIC"))
+
     shape_strategy = get_shape_strategy(engine, input_name)
+    print(shape_strategy)
+
 
     if any(x == -1 for x in (in_w, in_h, out_w, out_h)):
         # Dynamic shapes

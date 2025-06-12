@@ -49,35 +49,41 @@ def to_onnx(
     print(f"[V] PyTorch to ONNX: initialize a session, device={device}, dtype={dtype}, fp16={fp16}, opset={opset}")
     session.initialize(device=device, dtype=dtype)
 
-    # https://github.com/onnx/onnx/issues/654
-    dynamic_axes: dict[str, str] | None = None
     print(f"[V]  shape strategy: {shape_strategy}")
+    dynamic_axes: dict[str, str] | None = None
     if shape_strategy is not None:
-        print("[V]  shape strategy is not None")
-        if static or shape_strategy.static:
+        if static or shape_strategy.type == 'static':
             print("[V]  shape strategy is static")
-            dynamic_axes = {
-                'input': {0: 'batch_size'},
-                'output': {0: 'batch_size'}
-            }
             w, h = shape_strategy.opt_size
 
-    if dynamic_axes is None:
-        print("[V]  shape strategy is dynamic or fixed")
-        if batch == 1:
-            dynamic_axes = {
-                'input': {2: "height", 3: "width"},
-                'output': {2: "height", 3: "width"},
-            }
+            # TODO: verify against constraint
 
         else:
-            dynamic_axes = {
-                'input': {0: "batch", 2: "height", 3: "width"},
-                'output': {0: "batch", 2: "height", 3: "width"},
-            }
+            print("[V]  shape strategy is None")
+            print("[V]  shape strategy is dynamic or fixed")
+            if batch == 1:
+                dynamic_axes = {
+                    'input': {2: "height", 3: "width"},
+                    'output': {2: "height", 3: "width"},
+                }
 
+            else:
+                dynamic_axes = {
+                    'input': {0: "batch", 2: "height", 3: "width"},
+                    'output': {0: "batch", 2: "height", 3: "width"},
+                }
+
+            size: SizeConstraint | None = model.size_constraint
+            w, h = size.min if size is not None and size.min is not None else (32, 32)
+    else:
+        dynamic_axes = {
+            'input': {0: "batch", 2: "height", 3: "width"},
+            'output': {0: "batch", 2: "height", 3: "width"},
+        }
         size: SizeConstraint | None = model.size_constraint
         w, h = size.min if size is not None and size.min is not None else (32, 32)
+
+
 
     dummy_input = torch.rand(
         batch,
@@ -101,7 +107,7 @@ def to_onnx(
             output_names=['output'],
             opset_version=opset,
             do_constant_folding=True,
-            dynamic_axes=dynamic_axes if not static else None,
+            dynamic_axes=dynamic_axes,
         )
         bytes_io.seek(0)
         model_proto = onnx.load(bytes_io)

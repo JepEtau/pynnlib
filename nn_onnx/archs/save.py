@@ -22,7 +22,7 @@ def generate_onnx_basename(
         [fp for fp in ('fp32', 'fp16', 'bf16') if fp in model.dtypes]
     )
     shape: str = ""
-    if model.shape_strategy.static or "static" in model.shape_strategy.type:
+    if model.shape_strategy.type == 'static':
         shape = "_static_" + 'x'.join([str(x) for x in model.shape_strategy.opt_size])
 
     return f"{basename}_op{model.opset}_{dtypes}{shape}"
