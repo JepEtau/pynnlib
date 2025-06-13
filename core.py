@@ -177,16 +177,16 @@ class NnLib:
 
         # Parse a model object
         model.arch_name = model_arch.name
-        model_arch.parse(model)
 
-        # try:
-        #     model_arch.parse(model)
-        # except Exception as e:
-        #     warn(f"_create_model: failed to parse {nn_model_path}")
-        #     print(type(e))
-        #     if debug:
-        #         model_arch.parse(model)
-        #     return None
+        try:
+            model_arch.parse(model)
+        except Exception as e:
+            warn(f"_create_model: failed to parse {nn_model_path}")
+            print(type(e))
+            if debug:
+                model_arch.parse(model)
+            return None
+
         return model
 
 

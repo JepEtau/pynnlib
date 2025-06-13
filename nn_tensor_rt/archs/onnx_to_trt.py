@@ -31,11 +31,7 @@ def onnx_to_trt_engine(
     has_bf16: bool = bool('bf16' in dtypes)
 
     print(f"[V] Start converting to TRT, request fp16={has_fp16}, bf16={has_bf16}")
-
-    network_flags = 0
-    if shape_strategy.type != 'static':
-        print(red("add explicit batch"))
-        network_flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
+    network_flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
 
     with (
         trt.Builder(TRT_LOGGER) as builder,

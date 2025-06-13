@@ -93,6 +93,7 @@ class ShapeStrategy:
                 return False
         return True
 
+
     def __str__(self) -> str:
         class_str = "{\n"
         indent: str = "    "

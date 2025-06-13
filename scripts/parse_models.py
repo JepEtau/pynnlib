@@ -64,12 +64,13 @@ def main():
     )
 
     parser.add_argument(
+        "-f",
         "--filter",
         choices=[
             *get_supported_model_extensions(),
             'pytorch',
             'onnx',
-            'trt'
+            'trt',
         ],
         default="",
         required=False,
@@ -161,10 +162,16 @@ def main():
                 if model is None:
                     continue
                 elapsed = time.time() - start_time
+                dtype: str = (
+                    ", ".join(model.arch.dtypes)
+                    if model.framework.type == NnFrameworkType.PYTORCH
+                    else model.io_dtypes['input']
+                )
                 print(
-                    f"\tarch:", lightcyan(model.arch_name),
+                    f"    arch:", lightcyan(model.arch_name),
                     f"scale:", lightcyan(model.scale),
-                    f"\t\t({1000 * elapsed:.1f}ms)"
+                    f"\n    in_dtype:", lightcyan(dtype),
+                    f"\n    ({1000 * elapsed:.1f}ms)\n"
                 )
                 if arguments.verbose:
                     print(model)
