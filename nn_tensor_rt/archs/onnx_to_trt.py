@@ -56,19 +56,19 @@ def onnx_to_trt_engine(
             raise ValueError("Failed to parse the onnx model")
 
         # Input tensors
-        input_tensor = None
+        onnx_in_tensor = None
         for i in range(network.num_inputs):
-            input_tensor = network.get_input(i)
+            onnx_in_tensor = network.get_input(i)
             break
-        if input_tensor is None:
+        if onnx_in_tensor is None:
             raise ValueError("Missing input tensor in model")
-        input_name = input_tensor.name
-        is_onnx_fp16 = bool(trt.nptype(input_tensor.dtype) == np.float16)
+        input_name = onnx_in_tensor.name
+        is_onnx_fp16 = bool(trt.nptype(onnx_in_tensor.dtype) == np.float16)
         nnlogger.debug(f"is_onnx_fp16: {is_onnx_fp16}, to_fp16: {has_fp16}")
-        print(trt.nptype(input_tensor.dtype))
+        print(trt.nptype(onnx_in_tensor.dtype))
         print(f"is_onnx_fp16: {is_onnx_fp16}, to_fp16: {has_fp16}")
         print(f"[V]   is_onnx_fp16={is_onnx_fp16}, bf16={has_bf16}")
-        print(f"[V]   input shape: {input_tensor.shape}")
+        print(f"[V]   onnx input shape: {onnx_in_tensor.shape}")
 
         # builder.max_batch_size = 1
 
@@ -95,7 +95,7 @@ def onnx_to_trt_engine(
         if has_bf16:
             builder_config.set_flag(trt.BuilderFlag.BF16)
 
-        onnx_h, onnx_w = input_tensor.shape[2:]
+        onnx_h, onnx_w = onnx_in_tensor.shape[2:]
         static_onnx: bool = bool(onnx_h != -1 and onnx_w != -1)
         strategy: ShapeStrategy = deepcopy(shape_strategy)
         fixed_trt: bool = shape_strategy.is_fixed()
@@ -126,7 +126,7 @@ def onnx_to_trt_engine(
                     max=(batch_opt, model.in_nc, *reversed(strategy.max_size)),
                 )
 
-                builder_config.add_optimization_profile(profile)
+            builder_config.add_optimization_profile(profile)
 
         nnlogger.info("[I] Building a TensortRT engine; this may take a while...")
         engine_bytes = builder.build_serialized_network(network, builder_config)

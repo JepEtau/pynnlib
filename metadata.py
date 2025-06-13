@@ -74,5 +74,6 @@ def generate_metadata(
         metadata['trtzip_version'] = "1.0"
         if model.arch_name.lower() not in ('unknown', 'generic'):
             metadata['arch_name'] = model.arch_name
+        metadata['shapes'] = model.shape_strategy.type
 
     return metadata

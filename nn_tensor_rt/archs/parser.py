@@ -81,10 +81,8 @@ def get_shape_strategy(engine, tensor_name: str) -> ShapeStrategy:
     shape_strategy.min_size = tuple(reversed(min_shapes[2:]))
     shape_strategy.opt_size = tuple(reversed(opt_shapes[2:]))
     shape_strategy.max_size = tuple(reversed(max_shapes[2:]))
-    print(f"min_shapes: {min_shapes}, opt_shapes: {opt_shapes}, max_shapes: {max_shapes}")
-    if min_shapes == opt_shapes == max_shapes:
+    if shape_strategy.min_size == shape_strategy.opt_size == shape_strategy.max_size:
         shape_strategy.type = 'fixed'
-
     return shape_strategy
 
 
@@ -157,12 +155,8 @@ def parse_engine(model: TrtModel) -> None:
         raise ValueError(f"TensorRT: datatype {in_dtype} is not supported")
 
     # TODO: get shape strategy for each profile?
-    print(yellow(f"num_optimization_profile:"), f"{engine.num_optimization_profiles}")
-    if engine.num_optimization_profiles == 0:
-        print(red("STATIC"))
-
     shape_strategy = get_shape_strategy(engine, input_name)
-    print(shape_strategy)
+    shape_strategy.type = model.metadata.get("shapes", shape_strategy.type)
 
 
     if any(x == -1 for x in (in_w, in_h, out_w, out_h)):

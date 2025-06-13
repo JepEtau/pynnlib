@@ -312,7 +312,7 @@ Fallback to float if the execution provider does not support it
     print(lightcyan(f"\tScale:"), f"{model.scale}")
     print(lightcyan(f"\tFramework:"), f"{model.fwk_type.value}")
     print(lightcyan(f"\tDevice:"), f"{device}")
-    print(lightcyan(f"\tDatatype:"), f"{i_dtype}")
+    print(lightcyan(f"\tDatatype:"), f"{session.idtype}")
 
     # Inference
     inferences: int = arguments.n if arguments.profiling else 1

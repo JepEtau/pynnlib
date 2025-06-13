@@ -177,15 +177,16 @@ class NnLib:
 
         # Parse a model object
         model.arch_name = model_arch.name
+        model_arch.parse(model)
 
-        try:
-            model_arch.parse(model)
-        except Exception as e:
-            warn(f"_create_model: failed to parse {nn_model_path}")
-            print(type(e))
-            if debug:
-                model_arch.parse(model)
-            return None
+        # try:
+        #     model_arch.parse(model)
+        # except Exception as e:
+        #     warn(f"_create_model: failed to parse {nn_model_path}")
+        #     print(type(e))
+        #     if debug:
+        #         model_arch.parse(model)
+        #     return None
         return model
 
 
@@ -250,13 +251,14 @@ class NnLib:
         onnx_model.arch_name = model.arch.name
 
         # TODO: clean this
-        onnx_dtype = list(model.arch.dtypes)[0]
-        if onnx_dtype == 'fp16' and onnx_dtype in model.arch.dtypes:
-            onnx_model.dtypes = set(['fp16'])
-        elif onnx_dtype == 'bf16' and onnx_dtype in model.arch.dtypes:
-            onnx_model.dtypes = set(['bf16'])
-        else:
-            onnx_model.dtypes = set(['fp32'])
+        # onnx_dtype = list(model.arch.dtypes)[0]
+        # if onnx_dtype == 'fp16' and onnx_dtype in model.arch.dtypes:
+        #     onnx_model.dtypes = set(['fp16'])
+        # elif onnx_dtype == 'bf16' and onnx_dtype in model.arch.dtypes:
+        #     onnx_model.dtypes = set(['bf16'])
+        # else:
+        #     onnx_model.dtypes = set(['fp32'])
+        onnx_model.dtypes = set([dtype])
 
         # Add shape strategy, it will use
         if shape_strategy is not None:
@@ -320,9 +322,7 @@ class NnLib:
 
         model.shape_strategy = shape_strategy
 
-        trt_dtypes = set(['fp32'])
-        if dtype:
-            trt_dtypes.add(dtype)
+        trt_dtypes = set([dtype])
 
         # Remove suffixes from ONNX basename
         basename = os_path_basename(model.filepath)
@@ -362,11 +362,11 @@ class NnLib:
 
         # Convert to Onnx
         # Always use fp32 when converting to onnx
-        nnlogger.debug(yellow(f"[I] Convert to onnx (fp32)"))
+        nnlogger.debug(yellow(f"[I] Convert to onnx ({dtype})"))
         onnx_model: OnnxModel = self.convert_to_onnx(
             model=model,
             opset=opset,
-            dtype='fp32',
+            dtype=dtype,
             device=device,
             shape_strategy=shape_strategy,
             out_dir=out_dir,

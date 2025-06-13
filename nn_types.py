@@ -93,3 +93,11 @@ class ShapeStrategy:
                 return False
         return True
 
+    def __str__(self) -> str:
+        class_str = "{\n"
+        indent: str = "    "
+        for k, v in self.__dict__.items():
+            v_str = f"\'{v}\'" if isinstance(v, str) else f"{v}"
+            class_str += f"{indent}{indent}{k}: {type(v).__name__} = {v_str}\n"
+        class_str += f"{indent}{'}'}\n"
+        return class_str

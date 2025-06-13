@@ -33,8 +33,8 @@ def generate_tensorrt_basename(
     dtypes = '_'.join([fp for fp in ('fp32', 'fp16', 'bf16') if fp in model.dtypes])
     opset = f"op{model.opset}"
     shape: str
-    if model.shape_strategy.type == 'static':
-        shape = "static_" + 'x'.join([str(x) for x in model.shape_strategy.opt_size])
+    if model.shape_strategy.type in ('static', 'fixed'):
+        shape = f"{model.shape_strategy.type}_" + 'x'.join([str(x) for x in model.shape_strategy.opt_size])
     else:
         shape_strategy = deepcopy(model.shape_strategy)
         if shape_strategy.min_size == (0, 0):
@@ -55,48 +55,6 @@ def generate_tensorrt_basename(
         cc = '.'.join(map(str, torch.cuda.get_device_capability()))
 
     return f"{basename}_cc{cc}_{opset}_{dtypes}_{shape}_{tensorrt_version}"
-
-
-def basename_to_config(
-    basename: str
-) -> dict[str, str | int | tuple[int,int] | ShapeStrategy] | None:
-    config = None
-
-    if (
-        match := re.match(
-            re.compile(
-                r".*_cc(\d+.\d+)_([bfp1236_]+)_op(\d{1,2})_(\d+x\d+)_(\d+x\d+)_(\d+x\d+)_(\d+\.\d+\.\d+)$"
-            ),
-            basename
-        )
-    ):
-        #.......
-        dtypes = match.group(1)
-        fp16: bool = 'fp16' in dtypes
-        fp32: bool = 'fp32' in dtypes
-        bf16: bool = 'bf16' in dtypes
-        opset = int(match.group(2))
-        shape_strategy: ShapeStrategy = ShapeStrategy(
-            static=False,
-            min_size=[int(x) for x in match.group(3).split('x')],
-            opt_size=[int(x) for x in match.group(4).split('x')],
-            max_size=[int(x) for x in match.group(5).split('x')],
-        )
-        tensorrt_version: str = match.group(6)
-
-    # elif (match := re.match(re.compile("....."))):
-    else:
-        return None
-
-    config = dict(
-        fp16=fp16,
-        fp32=fp32,
-        bf16=bf16,
-        opset=opset,
-        shape_strategy=shape_strategy,
-        tensorrt_version=tensorrt_version
-    )
-    return config
 
 
 

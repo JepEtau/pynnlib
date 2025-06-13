@@ -89,7 +89,11 @@ class TensorRtSession(GenericSession):
         warmup: bool = False,
         create_stream: bool = False,
     ):
-        super().initialize(device=device, dtype=dtype)
+        # super().initialize(device=device, dtype=dtype)
+        self.device = device
+        # Use the dtype specified by the model
+        self.dtype = self.model.io_dtypes['input']
+
         nnlogger.debug(f"[I] Use {device} to load the tensorRT Engine")
 
         if create_stream:

@@ -3,7 +3,7 @@ import abc
 from typing import TypeVar
 import torch
 
-from .utils.torch_tensor import IdtypeToTorch
+from .utils.torch_tensor import IdtypeToTorch, TorchDtypeToIdtype
 from .nn_types import Idtype, NnFrameworkType
 from .model import NnModel
 
@@ -40,6 +40,11 @@ class GenericSession(abc.ABC):
         self._dtype = (
             dtype if isinstance(dtype, torch.dtype) else IdtypeToTorch[dtype]
         )
+
+
+    @property
+    def idtype(self) -> Idtype:
+        return TorchDtypeToIdtype[self._dtype]
 
 
     @property
