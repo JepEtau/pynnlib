@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from pprint import pprint
 from typing import Any, Type
 from warnings import warn
 import zipfile
@@ -68,6 +69,7 @@ def get_shapes_dtype(engine) -> dict[str, tuple[str | int | Any]]:
         elif engine.get_tensor_mode(tensor_name) == trt.TensorIOMode.OUTPUT:
             io_tensors['outputs'].append((tensor_name, shape, dtype))
 
+    pprint(io_tensors)
     return io_tensors
 
 
@@ -77,6 +79,7 @@ def get_shape_strategy(engine, tensor_name: str) -> ShapeStrategy:
     Returns only the 1st profile found
     """
     shape_strategy = ShapeStrategy()
+    pprint(engine.get_tensor_profile_shape(tensor_name, 0))
     min_shapes, opt_shapes, max_shapes = engine.get_tensor_profile_shape(tensor_name, 0)
     shape_strategy.min_size = tuple(reversed(min_shapes[2:]))
     shape_strategy.opt_size = tuple(reversed(opt_shapes[2:]))

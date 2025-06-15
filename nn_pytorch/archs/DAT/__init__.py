@@ -153,7 +153,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "layers.0.blocks.0.ffn.fc1.weight"
         ),
         parse=parse,
-        to_onnx=_to_onnx,
+        to_onnx=to_onnx,
         dtypes=('fp32', 'bf16'),
         size_constraint=SizeConstraint(min=(16, 16))
         # fixed size for conversion to pth->onnx->trt

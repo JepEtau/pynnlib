@@ -210,12 +210,19 @@ def get_scale_from_shape_inference(
     # If shape inference "failed", create an onnx session
     img_shape = guess_shape(out_shape)[1:]
     if math.prod(img_shape) == 0:
-        in_shape, out_shape = get_shapes_from_session(model_proto_tmp)
-        nnlogger.debug(f"[V] shapes from session: in={in_shape}, out={out_shape}")
+        try:
+            in_shape, out_shape = get_shapes_from_session(model_proto_tmp)
+            nnlogger.debug(f"[V] onnx session returned: in={in_shape}, out={out_shape}")
+        except:
+            pass
 
     # Now, shapes should be valid
+    nnlogger.debug(f"[V] shapes: in={in_shape}, out={out_shape}")
     in_shape_order, in_h, in_w, _ = guess_shape(in_shape)
+    nnlogger.debug(f"[V]   in: order: {in_shape_order}, w x h={in_w}x{in_h}")
+
     _, out_h, out_w, out_nc = guess_shape(out_shape)
+    nnlogger.debug(f"[V]   out: order: w x h={out_w}x{out_h}, out_nc: {out_nc}")
     try:
         if not any(x < 0 for x in [out_h, in_h, out_w, in_w]):
             scale_h, scale_w = out_h // in_h, out_w // in_w
@@ -249,7 +256,6 @@ def parse(
     is_scale_valid: bool = False
     if all(x != 0 for x in [out_h, in_h, out_w, in_w]):
         scale_h, scale_w = out_h // in_h, out_w // in_w
-        shape_strategy.static = True
         shape_strategy.type = "static"
         shape_strategy.opt_size = (in_w, in_h)
         shape_strategy.min_size = shape_strategy.opt_size
@@ -281,13 +287,16 @@ def parse(
     if scale_w is not None and scale_w == scale_h:
         scale = scale_w
     if scale is None or scale == 0:
-        raise ValueError(red("[E] onnx: unsupported scales, W and H scales must be identical and > 0"))
+        warn(red("[E] onnx: unsupported scales, W and H scales must be identical and > 0"))
         # raise ValueError("ONNX model: scale shall be different from 0")
         # Do not raise an error as it is not currently catched by caller #TODO
+        scale = 0
 
     # Channels
     if isinstance(out_nc, str):
         out_nc = 3
+    if out_nc == 0:
+        out_nc = in_nc
 
     # Model dtype
     supported_dtypes = get_input_dtype(model_proto)

@@ -1,12 +1,13 @@
 from __future__ import annotations
 from collections.abc import Callable
+from contextlib import nullcontext
 from pprint import pprint
 from warnings import warn
 import cv2
 import numpy as np
 import torch
 import torch.nn as nn
-from torch import Tensor
+from torch import Tensor, autocast
 from typing import TYPE_CHECKING
 from pynnlib import is_cuda_available
 from pynnlib.logger import nnlogger
@@ -14,7 +15,7 @@ from pynnlib.model import PyTorchModel
 from pynnlib.architecture import SizeConstraint
 from pynnlib.nn_types import Idtype
 from pynnlib.session import GenericSession
-from pynnlib.utils.p_print import red
+from pynnlib.utils.p_print import *
 from pynnlib.utils.torch_tensor import (
     img_to_tensor,
     tensor_to_img,
@@ -94,6 +95,7 @@ class PyTorchSession(GenericSession):
         if not is_cuda_available() or dtype not in self.model.arch.dtypes:
             self.dtype = 'fp32'
             self.device = 'cpu'
+            print(yellow(f"Initialize session, fallback to {self.dtype}"))
 
         nnlogger.debug(f"[V] Initialize a PyTorch inference session ({self.dtype})")
         torch.backends.cudnn.enabled = True
@@ -142,6 +144,14 @@ class PyTorchSession(GenericSession):
         This is an unoptimized function
         """
         nnlogger.debug(f"[V] inference: img: {in_img.shape}, {in_img.dtype}")
+        if self.dtype == torch.bfloat16:
+            context = torch.autocast(
+                device_type="cuda" if "cuda" in self.device else "cpu",
+                dtype=self.dtype
+            )
+        else:
+            context = nullcontext()
+
         in_dtype: np.dtype = in_img.dtype
         in_img: Tensor = torch.from_numpy(np.ascontiguousarray(in_img))
         d_in_img: Tensor = in_img.to(device=self.device)
@@ -151,8 +161,10 @@ class PyTorchSession(GenericSession):
             flip_r_b=True,
         )
         nnlogger.debug(f"[V]   in tensor: {d_in_tensor.shape}, {d_in_tensor.dtype}")
+        print(f"[V]   in tensor: {d_in_tensor.shape}, {d_in_tensor.dtype}")
 
-        d_out_tensor: Tensor = self.module(d_in_tensor)
+        with context:
+            d_out_tensor: Tensor = self.module(d_in_tensor)
         # d_out_tensor = d_in_tensor
         d_out_tensor = torch.clamp(d_out_tensor, 0., 1.)
 
@@ -177,7 +189,7 @@ class PyTorchSession(GenericSession):
     ) -> np.ndarray:
         in_tensor = torch.from_numpy(np.ascontiguousarray(in_img))
         in_tensor = in_tensor.to(self.device)
-        in_tensor = in_tensor.half() if self.fp16 else in_tensor.float()
+        in_tensor = in_tensor.to(dtype=self.dtype)
         in_tensor = flip_r_b_channels(in_tensor)
         in_tensor = to_nchw(in_tensor).contiguous()
 

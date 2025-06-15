@@ -5,7 +5,7 @@ import re
 import signal
 import sys
 import time
-from typing import Any
+from typing import Any, Optional
 
 if not os.path.exists("pynnlib"):
     root_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
@@ -38,6 +38,7 @@ def convert_to_tensorrt(
     device: str,
     dtype: Idtype,
     force: bool = False,
+    debug: Optional[bool] = False
 ) -> TrtModel | None:
     trt_model: TrtModel | None = None
 
@@ -87,6 +88,7 @@ def convert_to_tensorrt(
         device=device,
         out_dir=path_split(model.filepath)[0],
         overwrite=force,
+        debug=debug,
     )
 
     return trt_model
@@ -337,6 +339,7 @@ format: WxH.
                 device=device,
                 dtype=c_dtype,
                 force=force,
+                debug=True
             )
             if trt_model is None:
                 print(red("[E] Failed to convert to a TensorRT engine"))

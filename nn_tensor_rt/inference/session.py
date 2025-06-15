@@ -145,8 +145,9 @@ class TensorRtSession(GenericSession):
             raise ValueError("np.float32 img only")
 
         tensor_dtype: torch.dtype = self.dtype
-        if self.dtype == torch.bfloat16:
-            tensor_dtype = torch.float32
+        # if self.dtype == torch.bfloat16:
+        #     tensor_dtype = torch.float32
+        # print(tensor_dtype)
 
         context, engine = self.context, self.engine
         device = self.device

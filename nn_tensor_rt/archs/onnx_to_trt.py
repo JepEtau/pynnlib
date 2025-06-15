@@ -5,6 +5,8 @@ from pynnlib.logger import nnlogger
 from pynnlib.nn_types import Idtype, ShapeStrategy
 from pynnlib.utils.p_print import *
 import tensorrt as trt
+from tensorrt import DataType as TrtDType
+
 import torch
 from pynnlib.model import OnnxModel
 from ..inference.session import TRT_LOGGER
@@ -27,11 +29,23 @@ def onnx_to_trt_engine(
         support only a single input tensor
 
     """
+    is_tensorrt_min_10_12 = False
+    tensorrt_version = list(map(int, trt.__version__.split(".")))
+    is_tensorrt_min_10_12 = bool(tensorrt_version[0] * 100 + tensorrt_version[1] >= 1012)
+    use_strongly_typed: bool = bool(
+        is_tensorrt_min_10_12
+        and model.shape_strategy.type in ('static', 'fixed', 'dynamic')
+    )
+    print(red(f"use_strongly_typed: {use_strongly_typed}"))
+
     has_fp16: bool = bool('fp16' in dtypes)
     has_bf16: bool = bool('bf16' in dtypes)
 
     print(f"[V] Start converting to TRT, request fp16={has_fp16}, bf16={has_bf16}")
+    network_flags = 0
     network_flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
+    if use_strongly_typed:
+        network_flags += 1 << int(trt.NetworkDefinitionCreationFlag.STRONGLY_TYPED)
 
     with (
         trt.Builder(TRT_LOGGER) as builder,
@@ -59,10 +73,16 @@ def onnx_to_trt_engine(
         if onnx_in_tensor is None:
             raise ValueError("Missing input tensor in model")
         input_name = onnx_in_tensor.name
-        is_onnx_fp16 = bool(trt.nptype(onnx_in_tensor.dtype) == np.float16)
-        nnlogger.debug(f"is_onnx_fp16: {is_onnx_fp16}, to_fp16: {has_fp16}")
-        print(trt.nptype(onnx_in_tensor.dtype))
-        print(f"is_onnx_fp16: {is_onnx_fp16}, to_fp16: {has_fp16}")
+        print(onnx_in_tensor.dtype)
+        if onnx_in_tensor.dtype == TrtDType.BF16:
+            print("BFLOAAAAAAAAAAAAAAAAAAAAA16")
+            is_onnx_fp16 = False
+        else:
+            is_onnx_fp16 = bool(trt.nptype(onnx_in_tensor.dtype) == np.float16)
+            nnlogger.debug(f"is_onnx_fp16: {is_onnx_fp16}, to_fp16: {has_fp16}")
+            print(trt.nptype(onnx_in_tensor.dtype))
+            print(f"is_onnx_fp16: {is_onnx_fp16}, to_fp16: {has_fp16}")
+
         print(f"[V]   is_onnx_fp16={is_onnx_fp16}, bf16={has_bf16}")
         print(f"[V]   onnx input shape: {onnx_in_tensor.shape}")
 
@@ -83,12 +103,13 @@ def onnx_to_trt_engine(
 
         if is_onnx_fp16 or has_fp16:
             if builder.platform_has_fast_fp16:
-                builder_config.set_flag(trt.BuilderFlag.FP16)
+                if not use_strongly_typed:
+                    builder_config.set_flag(trt.BuilderFlag.FP16)
                 print(f"[V]   set fp16 flag")
             else:
                 raise RuntimeError("Error: fp16 is requested but this platform does not support it")
 
-        if has_bf16:
+        if not use_strongly_typed and has_bf16:
             builder_config.set_flag(trt.BuilderFlag.BF16)
 
         onnx_h, onnx_w = onnx_in_tensor.shape[2:]

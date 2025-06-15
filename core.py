@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from pprint import pprint
 import re
+from typing import Optional
 from warnings import warn
 
 from .import_libs import is_tensorrt_available
@@ -144,7 +145,7 @@ class NnLib:
         model_arch: NnArchitecture,
         model_obj: NnModelObject,
         device: str = 'cpu',
-        debug: bool = False
+        debug: Optional[bool] = False
     ) -> NnModel:
 
         if framework.type == NnFrameworkType.PYTORCH:
@@ -178,14 +179,17 @@ class NnLib:
         # Parse a model object
         model.arch_name = model_arch.name
 
-        try:
-            model_arch.parse(model)
-        except Exception as e:
-            warn(f"_create_model: failed to parse {nn_model_path}")
-            print(type(e))
-            if debug:
+        if not debug:
+            try:
                 model_arch.parse(model)
-            return None
+            except Exception as e:
+                warn(f"_create_model: failed to parse {nn_model_path}")
+                print(type(e))
+                if debug:
+                    model_arch.parse(model)
+                return None
+        else:
+            model_arch.parse(model)
 
         return model
 
@@ -199,6 +203,7 @@ class NnLib:
         shape_strategy: ShapeStrategy | None = None,
         out_dir: str | Path = "",
         suffix: str = "",
+        debug: Optional[bool] = False
     ) -> str | OnnxModel:
         """Convert a model into an onnx model.
 
@@ -230,7 +235,6 @@ class NnLib:
             onnx_model_object: onnx.ModelProto = convert_fct(
                 model=model,
                 dtype=dtype,
-                static=static, # <- replace by shape_strategy.static
                 shape_strategy=shape_strategy,
                 opset=opset,
                 device=device,
@@ -246,6 +250,7 @@ class NnLib:
             framework=onnx_fwk,
             model_arch=model_arch,
             model_obj=onnx_model_object,
+            debug=debug,
         )
         onnx_model.opset = opset
         onnx_model.arch_name = model.arch.name
@@ -299,6 +304,7 @@ class NnLib:
         out_dir: str | Path | None = None,
         suffix: str = "",
         overwrite: bool = False,
+        debug: Optional[bool] = False
     ) -> TrtModel:
         """Convert a model into a tensorrt model.
         Returns a new instance of model.
@@ -362,7 +368,8 @@ class NnLib:
 
         # Convert to Onnx
         # Always use fp32 when converting to onnx
-        nnlogger.debug(yellow(f"[I] Convert to onnx ({dtype})"))
+        nnlogger.debug(yellow(f"[I] Convert to onnx ({dtype}), use {device}"))
+        print(shape_strategy)
         onnx_model: OnnxModel = self.convert_to_onnx(
             model=model,
             opset=opset,
@@ -370,8 +377,10 @@ class NnLib:
             device=device,
             shape_strategy=shape_strategy,
             out_dir=out_dir,
+            debug=debug,
         )
         print(onnx_model)
+        torch.cuda.empty_cache()
 
         convert_to_tensorrt_fct = onnx_model.arch.to_tensorrt
         # TODO: put the following code in an Try-Except block
