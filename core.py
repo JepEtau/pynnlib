@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 import os
 from pathlib import Path
 from pprint import pprint
@@ -78,6 +79,7 @@ class NnLib:
         self,
         model_path: str | Path,
         device: str = 'cpu',
+        debug: Optional[bool] = False
     ) -> NnModel | None:
         """Open and parse a model and returns its parameters"""
         if not os.path.exists(model_path):
@@ -102,7 +104,7 @@ class NnLib:
             framework=fwk,
             model_arch=model_arch,
             model_obj=model_obj,
-            device=device
+            device=device,
         )
         if model is None:
             warn(f"{red("[E] Erroneous model or unsupported architecture:")}: {model_path}")
@@ -145,7 +147,6 @@ class NnLib:
         model_arch: NnArchitecture,
         model_obj: NnModelObject,
         device: str = 'cpu',
-        debug: Optional[bool] = False
     ) -> NnModel:
 
         if framework.type == NnFrameworkType.PYTORCH:
@@ -179,17 +180,16 @@ class NnLib:
         # Parse a model object
         model.arch_name = model_arch.name
 
-        if not debug:
+        if logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG":
+            # Don't catch the exception when in development
+            model_arch.parse(model)
+        else:
             try:
                 model_arch.parse(model)
             except Exception as e:
                 warn(f"_create_model: failed to parse {nn_model_path}")
                 print(type(e))
-                if debug:
-                    model_arch.parse(model)
                 return None
-        else:
-            model_arch.parse(model)
 
         return model
 
@@ -250,7 +250,6 @@ class NnLib:
             framework=onnx_fwk,
             model_arch=model_arch,
             model_obj=onnx_model_object,
-            debug=debug,
         )
         onnx_model.opset = opset
         onnx_model.arch_name = model.arch.name
@@ -304,7 +303,6 @@ class NnLib:
         out_dir: str | Path | None = None,
         suffix: str = "",
         overwrite: bool = False,
-        debug: Optional[bool] = False
     ) -> TrtModel:
         """Convert a model into a tensorrt model.
         Returns a new instance of model.
@@ -377,7 +375,6 @@ class NnLib:
             device=device,
             shape_strategy=shape_strategy,
             out_dir=out_dir,
-            debug=debug,
         )
         print(onnx_model)
         torch.cuda.empty_cache()
@@ -443,7 +440,7 @@ class NnLib:
     def load_model(
         self,
         model_name: str = 'efficienttam_s_512x512',
-        device: str = 'cuda:0'
+        device: str = 'cuda:0',
     ) -> NnModel:
         # PoC
         from pynnlib.nn_pytorch.archs.EfficientTAM import PREDEFINED_MODEL_ARCHITECTURES

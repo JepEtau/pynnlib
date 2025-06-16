@@ -92,16 +92,14 @@ def main():
         help="Used to debug"
     )
 
-
     arguments = parser.parse_args()
 
-    if arguments.debug:
+    debug: bool = arguments.debug
+    if debug:
         # FileOutputHandler = logging.FileHandler('logs.log', mode='w')
         # nnlogger.addHandler(FileOutputHandler)
-
         nnlogger.addHandler(logging.StreamHandler(sys.stdout))
         nnlogger.setLevel("DEBUG")
-
 
 
     filtered_exts: tuple[str] = get_supported_model_extensions()
@@ -176,7 +174,6 @@ def main():
                 if arguments.verbose:
                     print(model)
             except Exception as e:
-                # For debug:
                 model: NnModel = nnlib.open(filepath, device)
                 print(e)
 
