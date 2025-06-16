@@ -77,6 +77,8 @@ def parse(model: PyTorchModel) -> None:
 
     use_dysample: bool = bool("to_img.init_pos" in state_dict)
     if use_dysample:
+        groups = 4
+        scale = int(math.sqrt(state_dict["to_img.offset.weight"].shape[1] / (2 * groups)))
         if ")" in arch_name:
             arch_name = f"{arch_name[:-1]}, DySample)"
         else:
