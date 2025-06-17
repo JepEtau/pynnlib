@@ -9,7 +9,6 @@ from pynnlib.utils.p_print import *
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
 from ..torch_to_onnx import to_onnx
-from .module.unimatch import UniMatch
 
 # Impossible to differentiate unimatch from GMFlow
 
@@ -59,6 +58,7 @@ def parse(model: PyTorchModel) -> None:
         raise ValueError(red(f"Wrong detected feature_channels: {feature_channels}, should be 128"))
 
     arch_name = f"{model.arch.name} ({task})"
+    from .module.unimatch import UniMatch
     model.update(
         arch_name=arch_name,
         scale=scale,

@@ -5,7 +5,6 @@ from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
-from .module.realplksr_arch import RealPLKSR
 
 
 def parse(model: PyTorchModel) -> None:
@@ -38,6 +37,7 @@ def parse(model: PyTorchModel) -> None:
     if use_dysample:
         arch_name = f"{arch_name} DySample"
 
+    from .module.realplksr_arch import RealPLKSR
     model.update(
         arch_name=arch_name,
         scale=scale,

@@ -6,7 +6,6 @@ from ..helpers import (
     get_nsequences,
 )
 from ..torch_to_onnx import to_onnx
-from .module.evtexture import EvTexture
 
 
 def parse(model: PyTorchModel) -> None:
@@ -18,6 +17,7 @@ def parse(model: PyTorchModel) -> None:
     # scale is fixed
     scale: int = 4
 
+    from .module.evtexture import EvTexture
     model.update(
         arch_name=model.arch.name,
         scale=scale,

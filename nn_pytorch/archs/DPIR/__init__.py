@@ -2,8 +2,6 @@ from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
-from ..helpers import get_max_indice
-from .module.network_unet import NonLocalUNet, UNetRes
 
 
 def parse(model: PyTorchModel) -> None:
@@ -16,6 +14,7 @@ def parse(model: PyTorchModel) -> None:
     ])
     nc.append(state_dict[f"m_body.0.res.0.weight"].shape[0])
 
+    from .module.network_unet import UNetRes
     model.update(
         arch_name=model.arch.name,
         scale=1,

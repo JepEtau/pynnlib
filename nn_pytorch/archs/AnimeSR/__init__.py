@@ -7,7 +7,6 @@ from pynnlib.architecture import (
 from pynnlib.model import PyTorchModel
 from pynnlib.utils.p_print import *
 from ..torch_to_onnx import to_onnx
-from .module.vsr_arch import MSRSWVSR
 
 
 def parse(model: PyTorchModel) -> None:
@@ -19,6 +18,8 @@ def parse(model: PyTorchModel) -> None:
     )
     num_block: tuple[int, int, int] = (5, 3, 2)
     out_nc: int = in_nc
+
+    from .module.vsr_arch import MSRSWVSR
 
     model.update(
         arch_name=model.arch.name,

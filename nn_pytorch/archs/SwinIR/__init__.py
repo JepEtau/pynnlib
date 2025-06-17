@@ -4,7 +4,6 @@ from pynnlib.utils.p_print import *
 from pynnlib.architecture import NnPytorchArchitecture
 from pynnlib.model import PyTorchModel
 from ..torch_to_onnx import to_onnx
-from .module.SwinIR import SwinIR
 
 
 def parse(model: PyTorchModel) -> None:
@@ -127,6 +126,7 @@ def parse(model: PyTorchModel) -> None:
     # The JPEG models are the only ones with window-size 7, and they also use this range
     img_range = 255.0 if window_size == 7 else 1.0
 
+    from .module.SwinIR import SwinIR
     model.update(
         arch_name=model.arch.name,
         scale=upscale,

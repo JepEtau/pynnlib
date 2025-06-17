@@ -8,7 +8,6 @@ from pynnlib.nn_types import Idtype, ShapeStrategy
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
-from .module.dat_arch import DAT
 
 
 def _to_onnx(
@@ -121,6 +120,11 @@ def parse(model: PyTorchModel) -> None:
         elif expansion_factor == 2:
             arch_subtype = "2"
     arch_name = f"{model.arch.name}{arch_subtype}"
+
+    # Import module once parsed
+    #   todo: could it be done when instancing the session,
+    #       might be complicated to
+    from .module.dat_arch import DAT
 
     # Update model parameters
     model.update(

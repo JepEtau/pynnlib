@@ -3,14 +3,12 @@ import math
 from pynnlib.architecture import (
     InferType,
     NnPytorchArchitecture,
-    SizeConstraint,
 )
 from pynnlib.model import PyTorchModel
 from pynnlib.utils.p_print import *
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
-from .module.bsvd import BSVD
-from .module.tsm import TSN
+
 
 
 
@@ -79,6 +77,8 @@ def _parse_tsn(model: PyTorchModel) -> None:
     num_segments = 11
     shift_div = 8
 
+    from .module.tsm import TSN
+
     model.update(
         arch_name="TSN",
         scale=scale,
@@ -141,6 +141,7 @@ def parse(model: PyTorchModel) -> None:
     act: str = "relu6"
     blind: bool = False
 
+    from .module.bsvd import BSVD
     model.update(
         arch_name=model.arch.name,
         scale=scale,
@@ -165,7 +166,7 @@ def parse(model: PyTorchModel) -> None:
 MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
     NnPytorchArchitecture(
         name="BSVD",
-        # !!! currently no way to distingate BSVD and TSN except from shapes
+        # !!! currently no way to distingate BSVD and TSN except with shapes
         detection_keys=(
             "base_model.nets_list.1.outc.convblock.3.weight",
             "base_model.nets_list.0.inc.convblock.0.weight",

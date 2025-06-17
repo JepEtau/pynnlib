@@ -1,16 +1,9 @@
-
-
 import math
 import re
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
 from pynnlib.nn_pytorch.torch_types import StateDict
-from ..helpers import (
-    get_scale_and_out_nc,
-    get_max_indice,
-    get_nsequences,
-)
-from .module.esc_arch import ESC
+from ..helpers import get_nsequences
 from ..torch_to_onnx import to_onnx
 
 
@@ -84,6 +77,7 @@ def parse(model: PyTorchModel) -> None:
         else:
             arch_name = f"{arch_name} (DySample)"
 
+    from .module.esc_arch import ESC
     model.update(
         arch_name=arch_name,
         scale=scale,

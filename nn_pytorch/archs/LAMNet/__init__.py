@@ -4,8 +4,6 @@ from pynnlib.model import PyTorchModel
 from ..helpers import get_max_indice
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
-from .module.lamnet import LAMNet
-from .module.fsa_func import compile_fsa_ext
 
 
 def parse(model: PyTorchModel) -> None:
@@ -13,6 +11,7 @@ def parse(model: PyTorchModel) -> None:
     out_nc: int = 3
     in_nc: int = out_nc
 
+    from .module.fsa_func import compile_fsa_ext
     compile_fsa_ext()
 
     scale: int = int(math.sqrt(state_dict["upsample.0.weight"].shape[0] // 3))
@@ -28,6 +27,7 @@ def parse(model: PyTorchModel) -> None:
     expansion_factor: float = 1.0
     rgb_mean: tuple[float] = (0.4488, 0.4371, 0.4040)
 
+    from .module.lamnet import LAMNet
     model.update(
         arch_name=model.arch.name,
         scale=scale,

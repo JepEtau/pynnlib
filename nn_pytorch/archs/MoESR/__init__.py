@@ -5,7 +5,6 @@ from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
 from ..torch_to_onnx import to_onnx
-from .module.MoESR import MoESR
 
 
 def parse(model: PyTorchModel) -> None:
@@ -32,6 +31,7 @@ def parse(model: PyTorchModel) -> None:
     upsampler = upsample[int(index)]
 
     # Update model parameters
+    from .module.MoESR import MoESR
     model.update(
         arch_name=model.arch.name,
         scale=scale,

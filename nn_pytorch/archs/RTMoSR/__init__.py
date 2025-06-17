@@ -5,7 +5,6 @@ from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
 from ..torch_to_onnx import to_onnx
-from .module.RTMoSR import RTMoSR
 
 
 def parse(model: PyTorchModel) -> None:
@@ -33,6 +32,7 @@ def parse(model: PyTorchModel) -> None:
 
 
     # Update model parameters
+    from .module.RTMoSR import RTMoSR
     model.update(
         arch_name=model.arch.name,
         scale=scale,

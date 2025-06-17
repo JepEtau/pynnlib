@@ -6,7 +6,6 @@ from pynnlib.architecture import (
 )
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
-from .module.raft import RAFT
 
 
 
@@ -34,6 +33,7 @@ def parse(model: PyTorchModel) -> None:
     )
     corr_levels: int = 4
 
+    from .module.raft import RAFT
     model.update(
         arch_name=arch_name,
         scale=scale,

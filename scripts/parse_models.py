@@ -13,6 +13,7 @@ import time
 # logger = logging.getLogger("pynnlib")
 # logging.basicConfig(filename="logs.log", filemode="w", format="%(name)s → %(levelname)s: %(message)s")
 # logging.config.fileConfig('config.ini')
+start_time = time.time()
 
 if not os.path.exists("pynnlib"):
     root_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
@@ -29,7 +30,7 @@ from pynnlib import (
 )
 from pynnlib.utils import absolute_path, get_extension
 from pynnlib.utils.p_print import *
-
+print(f"pynnlib loaded in{time.time() - start_time:.01f}s")
 
 
 def main():

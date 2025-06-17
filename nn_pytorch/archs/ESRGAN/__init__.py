@@ -8,9 +8,6 @@ from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
 from ..helpers import get_max_indice
-from .module.RRDB import RRDBNet
-
-
 
 
 def _get_block_count(state: StateDict, state_map: dict) -> int:
@@ -152,6 +149,7 @@ def parse(model: PyTorchModel) -> None:
         scale //= shuffle_factor
 
     # Update model parameters
+    from .module.RRDB import RRDBNet
     model.update(
         state_dict=state_dict,
         arch_name="ESRGAN-2c2" if c2x2 else model.arch_name,

@@ -5,7 +5,6 @@ from ..helpers import (
     get_nsequences,
 )
 from ..torch_to_onnx import to_onnx
-from .module.TMP_arch import TMP
 
 
 def parse(model: PyTorchModel) -> None:
@@ -22,6 +21,7 @@ def parse(model: PyTorchModel) -> None:
     scale: int = 4
     num_extract_block = get_nsequences(state_dict, "feature_extraction")
 
+    from .module.TMP_arch import TMP
     model.update(
         arch_name=model.arch.name,
         scale=scale,

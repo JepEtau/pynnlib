@@ -5,7 +5,6 @@ from pynnlib.model import PyTorchModel
 from ...inference.session import PyTorchSession
 from ..helpers import get_scale_and_out_nc
 from ..torch_to_onnx import to_onnx
-from .module.span import SPAN
 
 
 def parse(model: PyTorchModel) -> None:
@@ -36,6 +35,7 @@ def parse(model: PyTorchModel) -> None:
         rgb_mean = (0.5, 0.5, 0.5)
 
     # Update model parameters
+    from .module.span import SPAN
     model.update(
         arch_name=model.arch.name,
         scale=scale,

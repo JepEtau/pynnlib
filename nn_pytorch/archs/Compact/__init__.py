@@ -4,7 +4,6 @@ from ..helpers import (
     get_scale_and_out_nc,
     get_max_indice,
 )
-from .module.SRVGG import SRVGGNetCompact
 from ..torch_to_onnx import to_onnx
 
 
@@ -16,6 +15,7 @@ def parse(model: PyTorchModel) -> None:
     pixelshuffle_shape: int = model.state_dict[f"body.{max_indice}.bias"].shape[0]
     scale, out_nc = get_scale_and_out_nc(pixelshuffle_shape, in_nc)
 
+    from .module.SRVGG import SRVGGNetCompact
     model.update(
         arch_name=model.arch.name,
         scale=scale,

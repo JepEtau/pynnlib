@@ -5,7 +5,6 @@ from ..helpers import (
     get_max_indice,
     get_pixelshuffle_params
 )
-from .module.rcan import RCAN
 from ..torch_to_onnx import to_onnx
 from ...torch_types import StateDict
 
@@ -39,7 +38,7 @@ def parse(model: PyTorchModel) -> None:
     )
     res_scale: int = 1
 
-
+    from .module.rcan import RCAN
     model.update(
         arch_name=model.arch.name,
         scale=scale,

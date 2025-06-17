@@ -5,8 +5,6 @@ from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
-from ..helpers import get_max_indice
-from .module.xrestormer import XRestormer
 
 
 def parse(model: PyTorchModel) -> None:
@@ -36,6 +34,7 @@ def parse(model: PyTorchModel) -> None:
     # don't want to train a model
     # use params defined in repo
     # channel_heads: use channel_attn.temperature
+    from .module.xrestormer import XRestormer
 
     model.update(
         arch_name=model.arch.name,

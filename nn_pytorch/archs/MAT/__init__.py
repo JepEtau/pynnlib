@@ -11,9 +11,7 @@ from pynnlib import is_cuda_available
 from pynnlib.model import PyTorchModel, SizeConstraint
 from ...inference.session import PyTorchSession
 from ...torch_types import StateDict
-from .module.mat import MAT
-from .module.bias_act import compile_bias_act_ext
-from .module.upfirdn2d import compile_upfirdn2d_ext
+
 from io import BytesIO
 import onnx
 import torch
@@ -26,12 +24,16 @@ def parse(model: PyTorchModel) -> None:
     out_nc: int = 3
 
     verbose: bool = True
+    from .module.bias_act import compile_bias_act_ext
+    from .module.upfirdn2d import compile_upfirdn2d_ext
     # compile_bias_act_ext(verbose=verbose)
     # compile_upfirdn2d_ext(verbose=verbose)
 
     for k in list(state_dict.keys()).copy():
         if k.startswith(("synthesis.", "mapping.")):
             state_dict[f"model.{k}"] = state_dict.pop(k)
+
+    from .module.mat import MAT
 
     # Update model parameters
     model.update(

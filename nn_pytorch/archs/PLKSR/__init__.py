@@ -6,7 +6,6 @@ from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
-from .module.plksr_arch import PLKSR
 
 
 def parse(model: PyTorchModel) -> None:
@@ -52,7 +51,7 @@ def parse(model: PyTorchModel) -> None:
 
     use_ea: bool = bool("feats.1.attn.f.0.weight" in state_dict)
 
-    # Update model parameters
+    from .module.plksr_arch import PLKSR
     model.update(
         arch_name=model.arch.name,
         scale=scale,

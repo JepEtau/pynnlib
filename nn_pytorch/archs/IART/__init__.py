@@ -5,7 +5,6 @@ from ..helpers import (
     get_nsequences,
 )
 from ..torch_to_onnx import to_onnx
-from .module.iart import IART
 
 
 def parse(model: PyTorchModel) -> None:
@@ -51,7 +50,7 @@ def parse(model: PyTorchModel) -> None:
     num_heads = [num_heads_num for _ in range(nlayers)]
 
     # We will see later for other values detection...
-
+    from .module.iart import IART
     model.update(
         arch_name=model.arch.name,
         scale=scale,

@@ -1,7 +1,6 @@
 import sys
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
-from .module.etam import _VirtualEfficientTAM
 import os
 
 # models: https://huggingface.co/yunyangx/efficient-track-anything/tree/main
@@ -34,6 +33,7 @@ def parse(model: PyTorchModel) -> None:
 
     del model.state_dict
 
+    from .module.etam import _VirtualEfficientTAM
     model.update(
         arch_name=model.arch.name,
         scale=1,

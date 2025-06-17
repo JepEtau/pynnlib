@@ -8,7 +8,7 @@ from ..helpers import (
     get_nsequences,
     get_pixelshuffle_params
 )
-from .module.atd import ATD
+
 
 def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
@@ -59,6 +59,7 @@ def parse(model: PyTorchModel) -> None:
     # use a heuristic for category_size
     category_size: int = 128 if is_light else 256
 
+    from .module.atd import ATD
     model.update(
         arch_name=model.arch.name,
         scale=scale,

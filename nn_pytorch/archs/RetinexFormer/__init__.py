@@ -3,7 +3,7 @@ from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
 from ..helpers import get_max_indice
-from .module.RetinexFormer import RetinexFormer
+
 
 def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
@@ -32,6 +32,7 @@ def parse(model: PyTorchModel) -> None:
         get_max_indice(state_dict, f"body.0.{s}.bottleneck.blocks") + 1,
     ]
 
+    from .module.RetinexFormer import RetinexFormer
     model.update(
         arch_name=model.arch.name,
         scale=scale,

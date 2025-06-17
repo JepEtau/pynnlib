@@ -5,7 +5,6 @@ from ..helpers import (
     get_scale_and_out_nc,
     get_max_indice,
 )
-from .module.OmniSR import OmniSR
 from ..torch_to_onnx import to_onnx
 from ...torch_types import StateDict
 
@@ -48,6 +47,7 @@ def parse(model: PyTorchModel) -> None:
     else:
         pe = False
 
+    from .module.OmniSR import OmniSR
     model.update(
         arch_name=model.arch.name,
         scale=scale,

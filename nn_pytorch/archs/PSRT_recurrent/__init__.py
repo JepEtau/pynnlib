@@ -6,7 +6,6 @@ from ..helpers import (
     get_nsequences,
 )
 from ..torch_to_onnx import to_onnx
-from .module.psrt_recurrent import BasicRecurrentSwin
 
 
 def parse(model: PyTorchModel) -> None:
@@ -61,6 +60,8 @@ def parse(model: PyTorchModel) -> None:
     #   window_size: [3, 8, 8]
     #   num_frames: 3
     #   is_low_res_input: True
+
+    from .module.psrt_recurrent import BasicRecurrentSwin
 
     model.update(
         arch_name=model.arch.name,

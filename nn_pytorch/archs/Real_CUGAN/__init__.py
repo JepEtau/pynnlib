@@ -4,7 +4,6 @@ from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
-from .module.upcunet import UpCunet
 
 
 _shape_to_scale: dict[int, list[int]] = {
@@ -98,6 +97,7 @@ def parse(model: PyTorchModel) -> None:
         # How I became stupid: use basename! arghhhhh... f.o.!
         pro, _, denoise = basename_to_params(path_split(model.filepath)[1])
 
+    from .module.upcunet import UpCunet
     model.update(
         arch_name=model.arch_name,
         scale=scale,

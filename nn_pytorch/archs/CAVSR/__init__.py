@@ -2,11 +2,8 @@ import math
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
-from ..helpers import (
-    get_nsequences,
-)
+from ..helpers import get_nsequences
 from ..torch_to_onnx import to_onnx
-from .module.CAVSR import CAVSR
 
 
 def parse(model: PyTorchModel) -> None:
@@ -25,6 +22,7 @@ def parse(model: PyTorchModel) -> None:
 
     encoder_fp: str = "ranker.pth"
 
+    from .module.CAVSR import CAVSR
     model.update(
         arch_name=model.arch.name,
         scale=scale,

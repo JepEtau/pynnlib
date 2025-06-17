@@ -4,7 +4,6 @@ from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
-from .module.ASID import ASID
 
 
 def _get_max_indice(state_dict: StateDict, key: str) -> int:
@@ -31,6 +30,7 @@ def parse(model: PyTorchModel) -> None:
     pe: bool = True
     window_size: int = 8
 
+    from .module.ASID import ASID
     model.update(
         arch_name=model.arch.name,
         scale=scale,

@@ -1,7 +1,6 @@
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
 
-from .module.network_rvrt import RVRT
 from ..torch_to_onnx import to_onnx
 from ...torch_types import StateDict
 
@@ -69,6 +68,8 @@ def parse(model: PyTorchModel) -> None:
             inputconv_groups = (1, 3, 4, 6, 8, 4)
         else:
             inputconv_groups = (1, 3, 3, 3, 3, 3)
+
+    from .module.network_rvrt import RVRT
 
     model.update(
         arch_name=model.arch.name,
