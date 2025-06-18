@@ -126,14 +126,14 @@ def parse(model: PyTorchModel) -> None:
     # The JPEG models are the only ones with window-size 7, and they also use this range
     img_range = 255.0 if window_size == 7 else 1.0
 
-    from .module.SwinIR import SwinIR
+    # from .module.SwinIR import SwinIR
     model.update(
         arch_name=model.arch.name,
         scale=upscale,
         in_nc=in_nc // start_unshuffle**2,
         out_nc=out_nc,
 
-        ModuleClass=SwinIR,
+        # ModuleClass=SwinIR,
         in_chans=in_nc,
         num_feat=num_feat,
         embed_dim=embed_dim,

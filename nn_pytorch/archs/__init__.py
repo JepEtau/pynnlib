@@ -1,20 +1,21 @@
 
 from __future__ import annotations
 from functools import partial
-import importlib
+from importlib import util as importlib_util
 import os
 from pathlib import Path, PurePath
 import sys
 from typing import Type
 
-from ..torch_types import (
-    StateDict,
-)
-from pynnlib.logger import nnlogger
+from torch import nn
+
+from ..torch_types import StateDict
+from pynnlib.logger import is_debugging, nnlogger
 from pynnlib.architecture import NnPytorchArchitecture
 from pynnlib.utils.p_print import *
 from pynnlib.model import PyTorchModel
 from .helpers import parameters_to_args
+
 
 
 def import_model_architectures() -> list[NnPytorchArchitecture]:
@@ -46,17 +47,21 @@ def import_model_architectures() -> list[NnPytorchArchitecture]:
         detected_archs.append((arch, arch_module_name, init_file))
 
     # Import modules
+    if is_debugging():
+        from pprint import pprint
+        pprint(detected_archs)
+
     for arch, arch_module_name, init_file in detected_archs:
         if arch_module_name in sys.modules:
             nnlogger.debug(f"architecture {arch_module_name!r} already in sys.modules")
             module = sys.modules[arch_module_name]
 
-        elif (module_spec := importlib.util.spec_from_file_location(arch_module_name, init_file)) is not None:
-            module = importlib.util.module_from_spec(module_spec)
+        elif (module_spec := importlib_util.spec_from_file_location(arch_module_name, init_file)) is not None:
+            module = importlib_util.module_from_spec(module_spec)
             sys.modules[arch_module_name] = module
             nnlogger.debug(f"load {arch_module_name!r} from {module}")
             module_spec.loader.exec_module(module)
-            # nnlogger.debug(f"{arch_module_name!r} has been imported")
+            nnlogger.debug(f"{arch_module_name!r} has been imported")
         # else:
         #     nnlogger.debug(f"can't find the {arch_module_name!r} module")
 
@@ -74,8 +79,13 @@ def import_model_architectures() -> list[NnPytorchArchitecture]:
     return imported_archs
 
 
+
 def contains_all_keys(state_dict: StateDict, keys: tuple[str | tuple[str]]) -> bool:
+    """Define a simple detection function to detect if all keys
+        are in a state_dict
+    """
     return all(key in state_dict for key in keys)
+
 
 
 def contains_any_keys(state_dict: StateDict, keys: tuple[str | tuple[str]]) -> bool:
@@ -83,10 +93,24 @@ def contains_any_keys(state_dict: StateDict, keys: tuple[str | tuple[str]]) -> b
 
 
 def create_session(model: Type[PyTorchModel]) -> Type[PyTorchModel]:
-    TorchModule = model.ModuleClass
+    TorchModule: type[nn.Module] = None
+    if model.ModuleClass is not None:
+        TorchModule = model.ModuleClass
+
+    elif model.arch.ModuleClass is not None:
+        TorchModule = model.arch.ModuleClass
+
+    else:
+        model.arch.import_module()
+        TorchModule = model.arch.ModuleClass
+
+    if TorchModule is None:
+        raise ValueError(f"No nn.module imported for arch {model.arch}")
+
     args = parameters_to_args(model, TorchModule)
     model.module = TorchModule(**args)
     return model.framework.Session(model)
+
 
 
 # Detect and list model architectures
@@ -94,9 +118,12 @@ MODEL_ARCHITECTURES: list[NnPytorchArchitecture] = import_model_architectures()
 
 
 # Append common variables for all architectures
+_is_debug: bool = is_debugging()
 for arch in MODEL_ARCHITECTURES:
     arch.type = arch.name
 
+    # By default use a simple detection function which checks
+    # that the state_dict contains all detection_keys
     arch.detect = (
         partial(contains_all_keys, keys=arch.detection_keys)
         if arch.detect is None
@@ -105,3 +132,7 @@ for arch in MODEL_ARCHITECTURES:
 
     if arch.create_session is None:
         arch.create_session = create_session
+
+    if _is_debug:
+        print(f"[V] {arch.name}, detection keys:\n  {'\n  '.join(arch.detection_keys)}")
+

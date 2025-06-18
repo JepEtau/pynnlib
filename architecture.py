@@ -1,9 +1,13 @@
 from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from pprint import pprint
+from importlib import util as importlib_util
+import inspect
+import os
+import sys
+from warnings import warn
 import onnx
-from pathlib import Path
+from pathlib import Path, PurePath
 
 try:
     import torch
@@ -18,12 +22,14 @@ from .model import (
     PyTorchModel,
     SizeConstraint,
 )
+from .logger import nnlogger
 from .nn_types import (
     Idtype,
     NnArchitectureType,
     ShapeStrategy,
 )
 from .session import NnModelSession
+from .utils import absolute_path, path_split
 
 
 ParseFunction = Callable[[NnModel], None]
@@ -138,6 +144,56 @@ class NnPytorchArchitecture(NnGenericArchitecture):
     # TODO add dtypes supported for conversion to tensorRT ???
     #   example: SCUNET does not support conversion to fp16
 
+    ModuleClass = None
+    module_file: str = ""
+    module_class_name: str = ""
+    __caller_dir: str = ""
+
+
+    def __post_init__(self):
+        frame = inspect.currentframe()
+        try:
+            # Go up two levels: one for the __post_init__ call,
+            #   and one for the instantiation
+            caller_file = frame.f_back.f_back.f_globals.get('__file__', 'unknown')
+        finally:
+            del frame
+        self.__caller_dir= absolute_path(path_split(caller_file)[0])
+
+
+    def import_module(self) -> None:
+        """Dynamic import the nn.module
+        """
+        if self.ModuleClass is not None:
+            return
+
+        pynnlib_dir = absolute_path(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
+        )
+        arch_module_key: str = (
+            self.__caller_dir[len(pynnlib_dir) + 1:].replace(os.sep, ".")
+        )
+
+        if any(not x for x in (self.module_file, self.module_class_name)):
+            print("[W] Missing module package or class_name")
+
+        nn_module_filepath = os.path.join(
+            self.__caller_dir, "module", self.module_file.replace(".", os.sep)
+        )
+        if not nn_module_filepath.endswith(".py"):
+            nn_module_filepath += ".py"
+
+        sys_module_key = f"{arch_module_key}.module.{self.module_file}"
+        module_spec = importlib_util.spec_from_file_location(
+            name=sys_module_key,
+            location=nn_module_filepath
+        )
+        module = importlib_util.module_from_spec(module_spec)
+        sys.modules[sys_module_key] = module
+        module_spec.loader.exec_module(module)
+        self.ModuleClass = getattr(module, self.module_class_name)
+
+
 
 @dataclass
 class NnOnnxArchitecture(NnGenericArchitecture):
@@ -145,9 +201,11 @@ class NnOnnxArchitecture(NnGenericArchitecture):
     to_tensorrt: Callable | None = None
 
 
+
 @dataclass
 class NnTensorrtArchitecture(NnGenericArchitecture):
     version: str = ''
+
 
 
 NnArchitecture = (
@@ -156,6 +214,7 @@ NnArchitecture = (
     | NnPytorchArchitecture
     | NnTensorrtArchitecture
 )
+
 
 
 # GetModelArchFct = Callable[
@@ -170,7 +229,10 @@ def detect_model_arch(
     architectures: dict[str, NnArchitecture]
 ) -> NnArchitecture:
     """Detect the model architecture and returns it"""
+
     for arch in architectures.values():
+        nnlogger.debug(f"[V] check if {arch.name}")
+
         if (detect_fct := arch.detect) is None:
             raise NotImplementedError(f"Detection function is not implemented for {arch.name}")
 
@@ -178,10 +240,12 @@ def detect_model_arch(
             # List of functions for detection
             for func in detect_fct:
                 if func(model):
+                    nnlogger.debug(f"[V] detected arch: {arch.name}")
                     return arch
         else:
             # Use a customized function for detection
             if detect_fct(model):
+                nnlogger.debug(f"[V] detected arch: {arch.name}")
                 return arch
 
     return None

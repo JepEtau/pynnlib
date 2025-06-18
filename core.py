@@ -79,7 +79,6 @@ class NnLib:
         self,
         model_path: str | Path,
         device: str = 'cpu',
-        debug: Optional[bool] = False
     ) -> NnModel | None:
         """Open and parse a model and returns its parameters"""
         if not os.path.exists(model_path):
@@ -203,7 +202,6 @@ class NnLib:
         shape_strategy: ShapeStrategy | None = None,
         out_dir: str | Path = "",
         suffix: str = "",
-        debug: Optional[bool] = False
     ) -> str | OnnxModel:
         """Convert a model into an onnx model.
 
@@ -367,7 +365,6 @@ class NnLib:
         # Convert to Onnx
         # Always use fp32 when converting to onnx
         nnlogger.debug(yellow(f"[I] Convert to onnx ({dtype}), use {device}"))
-        print(shape_strategy)
         onnx_model: OnnxModel = self.convert_to_onnx(
             model=model,
             opset=opset,

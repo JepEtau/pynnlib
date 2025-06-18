@@ -4,6 +4,8 @@ from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
 from ..helpers import get_max_indice, get_nsequences
 
+
+
 def parse(model: PyTorchModel) -> None:
     state_dict: StateDict = model.state_dict
     dim, in_nc = state_dict["m_head.0.weight"].shape[:2]
@@ -17,14 +19,12 @@ def parse(model: PyTorchModel) -> None:
         get_max_indice(state_dict, "m_up1")
     )
 
-    from .module.network_scunet import SCUNet
     model.update(
         arch_name=model.arch.name,
         scale=1,
         in_nc=in_nc,
         out_nc=in_nc,
 
-        ModuleClass=SCUNet,
         dim=dim,
         config=config,
         drop_path_rate=0.,
@@ -39,12 +39,14 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "m_head.0.weight",
             "m_tail.0.weight"
         ),
+        module_file="network_scunet",
+        module_class_name="SCUNet",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
         size_constraint=SizeConstraint(
             min=(64, 64),
             modulo=1
-        )
+        ),
     ),
 )

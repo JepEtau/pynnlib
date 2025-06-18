@@ -49,7 +49,9 @@ def parse(model: PyTorchModel) -> None:
 efficient_tam_arch = NnPytorchArchitecture(
     name="EfficientTAM",
     category="segmentation",
-    detection_keys=("efficienttam"),
+    detection_keys=(
+        "efficienttam",
+    ),
     parse=parse,
     dtypes=('fp32'),
     size_constraint=SizeConstraint(

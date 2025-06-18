@@ -98,9 +98,6 @@ def get_model_arch(
         )
         return None, None
 
-    # print(state_dict.keys())
-    # print(StateDict.get(state_dict, 'metadata', None))
-
     # Standardize
     state_dict = standardize_state_dict(state_dict=state_dict)
 

@@ -114,17 +114,19 @@ class GenericModel:
 
         # Append the list of arguments used by a PyTorch nn.Module
         module_key: str = 'ModuleClass'
+        module = None
         if module_key in defined_keys:
             module = (
                 kwargs[module_key]
                 if module_key in kwargs
                 else getattr(self, module_key, None)
             )
+            # Append args of the module
             if module is not None:
-                defined_keys.extend(arg_list(kwargs['ModuleClass']))
+                defined_keys.extend(arg_list(kwargs[module_key]))
 
         for key, value in kwargs.items():
-            if key not in defined_keys:
+            if module is not None and key not in defined_keys:
                 raise KeyError(f"Undefined key \'{key}\' in {self.__class__.__name__}")
             setattr(self, key, value)
 
