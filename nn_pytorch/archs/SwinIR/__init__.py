@@ -133,7 +133,6 @@ def parse(model: PyTorchModel) -> None:
         in_nc=in_nc // start_unshuffle**2,
         out_nc=out_nc,
 
-        # ModuleClass=SwinIR,
         in_chans=in_nc,
         num_feat=num_feat,
         embed_dim=embed_dim,
@@ -158,6 +157,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "layers.0.residual_group.blocks.0.mlp.fc1.bias",
             "layers.0.residual_group.blocks.0.attn.relative_position_index",
         ),
+        module_file="SwinIR",
+        module_class_name="SwinIR",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

@@ -14,14 +14,13 @@ def parse(model: PyTorchModel) -> None:
     ])
     nc.append(state_dict[f"m_body.0.res.0.weight"].shape[0])
 
-    from .module.network_unet import UNetRes
+    # from .module.network_unet import UNetRes
     model.update(
         arch_name=model.arch.name,
         scale=1,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=UNetRes,
         nc=nc,
         nb=4,
         act_mode='R',
@@ -41,6 +40,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "m_body.0.res.0.weight",
             "m_tail.weight",
         ),
+        module_file="network_unet",
+        module_class_name="UNetRes",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

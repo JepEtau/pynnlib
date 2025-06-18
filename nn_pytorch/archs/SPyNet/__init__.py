@@ -3,7 +3,6 @@ from pynnlib.architecture import (
     SizeConstraint,
 )
 from pynnlib.model import PyTorchModel
-from .module.SPyNet import SpyNet
 
 
 def parse(model: PyTorchModel) -> None:
@@ -12,13 +11,13 @@ def parse(model: PyTorchModel) -> None:
     in_nc: int = 3
     out_nc: int = 3
 
+    # from .module.SPyNet import SpyNet
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=SpyNet,
         # return_levels=[5],
     )
 
@@ -31,6 +30,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "basic_module.3.basic_module.0.weight",
             "basic_module.5.basic_module.0.weight",
         ),
+        module_file="SPyNet",
+        module_class_name="SpyNet",
         parse=parse,
         # to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

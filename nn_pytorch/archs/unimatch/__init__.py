@@ -58,14 +58,14 @@ def parse(model: PyTorchModel) -> None:
         raise ValueError(red(f"Wrong detected feature_channels: {feature_channels}, should be 128"))
 
     arch_name = f"{model.arch.name} ({task})"
-    from .module.unimatch import UniMatch
+
+    # from .module.unimatch import UniMatch
     model.update(
         arch_name=arch_name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=UniMatch,
         task=task,
         reg_refine=is_refine,
         num_scales=num_scales,
@@ -85,6 +85,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "backbone.conv1.weight",
             "backbone.conv2.weight",
         ),
+        module_file="unimatch",
+        module_class_name="UniMatch",
         parse=parse,
         # to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

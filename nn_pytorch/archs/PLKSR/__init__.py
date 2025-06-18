@@ -51,14 +51,13 @@ def parse(model: PyTorchModel) -> None:
 
     use_ea: bool = bool("feats.1.attn.f.0.weight" in state_dict)
 
-    from .module.plksr_arch import PLKSR
+    # from .module.plksr_arch import PLKSR
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=PLKSR,
         dim=dim,
         n_blocks=n_blocks,
         upscaling_factor=scale,
@@ -82,6 +81,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "feats.1.channe_mixer.0.weight",
             "feats.1.channe_mixer.2.weight"
         ),
+        module_file="plksr_arch",
+        module_class_name="PLKSR",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=set(['fp32', 'fp16', 'bf16']),

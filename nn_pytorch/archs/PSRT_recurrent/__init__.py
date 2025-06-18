@@ -61,15 +61,13 @@ def parse(model: PyTorchModel) -> None:
     #   num_frames: 3
     #   is_low_res_input: True
 
-    from .module.psrt_recurrent import BasicRecurrentSwin
-
+    # from .module.psrt_recurrent import BasicRecurrentSwin
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=BasicRecurrentSwin,
         in_channels=in_nc,
         mid_channels=mid_channels,
         embed_dim=embed_dim,
@@ -94,6 +92,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_before_upsample.weight",
             "conv_first.weight",
         ),
+        module_file="psrt_recurrent",
+        module_class_name="BasicRecurrentSwin",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

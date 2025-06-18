@@ -30,14 +30,12 @@ def parse(model: PyTorchModel) -> None:
     pe: bool = True
     window_size: int = 8
 
-    from .module.ASID import ASID
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=ASID,
         window_size=window_size,
         num_feat=num_feat,
         res_num=res_num,
@@ -58,6 +56,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "block0.res_end.weight",
             "up.0.weight",
         ),
+        module_file="ASID",
+        module_class_name="ASID",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
@@ -72,6 +72,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "block0.res_end.weight",
             "up.0.weight",
         ),
+        module_file="ASID",
+        module_class_name="ASID",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

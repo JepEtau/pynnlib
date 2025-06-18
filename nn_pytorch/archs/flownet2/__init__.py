@@ -8,7 +8,6 @@ from pynnlib.model import PyTorchModel
 from pynnlib.utils.p_print import *
 # from ...torch_types import StateDict
 # from ..torch_to_onnx import to_onnx
-# from .module.flownet2 import FlowNet2
 
 
 
@@ -18,12 +17,11 @@ from pynnlib.utils.p_print import *
 #     in_nc: int = 3
 #     out_nc: int = 3
 
+#     # from .module.flownet2 import FlowNet2
 #     model.update(
 #         scale=scale,
 #         in_nc=in_nc,
 #         out_nc=out_nc,
-
-#         ModuleClass=FlowNet2,
 #     )
 
 
@@ -39,6 +37,8 @@ from pynnlib.utils.p_print import *
 #             "flownets_d.upsampled_flow3_to_2.weigh",
 #             "flownetfusion.upsampled_flow1_to_0.weight",
 #         ),
+#         module_file="flownet2",
+#         module_class_name="FlowNet2",
 #         parse=parse,
 #         to_onnx=to_onnx,
 #         dtypes=('fp32'),

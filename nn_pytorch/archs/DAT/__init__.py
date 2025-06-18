@@ -121,19 +121,13 @@ def parse(model: PyTorchModel) -> None:
             arch_subtype = "2"
     arch_name = f"{model.arch.name}{arch_subtype}"
 
-    # Import module once parsed
-    #   todo: could it be done when instancing the session,
-    #       might be complicated to
-    from .module.dat_arch import DAT
-
-    # Update model parameters
+    # from .module.dat_arch import DAT
     model.update(
         arch_name=arch_name,
         scale=scale,
         in_nc=in_nc,
         out_nc=in_nc,
 
-        ModuleClass=DAT,
         img_size=img_size,
         in_chans=in_nc,
         embed_dim=embed_dim,
@@ -156,6 +150,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_first.weight",
             "layers.0.blocks.0.ffn.fc1.weight"
         ),
+        module_file="dat_arch",
+        module_class_name="DAT",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'bf16'),

@@ -38,14 +38,13 @@ def parse(model: PyTorchModel) -> None:
     )
     res_scale: int = 1
 
-    from .module.rcan import RCAN
+    # from .module.rcan import RCAN
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=RCAN,
         n_resgroups=n_resgroups,
         n_resblocks=n_resblocks,
         n_feats=num_feat,
@@ -70,6 +69,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "body.0.body.0.body.0.weight",
             "body.0.body.0.body.3.conv_du.0.weight",
         ),
+        module_file="rcan",
+        module_class_name="RCAN",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

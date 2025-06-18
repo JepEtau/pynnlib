@@ -32,14 +32,13 @@ def parse(model: PyTorchModel) -> None:
         get_max_indice(state_dict, f"body.0.{s}.bottleneck.blocks") + 1,
     ]
 
-    from .module.RetinexFormer import RetinexFormer
+    # from .module.RetinexFormer import RetinexFormer
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=RetinexFormer,
         n_feat=n_feat,
         stage=stage,
         num_blocks=num_blocks,
@@ -57,6 +56,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "body.0.denoiser.encoder_layers.1.0.blocks.0.0.rescale",
             "body.0.denoiser.encoder_layers.1.1.weight",
         ),
+        module_file="RetinexFormer",
+        module_class_name="RetinexFormer",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

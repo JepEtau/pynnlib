@@ -149,7 +149,7 @@ def parse(model: PyTorchModel) -> None:
         scale //= shuffle_factor
 
     # Update model parameters
-    from .module.RRDB import RRDBNet
+    # from .module.RRDB import RRDBNet
     model.update(
         state_dict=state_dict,
         arch_name="ESRGAN-2c2" if c2x2 else model.arch_name,
@@ -157,7 +157,6 @@ def parse(model: PyTorchModel) -> None:
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=RRDBNet,
         num_filters=num_filters,
         num_blocks=num_blocks,
         c2x2=c2x2,
@@ -205,6 +204,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
 
 
 for arch in MODEL_ARCHITECTURES:
+    arch.module_file = "RRDB"
+    arch.module_class_name = "RRDBNet"
     arch.parse = parse
     arch.to_onnx = to_onnx
     arch.dtypes = ['fp32', 'fp16']

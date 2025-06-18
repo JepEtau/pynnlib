@@ -30,16 +30,14 @@ def parse(model: PyTorchModel) -> None:
     # bug in detection for s
     scale: int = 2
 
-
     # Update model parameters
-    from .module.RTMoSR import RTMoSR
+    # from .module.RTMoSR import RTMoSR
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=RTMoSR,
         dim=dim,
         ffn_expansion=ffn,
         n_blocks=n_blocks,
@@ -71,6 +69,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "to_img.0.conv3.conv.1.weight",
             "to_img.0.conv3.conv.2.weight",
         ),
+        module_file="RTMoSR",
+        module_class_name="RTMoSR",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=set(['fp32', 'fp16']),

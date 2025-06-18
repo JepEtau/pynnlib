@@ -30,7 +30,7 @@ from pynnlib import (
 )
 from pynnlib.utils import absolute_path, get_extension
 from pynnlib.utils.p_print import *
-print(f"pynnlib loaded in{time.time() - start_time:.01f}s")
+print(f"pynnlib loaded in {(time.time() - start_time):.02f}s")
 
 
 def main():

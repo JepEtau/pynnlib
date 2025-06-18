@@ -17,36 +17,6 @@ import onnx
 import torch
 
 
-def parse(model: PyTorchModel) -> None:
-    state_dict: StateDict = model.state_dict
-    scale: int = 1
-    in_nc: int = 3
-    out_nc: int = 3
-
-    verbose: bool = True
-    from .module.bias_act import compile_bias_act_ext
-    from .module.upfirdn2d import compile_upfirdn2d_ext
-    # compile_bias_act_ext(verbose=verbose)
-    # compile_upfirdn2d_ext(verbose=verbose)
-
-    for k in list(state_dict.keys()).copy():
-        if k.startswith(("synthesis.", "mapping.")):
-            state_dict[f"model.{k}"] = state_dict.pop(k)
-
-    from .module.mat import MAT
-
-    # Update model parameters
-    model.update(
-        arch_name=model.arch.name,
-        scale=scale,
-        in_nc=in_nc,
-        out_nc=out_nc,
-
-        ModuleClass=MAT,
-    )
-
-
-
 def to_onnx_inpaint(
     model: PyTorchModel,
     dtype: Idtype,
@@ -151,6 +121,33 @@ def to_onnx_inpaint(
     return model_proto
 
 
+
+def parse(model: PyTorchModel) -> None:
+    state_dict: StateDict = model.state_dict
+    scale: int = 1
+    in_nc: int = 3
+    out_nc: int = 3
+
+    verbose: bool = True
+    from .module.bias_act import compile_bias_act_ext
+    from .module.upfirdn2d import compile_upfirdn2d_ext
+    # compile_bias_act_ext(verbose=verbose)
+    # compile_upfirdn2d_ext(verbose=verbose)
+
+    for k in list(state_dict.keys()).copy():
+        if k.startswith(("synthesis.", "mapping.")):
+            state_dict[f"model.{k}"] = state_dict.pop(k)
+
+    # from .module.mat import MAT
+    model.update(
+        arch_name=model.arch.name,
+        scale=scale,
+        in_nc=in_nc,
+        out_nc=out_nc,
+    )
+
+
+
 MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
     NnPytorchArchitecture(
         name="MAT inpainting",
@@ -159,8 +156,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "model.synthesis.first_stage.conv_first.conv.resample_filter",
         ),
         detect=contains_any_keys,
+        module_file="mat",
+        module_class_name="MAT",
         parse=parse,
-        # to_onnx=None,
+        to_onnx=None,
         # to_onnx=to_onnx_inpaint,
         dtypes=set(['fp32', 'fp16']),
         infer_type=InferType(

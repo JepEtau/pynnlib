@@ -27,14 +27,13 @@ def parse(model: PyTorchModel) -> None:
     expansion_factor: float = 1.0
     rgb_mean: tuple[float] = (0.4488, 0.4371, 0.4040)
 
-    from .module.lamnet import LAMNet
+    # from .module.lamnet import LAMNet
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=LAMNet,
         num_blocks=num_blocks,
         num_groups=num_groups,
         dim=dim,
@@ -56,6 +55,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "deep_feature_extraction.0.alpha",
             "upsample.0.weight",
         ),
+        module_file="lamnet",
+        module_class_name="LAMNet",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
@@ -70,6 +71,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "deep_feature_extraction.0.alpha",
             "upsample.0.weight",
         ),
+        module_file="lamnet",
+        module_class_name="LAMNet",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

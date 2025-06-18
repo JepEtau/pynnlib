@@ -271,7 +271,7 @@ class SimplifiedResidualGroup(nn.Module):
         for block in self.blocks: x_seq = block(x_seq, H, W)
         return self.conv(x_seq.transpose(1,2).view(B,C,H,W)) + x
 
-class lhan(nn.Module):
+class Lhan(nn.Module):
     def __init__(
         self,
         num_in_ch: int = 3,

@@ -59,14 +59,13 @@ def parse(model: PyTorchModel) -> None:
     # use a heuristic for category_size
     category_size: int = 128 if is_light else 256
 
-    from .module.atd import ATD
+    # from .module.atd import ATD
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=ATD,
         img_size=64,
         patch_size=1,
         embed_dim=embed_dim,
@@ -104,6 +103,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "layers.0.residual_group.layers.0.wqkv.bias",
             "layers.0.residual_group.layers.0.attn_aca.logit_scale",
         ),
+        module_file="atd",
+        module_class_name="ATD",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

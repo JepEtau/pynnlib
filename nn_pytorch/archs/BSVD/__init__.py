@@ -141,14 +141,13 @@ def parse(model: PyTorchModel) -> None:
     act: str = "relu6"
     blind: bool = False
 
-    from .module.bsvd import BSVD
+    # from .module.bsvd import BSVD
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_ch - 1,
         out_nc=out_nc,
 
-        ModuleClass=BSVD,
         chns=chns,
         mid_ch=mid_ch,
         shift_input=shift_input,
@@ -172,6 +171,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "base_model.nets_list.0.inc.convblock.0.weight",
             "base_model.nets_list.1.inc.convblock.0.weight",
         ),
+        module_file="bsvd",
+        module_class_name="BSVD",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

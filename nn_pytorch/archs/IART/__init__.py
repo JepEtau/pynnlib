@@ -50,14 +50,13 @@ def parse(model: PyTorchModel) -> None:
     num_heads = [num_heads_num for _ in range(nlayers)]
 
     # We will see later for other values detection...
-    from .module.iart import IART
+    # from .module.iart import IART
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=IART,
         in_channels=in_nc,
         mid_channels=mid_channels,
         embed_dim=embed_dim,
@@ -90,6 +89,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "spynet.basic_module.0.basic_module.0.weight",
             "conv_before_upsample.weight",
         ),
+        module_file="iart",
+        module_class_name="IART",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

@@ -35,14 +35,13 @@ def parse(model: PyTorchModel) -> None:
         rgb_mean = (0.5, 0.5, 0.5)
 
     # Update model parameters
-    from .module.span import SPAN
+    # from .module.span import SPAN
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=SPAN,
         num_in_ch=in_nc,
         num_out_ch=out_nc,
         upscale=scale,
@@ -68,6 +67,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_2.eval_conv.weight",
             "upsampler.0.weight",
         ),
+        module_file="span",
+        module_class_name="SPAN",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16', 'bf16'),

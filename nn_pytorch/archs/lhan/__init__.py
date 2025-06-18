@@ -6,7 +6,6 @@ from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
 
-from .module.lhan_arch import lhan
 
 
 # def _to_onnx(
@@ -78,6 +77,7 @@ def parse(model: PyTorchModel) -> None:
     aim_reduction_ratio: int = 8
 
     # Populate the model with arch's args
+    # from .module.lhan_arch import Lhan
     model.update(
         arch_name=arch_name,
         scale=scale,
@@ -97,8 +97,6 @@ def parse(model: PyTorchModel) -> None:
         # group_block_pattern=['spatial', 'channel'],
         drop_path_rate=drop_path_rate,
         upsampler_type=upsampler_type,
-
-        ModuleClass=lhan,
     )
 
 
@@ -111,6 +109,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "groups.0.blocks.3.ffn.smix.weight",
             "groups.1.blocks.3.ffn.smix.weight",
         ),
+        module_file="lhan_arch",
+        module_class_name="Lhan",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16', 'bf16'),

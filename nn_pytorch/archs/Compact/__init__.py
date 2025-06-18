@@ -1,7 +1,6 @@
-from pprint import pprint
-import sys
 from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
 from pynnlib.model import PyTorchModel
+from ...torch_types import StateDict
 from ..helpers import (
     get_scale_and_out_nc,
     get_max_indice,
@@ -10,11 +9,13 @@ from ..torch_to_onnx import to_onnx
 
 
 def parse(model: PyTorchModel) -> None:
-    max_indice = get_max_indice(model.state_dict, "body")
+    state_dict: StateDict = model.state_dict
 
-    num_feat, in_nc = model.state_dict["body.0.weight"].shape[:2]
+    max_indice = get_max_indice(state_dict, "body")
+
+    num_feat, in_nc = state_dict["body.0.weight"].shape[:2]
     num_conv: int = (max_indice - 2) // 2
-    pixelshuffle_shape: int = model.state_dict[f"body.{max_indice}.bias"].shape[0]
+    pixelshuffle_shape: int = state_dict[f"body.{max_indice}.bias"].shape[0]
     scale, out_nc = get_scale_and_out_nc(pixelshuffle_shape, in_nc)
 
     # from .module.SRVGG import SRVGGNetCompact
@@ -24,7 +25,6 @@ def parse(model: PyTorchModel) -> None:
         in_nc=in_nc,
         out_nc=out_nc,
 
-        # ModuleClass=SRVGGNetCompact,
         num_feat=num_feat,
         num_conv=num_conv,
     )

@@ -17,14 +17,13 @@ def parse(model: PyTorchModel) -> None:
     # scale is fixed
     scale: int = 4
 
-    from .module.evtexture import EvTexture
+    # from .module.evtexture import EvTexture
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=EvTexture,
         num_feat=num_feat,
         num_block=num_block,
         spynet_path=""
@@ -43,6 +42,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "spynet.basic_module.0.basic_module.0.weight",
             "conv_last.weight",
         ),
+        module_file="evtexture",
+        module_class_name="EvTexture",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

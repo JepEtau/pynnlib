@@ -34,15 +34,14 @@ def parse(model: PyTorchModel) -> None:
     # don't want to train a model
     # use params defined in repo
     # channel_heads: use channel_attn.temperature
-    from .module.xrestormer import XRestormer
 
+    # from .module.xrestormer import XRestormer
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=XRestormer,
         dim=dim,
         num_blocks=(2, 4, 4, 4),
         num_refinement_blocks=4,
@@ -66,6 +65,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "encoder_level1.0.spatial_attn.project_out.weight",
             "output.weight",
         ),
+        module_file="xrestormer",
+        module_class_name="XRestormer",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

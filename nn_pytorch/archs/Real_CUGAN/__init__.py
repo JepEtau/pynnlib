@@ -97,14 +97,13 @@ def parse(model: PyTorchModel) -> None:
         # How I became stupid: use basename! arghhhhh... f.o.!
         pro, _, denoise = basename_to_params(path_split(model.filepath)[1])
 
-    from .module.upcunet import UpCunet
+    # from .module.upcunet import UpCunet
     model.update(
         arch_name=model.arch_name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=UpCunet,
         legacy=not pro,
         shuffle_factor=shuffle_factor,
     )
@@ -119,6 +118,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "unet1.conv_bottom.weight",
             "unet2.conv_bottom.weight"
         ),
+        module_file="upcunet",
+        module_class_name="UpCunet",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

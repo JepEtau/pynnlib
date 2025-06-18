@@ -37,14 +37,13 @@ def parse(model: PyTorchModel) -> None:
     if use_dysample:
         arch_name = f"{arch_name} DySample"
 
-    from .module.realplksr_arch import RealPLKSR
+    # from .module.realplksr_arch import RealPLKSR
     model.update(
         arch_name=arch_name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=RealPLKSR,
         dim=dim,
         n_blocks=n_blocks,
         upscaling_factor=scale,
@@ -65,6 +64,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "feats.1.channel_mixer.0.weight",
             "feats.1.lk.conv.weight"
         ),
+        module_file="realplksr_arch",
+        module_class_name="RealPLKSR",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=set(['fp32', 'fp16', 'bf16']),

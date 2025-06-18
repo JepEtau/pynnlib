@@ -77,14 +77,13 @@ def parse(model: PyTorchModel) -> None:
         else:
             arch_name = f"{arch_name} (DySample)"
 
-    from .module.esc_arch import ESC
+    # from .module.esc_arch import ESC
     model.update(
         arch_name=arch_name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=ESC,
         dim=dim,
         pdim=pdim,
         kernel_size=kernel_size,
@@ -111,6 +110,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "blocks.0.attn.relative_position_bias",
             "blocks.2.ln_out.weight",
         ),
+        module_file="esc_arch",
+        module_class_name="ESC",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16', 'bf16'),
@@ -119,79 +120,3 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         )
     ),
 )
-
-
-
-# Base
-# ESC_DFLIP_xxx
-# ESC_DIV2K
-# model_kwargs = {
-#     "dim": 64,
-#     "pdim": 16,
-#     "kernel_size": 13,
-#     "n_blocks": 5,
-#     "conv_blocks": 5,
-#     "window_size": 32,
-#     "num_heads": 4,
-#     "upscaling_factor": upsampling_factor,
-#     "exp_ratio": 1.25,
-#       attn_type: Flex
-
-# FP
-# ESC_FP
-# model_kwargs = {
-#     'dim': 48,
-#     'pdim': 16,
-#     'kernel_size': 13,
-#     'n_blocks': 5,
-#     'conv_blocks': 5,
-#     'window_size': 32,
-#     'num_heads': 3,
-#     'upscaling_factor': upsampling_factor,
-#     'exp_ratio': 1.25,
-#       attn_type: Flex
-# }
-
-# Light
-# model_kwargs = {
-#     "dim": 64,
-#     "pdim": 16,
-#     "kernel_size": 13,
-#     "n_blocks": 3,
-#     "conv_blocks": 5,
-#     "window_size": 32,
-#     "num_heads": 4,
-#     "upscaling_factor": upsampling_factor,
-#     "exp_ratio": 1.25,
-#       attn_type: Flex
-# }
-
-# ESC-Real
-# model_kwargs = {
-#     'dim': 64,
-#     'pdim': 16,
-#     'kernel_size': 13,
-#     'n_blocks': 10,
-#     'conv_blocks': 5,
-#     'window_size': 32,
-#     'num_heads': 4,
-#     'upscaling_factor': upsampling_factor,
-#     'exp_ratio': 2,
-#       attn_type: Flex
-# }
-# ESC-Real-M
-# model_kwargs = {
-#     'dim': 64,
-#     'pdim': 16,
-#     'kernel_size': 13,
-#     'n_blocks': 10,
-#     'conv_blocks': 5,
-#     'window_size': 32,
-#     'num_heads': 4,
-#     'upscaling_factor': upsampling_factor,
-#     'exp_ratio': 2,
-#     'upsampler': 'pixelshuffle',
-# }
-# shape = (batch_size, 3, height // upsampling_factor, width // upsampling_factor)
-# model = ESCRealM(**model_kwargs)
-

@@ -69,15 +69,13 @@ def parse(model: PyTorchModel) -> None:
         else:
             inputconv_groups = (1, 3, 3, 3, 3, 3)
 
-    from .module.network_rvrt import RVRT
-
+    # from .module.network_rvrt import RVRT
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=RVRT,
         clip_size=clip_size,
         img_size=img_size,
         window_size=window_size,
@@ -182,6 +180,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "reconstruction.main.1.bias",
             "conv_last.weight",
         ),
+        module_file="network_rvrt",
+        module_class_name="RVRT",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

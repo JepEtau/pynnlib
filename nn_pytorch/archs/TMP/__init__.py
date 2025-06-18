@@ -21,14 +21,13 @@ def parse(model: PyTorchModel) -> None:
     scale: int = 4
     num_extract_block = get_nsequences(state_dict, "feature_extraction")
 
-    from .module.TMP_arch import TMP
+    # from .module.TMP_arch import TMP
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=TMP,
         num_in_ch=in_nc,
         num_feat=num_feat,
         num_extract_block=num_extract_block,
@@ -47,6 +46,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_first.weight",
             "upconv1.weight",
         ),
+        module_file="TMP_arch",
+        module_class_name="TMP",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

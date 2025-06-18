@@ -22,14 +22,13 @@ def parse(model: PyTorchModel) -> None:
 
     encoder_fp: str = "ranker.pth"
 
-    from .module.CAVSR import CAVSR
+    # from .module.CAVSR import CAVSR
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=CAVSR,
         num_feat=num_feat,
         num_block=num_block,
         encoder_fp=encoder_fp
@@ -47,6 +46,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "fusion.0.weight",
             "backward_trunk.main.2.0.conv1.weight"
         ),
+        module_file="CAVSR",
+        module_class_name="CAVSR",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

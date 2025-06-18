@@ -31,14 +31,13 @@ def parse(model: PyTorchModel) -> None:
     upsampler = upsample[int(index)]
 
     # Update model parameters
-    from .module.MoESR import MoESR
+    # from .module.MoESR import MoESR
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=MoESR,
         n_blocks=n_blocks,
         n_block=n_block,
         dim=dim,
@@ -64,6 +63,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             'blocks.0.blocks.0.fc2.weight',
             'upscale.MetaUpsample',
         ),
+        module_file="MoESR",
+        module_class_name="MoESR",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=set(['fp32', 'fp16']),

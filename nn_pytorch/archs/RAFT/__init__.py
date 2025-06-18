@@ -33,7 +33,7 @@ def parse(model: PyTorchModel) -> None:
     )
     corr_levels: int = 4
 
-    from .module.raft import RAFT
+    # from .module.raft import RAFT
     model.update(
         arch_name=arch_name,
         scale=scale,
@@ -42,7 +42,6 @@ def parse(model: PyTorchModel) -> None:
         out_nc=out_nc,
         num_feat=num_feat,
 
-        ModuleClass=RAFT,
         # corr_levels=corr_levels,
         # corr_radius=corr_radius,
         # dropout=0
@@ -64,6 +63,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "update_block.flow_head.conv1.bias",
 
         ),
+        module_file="raft",
+        module_class_name="RAFT",
         parse=parse,
         # to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

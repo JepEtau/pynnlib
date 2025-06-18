@@ -19,8 +19,7 @@ def parse(model: PyTorchModel) -> None:
     num_block: tuple[int, int, int] = (5, 3, 2)
     out_nc: int = in_nc
 
-    from .module.vsr_arch import MSRSWVSR
-
+    # from .module.vsr_arch import MSRSWVSR
     model.update(
         arch_name=model.arch.name,
         scale=scale,
@@ -28,8 +27,6 @@ def parse(model: PyTorchModel) -> None:
         out_nc=out_nc,
         num_feat=num_feat,
         num_block=num_block,
-
-        ModuleClass=MSRSWVSR,
     )
 
 
@@ -40,6 +37,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "recurrent_cell.conv_s1_first.0.weight",
             "recurrent_cell.fusion.0.weight",
         ),
+        module_file="vsr_arch",
+        module_class_name="MSRSWVSR",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

@@ -33,14 +33,13 @@ def parse(model: PyTorchModel) -> None:
 
     del model.state_dict
 
-    from .module.etam import _VirtualEfficientTAM
+    # from .module.etam import _VirtualEfficientTAM
     model.update(
         arch_name=model.arch.name,
         scale=1,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=_VirtualEfficientTAM,
         filepath=checkpoint_fp,
         config_fp=config_fp,
     )
@@ -52,6 +51,8 @@ efficient_tam_arch = NnPytorchArchitecture(
     detection_keys=(
         "efficienttam",
     ),
+    module_file="etam",
+    module_class_name="_VirtualEfficientTAM",
     parse=parse,
     dtypes=('fp32'),
     size_constraint=SizeConstraint(

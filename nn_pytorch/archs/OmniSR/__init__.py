@@ -47,14 +47,13 @@ def parse(model: PyTorchModel) -> None:
     else:
         pe = False
 
-    from .module.OmniSR import OmniSR
+    # from .module.OmniSR import OmniSR
     model.update(
         arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        ModuleClass=OmniSR,
         num_in_ch=in_nc,
         num_out_ch=out_nc,
         num_feat=num_feat,
@@ -74,6 +73,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "input.weight",
             "up.0.weight",
         ),
+        module_file="OmniSR",
+        module_class_name="OmniSR",
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
