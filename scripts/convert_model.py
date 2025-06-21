@@ -88,7 +88,6 @@ def convert_to_tensorrt(
         device=device,
         out_dir=path_split(model.filepath)[0],
         overwrite=force,
-        debug=debug,
     )
 
     return trt_model
