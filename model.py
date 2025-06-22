@@ -141,7 +141,7 @@ class GenericModel:
                     f"{indent}{k}: {f'{type(v).__name__} ...' if v is not None else 'None'}\n"
                 )
                 continue
-            # For dict
+            # dict
             if isinstance(v, dict):
                 class_str += f"{indent}{k}: {type(v).__name__} = {'{'}\n{indent}{indent}"
                 items = []

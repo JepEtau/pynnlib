@@ -81,9 +81,6 @@ def save_as(
     model.filepath = os.path.join(directory, f"{basename}{suffix}{ext}")
 
     generate_metadata(model, {})
-
-    print(model)
-
     try:
         with zipfile.ZipFile(
             model.filepath, "w", compression=zipfile.ZIP_DEFLATED

@@ -1,13 +1,12 @@
 from __future__ import annotations
-from collections.abc import Callable
+from collections.abc import Callable, Set
 from dataclasses import dataclass, field
 from importlib import util as importlib_util
 import inspect
 import os
 import sys
-from warnings import warn
 import onnx
-from pathlib import Path, PurePath
+from pathlib import Path
 
 try:
     import torch
@@ -27,6 +26,7 @@ from .nn_types import (
     Idtype,
     NnArchitectureType,
     ShapeStrategy,
+    ShapeStrategyType,
 )
 from .session import NnModelSession
 from .utils import absolute_path, path_split
@@ -63,10 +63,8 @@ class NnGenericArchitecture:
 
     create_session: Callable[[NnModel], NnModelSession] | None = None
 
-    # TODO: remove this
-    default: bool = False
-
-    # Supported datatypes
+    # Supported datatypes for inference and conversion
+    #   TODO: as it may differ, use a dataclass
     dtypes: list[Idtype] = field(default_factory=list)
 
     size_constraint: SizeConstraint | None = None
@@ -128,21 +126,38 @@ ConvertToOnnxFct = Callable[
         batch: int = 1
 """
 
-
 ConvertToTensorrtFct = Callable[
     [PyTorchModel | OnnxModel, str, bool, Any, bool],
     bytes
 ]
 
 
+@dataclass(slots=True)
+class TensorRTConv:
+    # Some archs don't support strong typing,
+    #   caution: conversion might fail or slower inference
+    dtypes: Set[Idtype] = field(
+        default_factory=lambda: {'fp32', 'fp16', 'bf16'}
+    )
+    weak_typing: bool = False
+    shape_strategy_types: Set[ShapeStrategyType] = field(
+        default_factory=lambda: {'dynamic', 'fixed', 'static'}
+    )
+
+
+
 @dataclass
 class NnPytorchArchitecture(NnGenericArchitecture):
     detection_keys: tuple[str | tuple[str]] | dict = ()
     """Convert a model from pytorch to onnx"""
-    to_onnx: ConvertToOnnxFct | None = None
-    to_tensorrt: ConvertToTensorrtFct | None = None
-    # TODO add dtypes supported for conversion to tensorRT ???
+
+    # TODO replace by a dataclass to indicate if this model
+    # supports weak or strong typing
+    # support some dtypes that torch doesn't
     #   example: SCUNET does not support conversion to fp16
+    to_onnx: ConvertToOnnxFct | None = None
+    # to_tensorrt: ConvertToTensorrtFct | None = None
+    to_tensorrt: TensorRTConv | None = None
 
     ModuleClass = None
     module_file: str = ""

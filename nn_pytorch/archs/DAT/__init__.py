@@ -2,7 +2,11 @@ import math
 from typing import Literal
 
 import onnx
-from pynnlib.architecture import NnPytorchArchitecture,SizeConstraint
+from pynnlib.architecture import (
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from pynnlib.nn_types import Idtype, ShapeStrategy
 from ...torch_types import StateDict
@@ -155,7 +159,13 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'bf16'),
-        size_constraint=SizeConstraint(min=(16, 16))
-        # fixed size for conversion to pth->onnx->trt
+        size_constraint=SizeConstraint(min=(16, 16)),
+
+        to_tensorrt=TensorRTConv(
+            dtypes=set(['fp32', 'bf16']),
+            weak_typing=True,
+            shape_strategy_types=set(['fixed']),
+        ),
+
     ),
 )

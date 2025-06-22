@@ -30,6 +30,7 @@ class GenericSession(abc.ABC):
         self.dtype = dtype
         self.device = device
 
+
     @property
     def dtype(self) -> torch.dtype:
         return self._dtype

@@ -1,4 +1,8 @@
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import (
@@ -44,6 +48,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         dtypes=('fp32', 'fp16', 'bf16'),
         size_constraint=SizeConstraint(
             min=(64, 64)
-        )
+        ),
+        to_tensorrt=TensorRTConv(
+            dtypes=set(['fp32', 'fp16']),
+        ),
+
     ),
 )

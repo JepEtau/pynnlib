@@ -283,13 +283,15 @@ format: WxH.
     print(lightgreen(f"[I] arch: {model.arch_name}"))
     print(model)
 
-    if arguments.fp16 and not 'fp16' in model.arch.dtypes:
-        sys.exit(red(f"[E] This arch does not support conversion with fp16 support"))
-    fp16: bool = arguments.fp16 and 'fp16' in model.arch.dtypes
+    fp16: bool = arguments.fp16
+    # if arguments.fp16 and not 'fp16' in model.arch.dtypes:
+    #     sys.exit(red(f"[E] This arch does not support conversion with fp16 support"))
+    # fp16: bool = arguments.fp16 and 'fp16' in model.arch.dtypes
 
-    if arguments.bf16 and not 'bf16' in model.arch.dtypes:
-        sys.exit(red(f"[E] This arch does not support conversion with bf16 support, supported dtypes: {model.arch.dtypes}"))
-    bf16: bool = arguments.bf16 and 'bf16' in model.arch.dtypes
+    bf16: bool = arguments.bf16
+    # if arguments.bf16 and not 'bf16' in model.arch.dtypes:
+    #     sys.exit(red(f"[E] This arch does not support conversion with bf16 support, supported dtypes: {model.arch.dtypes}"))
+    # bf16: bool = arguments.bf16 and 'bf16' in model.arch.dtypes
 
     # bf16 has the priority if multiple types are provided
     c_dtype: Idtype = 'fp32'

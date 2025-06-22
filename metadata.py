@@ -50,10 +50,12 @@ def generate_metadata(
         if model.arch_name.lower() not in ('unknown', 'generic'):
             metadata['arch_name'] = model.arch_name
 
+        if model.arch.to_tensorrt is not None:
+            if model.arch.to_tensorrt.weak_typing:
+                metadata['weak_typing'] = 'enforce'
 
     elif model.framework.type == NnFrameworkType.PYTORCH:
         ext = get_extension(model.filepath)
-
         if ext in (".pth", ".ckpt"):
             model.state_dict.pop('metadata', None)
             model.state_dict['metadata'] = metadata
@@ -68,7 +70,6 @@ def generate_metadata(
             # it may be a torch.jit.ScriptModule or a regular torch model
             # not supported.
             warn(f"Adding metadata to a \'{ext}\' file is not supported")
-
 
     elif model.framework.type == NnFrameworkType.TENSORRT:
         metadata['trtzip_version'] = "1.0"

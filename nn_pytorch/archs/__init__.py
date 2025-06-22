@@ -14,6 +14,7 @@ from pynnlib.logger import is_debugging, nnlogger
 from pynnlib.architecture import NnPytorchArchitecture
 from pynnlib.utils.p_print import *
 from pynnlib.model import PyTorchModel
+from pynnlib.import_libs import is_tensorrt_available
 from .helpers import parameters_to_args
 
 
@@ -136,3 +137,10 @@ for arch in MODEL_ARCHITECTURES:
     if _is_debug:
         print(f"[V] {arch.name}, detection keys:\n  {'\n  '.join(arch.detection_keys)}")
 
+    # if is_tensorrt_available():
+    #     if arch.to_tensorrt is not None:
+            # Use default onnx to trt conversion function
+
+
+        # else:
+        #   conversion to tensorrt is not supported

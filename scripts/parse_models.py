@@ -5,6 +5,7 @@ from argparse import (
 import logging
 import logging.config
 import os
+from pprint import pprint
 import signal
 import sys
 import time
@@ -135,7 +136,10 @@ def main():
                 f"\t\t({1000 * elapsed:.1f}ms)"
             )
             if arguments.verbose:
+                print("Model:")
                 print(model)
+                print("\nArchitecture:")
+                print(model.arch)
         except Exception as e:
             # For debug:
             model: NnModel = nnlib.open(model_fp, device)
@@ -173,7 +177,10 @@ def main():
                     f"\n    ({1000 * elapsed:.1f}ms)\n"
                 )
                 if arguments.verbose:
+                    print("Model:")
                     print(model)
+                    print("Arch:")
+                    print(model.arch)
             except Exception as e:
                 model: NnModel = nnlib.open(filepath, device)
                 print(e)

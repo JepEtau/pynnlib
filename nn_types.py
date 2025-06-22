@@ -48,10 +48,6 @@ ShapeStrategyType = Literal[
     #   (if used with conversion to ONNX -> static ONNX strategy)
     'fixed',
 
-    # Only for TensorRT: forced static ONNX, fixed TensorRT shapes
-    #   to be deprecated as it is a special case of 'fixed'
-    'static_fixed',
-
     # Use dynamic shapes for both ONNX and tensorRT
     'dynamic'
 ]

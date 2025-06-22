@@ -36,9 +36,11 @@ def get_max_indice(state_dict: StateDict, seq_key: str) -> int:
     return max(keys) if keys else 0
 
 
+
 def get_nsequences(state_dict: StateDict, seq_key: str) -> int:
     nsequences: int = get_max_indice(state_dict=state_dict, seq_key=seq_key)
     return nsequences + 1 if nsequences else 0
+
 
 
 def get_scale_and_out_nc(x: int, input_channels: int) -> tuple[int, int]:
