@@ -31,8 +31,6 @@ def parse(model: PyTorchModel) -> None:
     embed_dim, in_nc = state_dict["conv_first.weight"].shape[:2]
     out_nc: int = in_nc
 
-    # Currently use fixed value until end of PoC
-    from .module.fdat import FDAT
     (
         block_version,
         sample_type_index,
