@@ -1,3 +1,4 @@
+import math
 from typing import Literal
 import onnx
 from pynnlib.architecture import NnPytorchArchitecture,SizeConstraint
@@ -5,12 +6,12 @@ from pynnlib.model import PyTorchModel
 from pynnlib.nn_pytorch.archs.FastDAT.module.fdat import SampleMods3
 from pynnlib.nn_types import Idtype, ShapeStrategy
 from ...torch_types import StateDict
-from ..helpers import get_max_indice
+from ..helpers import get_nsequences
 from ..torch_to_onnx import to_onnx
 
 
 # copy from module to avoid importing module right now
-SampleMods = Literal[
+sample_types: list[str] = [
     "conv",
     "pixelshuffledirect",
     "pixelshuffle",
@@ -31,68 +32,50 @@ def parse(model: PyTorchModel) -> None:
     out_nc: int = in_nc
 
     # Currently use fixed value until end of PoC
-    # from module.fdat import FDAT
+    from .module.fdat import FDAT
+    (
+        block_version,
+        sample_type_index,
+        scale,
+        in_dim,
+        out_nc,
+        mid_dim,
+        group
+    ) = state_dict["upsampler.MetaUpsample"].tolist()
+    if sample_type_index >= len(sample_types):
+        raise ValueError(
+            f"[E] \'sample_type_index\' {sample_type_index} is not supported"
+        )
 
-    ffn_expansion_ratio: float = 2.
-    window_size: int = 8
-    aim_reduction_ratio: int = 8
-    group_block_pattern: list[str] | None = None
-    mid_dim: int = 64
-    upsampler_type: SampleMods3 = 'transpose+conv'
+    num_groups: int = get_nsequences(state_dict, "groups")
+    group_block_pattern: list[str] = ["spatial", "channel"]
+    depth_per_group: int = int(
+        get_nsequences(state_dict, "groups.0.blocks")
+        / len(group_block_pattern)
+    )
+    num_heads, _, window_size_sq = (
+        state_dict["groups.0.blocks.0.attn.bias"].shape[:3]
+    )
+    window_size = math.isqrt(window_size_sq)
+    ffn_expansion_ratio: float = (
+        float(state_dict["groups.0.blocks.0.ffn.fc1.weight"].shape[0])
+        / embed_dim
+    )
+    aim_reduction_ratio: int = int(
+        embed_dim / state_dict["groups.0.blocks.0.inter.cg.1.weight"].shape[0]
+    )
     img_range: float = 1.0
 
-    # Tiny
-    if embed_dim == 96:
-        arch_name = f"{model.arch.name} (tiny)"
-        num_groups = 2
-        depth_per_group = 2
-        num_heads = 3
-        ffn_expansion_ratio = 1.5
-        drop_path_rate: float = 0.05
-        upsampler_type = "pixelshuffle"
+    variants: dict[int, str] = {
+        96: " (tiny)",
+        108: " (light)",
+        120: " (medium)",
+        180: " (large)"
+    }
+    arch_name = f"{model.arch.name}{variants.get(embed_dim, '')}"
+    if embed_dim == 180 and num_groups == 6:
+        arch_name = f"{model.arch.name} (xl)"
 
-    # Light
-    elif embed_dim == 108:
-        arch_name = f"{model.arch.name} (light)"
-        num_groups = 3
-        depth_per_group = 2
-        num_heads = 4
-        drop_path_rate: float = 0.08
-
-    # Medium
-    elif embed_dim == 120:
-        arch_name = f"{model.arch.name} (medium)"
-        num_groups = 4
-        depth_per_group = 3
-        num_heads = 4
-        drop_path_rate: float = 0.1
-
-
-    # Large, XL
-    elif embed_dim == 180:
-        drop_path_rate: float = 0.1
-        raise NotImplementedError("waiting for a model....")
-        # use num_groups
-        if ...:
-            arch_name = f"{model.arch.name} (large)"
-            num_groups = 4
-            depth_per_group = 4
-            num_heads = 6
-
-        else:
-            arch_name = f"{model.arch.name} (xl)"
-            num_groups = 6
-            depth_per_group = 6
-            num_heads = 6
-
-
-    else:
-        raise ValueError("Variant not found")
-
-
-
-    # Populate the model with arch's args
-    # from .module.lhan_arch import Lhan
     model.update(
         arch_name=arch_name,
         scale=scale,
@@ -109,9 +92,8 @@ def parse(model: PyTorchModel) -> None:
         ffn_expansion_ratio=ffn_expansion_ratio,
         aim_reduction_ratio=aim_reduction_ratio,
         group_block_pattern=group_block_pattern,
-        drop_path_rate=drop_path_rate,
         mid_dim=mid_dim,
-        upsampler_type=upsampler_type,
+        upsampler_type=sample_types[sample_type_index],
         img_range=img_range,
     )
 
@@ -122,10 +104,11 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
     NnPytorchArchitecture(
         name="FastDAT",
         detection_keys=(
-            # "groups.0.blocks.3.ffn.smix.weight",
-            # "groups.1.blocks.3.ffn.smix.weight",
-            # "groups.1.blocks.0.inter.sg.0.weight",
-            "FastDAT"
+            "groups.0.blocks.0.n1.weight",
+            "groups.0.blocks.0.attn.bias",
+            "groups.0.blocks.0.ffn.fc1.weight",
+            "groups.0.blocks.0.inter.cg.1.weight",
+            "upsampler.MetaUpsample",
         ),
         module_file="fdat",
         module_class_name="FDAT",
