@@ -71,7 +71,7 @@ def parse(model: PyTorchModel) -> None:
     # Large, XL
     elif embed_dim == 180:
         drop_path_rate: float = 0.1
-
+        raise NotImplementedError("waiting for a model....")
         # use num_groups
         if ...:
             arch_name = f"{model.arch.name} (large)"
@@ -122,8 +122,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
     NnPytorchArchitecture(
         name="FastDAT",
         detection_keys=(
-            # TODO
-            "fastdat",
+            # "groups.0.blocks.3.ffn.smix.weight",
+            # "groups.1.blocks.3.ffn.smix.weight",
+            # "groups.1.blocks.0.inter.sg.0.weight",
+            "FastDAT"
         ),
         module_file="fdat",
         module_class_name="FDAT",
