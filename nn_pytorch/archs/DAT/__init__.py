@@ -6,13 +6,16 @@ from pynnlib.architecture import (
     NnPytorchArchitecture,
     SizeConstraint,
     TensorRTConv,
+    Module,
 )
 from pynnlib.model import PyTorchModel
 from pynnlib.nn_types import Idtype, ShapeStrategy
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
-
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .module.dat_arch import DAT
 
 def _to_onnx(
     model: PyTorchModel,
@@ -125,7 +128,6 @@ def parse(model: PyTorchModel) -> None:
             arch_subtype = "2"
     arch_name = f"{model.arch.name}{arch_subtype}"
 
-    # from .module.dat_arch import DAT
     model.update(
         arch_name=arch_name,
         scale=scale,
@@ -154,8 +156,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_first.weight",
             "layers.0.blocks.0.ffn.fc1.weight"
         ),
-        module_file="dat_arch",
-        module_class_name="DAT",
+        module=Module(
+            file="dat_arch",
+            class_name="DAT"
+        ),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'bf16'),

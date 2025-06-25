@@ -13,7 +13,7 @@ try:
     torch_device = torch.device
 except:
     torch_device = str
-    pass
+from torch import nn as nn
 from typing import Any, Literal, Optional, overload
 from .model import (
     OnnxModel,
@@ -145,11 +145,17 @@ class TensorRTConv:
     )
 
 
+@dataclass
+class Module:
+    file: str
+    class_name: str
+    module_class: nn.Module | None = None
+
 
 @dataclass
 class NnPytorchArchitecture(NnGenericArchitecture):
-    detection_keys: tuple[str | tuple[str]] | dict = ()
-    """Convert a model from pytorch to onnx"""
+    detection_keys: tuple[str | tuple[str]] | dict
+    module: Module
 
     # TODO replace by a dataclass to indicate if this model
     # supports weak or strong typing
@@ -159,9 +165,6 @@ class NnPytorchArchitecture(NnGenericArchitecture):
     # to_tensorrt: ConvertToTensorrtFct | None = None
     to_tensorrt: TensorRTConv | None = None
 
-    ModuleClass = None
-    module_file: str = ""
-    module_class_name: str = ""
     __caller_dir: str = ""
 
 
