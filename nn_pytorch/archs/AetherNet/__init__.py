@@ -200,7 +200,6 @@ def parse(model: PyTorchModel) -> None:
 
     if is_debugging():
         from .module.aether_arch import AetherNet
-        print("update ModuleClass for Aether")
         model.update(ModuleClass=AetherNet)
 
     model.update(

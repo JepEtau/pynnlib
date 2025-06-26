@@ -78,7 +78,6 @@ def parse(model: PyTorchModel) -> None:
 
     if is_debugging():
         from .module.fdat import FDAT
-        print("update ModuleClass for Aether")
         model.update(ModuleClass=FDAT)
 
     model.update(

@@ -7,13 +7,11 @@ from pynnlib.architecture import (
     SizeConstraint,
     TensorRTConv,
 )
+from pynnlib.logger import is_debugging
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .module.dat_arch import DAT
 
 
 
@@ -105,6 +103,10 @@ def parse(model: PyTorchModel) -> None:
         elif expansion_factor == 2:
             arch_subtype = "2"
     arch_name = f"{model.arch.name}{arch_subtype}"
+
+    if is_debugging():
+        from .module.dat_arch import DAT
+        model.update(ModuleClass=DAT)
 
     model.update(
         arch_name=arch_name,
