@@ -1,20 +1,23 @@
 from __future__ import annotations
-from pprint import pprint
-from pynnlib.nn_pytorch.archs import contains_any_keys
-from pynnlib.nn_types import Idtype
-from pynnlib.utils.p_print import *
-from pynnlib.architecture import (
-    InferType,
-    NnPytorchArchitecture,
-)
-from pynnlib import is_cuda_available
-from pynnlib.model import PyTorchModel, SizeConstraint
-from ...inference.session import PyTorchSession
-from ...torch_types import StateDict
-
 from io import BytesIO
 import onnx
 import torch
+
+from pynnlib.architecture import (
+    InferType,
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
+from pynnlib.nn_types import Idtype
+from pynnlib.utils.p_print import *
+from pynnlib import is_cuda_available
+from pynnlib.model import PyTorchModel, SizeConstraint
+from ...archs import contains_any_keys
+from ...torch_types import StateDict
+from ...inference.session import PyTorchSession
+
 
 
 def to_onnx_inpaint(
@@ -156,8 +159,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "model.synthesis.first_stage.conv_first.conv.resample_filter",
         ),
         detect=contains_any_keys,
-        module_file="mat",
-        module_class_name="MAT",
+        module=Module(file="mat", class_name="MAT"),
         parse=parse,
         to_onnx=None,
         # to_onnx=to_onnx_inpaint,

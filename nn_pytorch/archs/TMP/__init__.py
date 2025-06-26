@@ -1,4 +1,9 @@
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import (
@@ -46,8 +51,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_first.weight",
             "upconv1.weight",
         ),
-        module_file="TMP_arch",
-        module_class_name="TMP",
+        module=Module(file="TMP_arch", class_name="TMP"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

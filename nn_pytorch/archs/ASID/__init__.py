@@ -1,6 +1,10 @@
 import math
 import re
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
@@ -49,15 +53,14 @@ def parse(model: PyTorchModel) -> None:
 
 MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
     NnPytorchArchitecture(
-        name="ASIDd8",
+        name="ASID d8",
         detection_keys=(
             "block7.res_end.weight"
             "block2.res_end.weight",
             "block0.res_end.weight",
             "up.0.weight",
         ),
-        module_file="ASID",
-        module_class_name="ASID",
+        module=Module(file="ASID", class_name="ASID"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
@@ -72,8 +75,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "block0.res_end.weight",
             "up.0.weight",
         ),
-        module_file="ASID",
-        module_class_name="ASID",
+        module=Module(file="ASID", class_name="ASID"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

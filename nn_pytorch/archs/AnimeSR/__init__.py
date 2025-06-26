@@ -1,6 +1,7 @@
 import math
 from pynnlib.architecture import (
     InferType,
+    Module,
     NnPytorchArchitecture,
     SizeConstraint,
 )
@@ -37,8 +38,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "recurrent_cell.conv_s1_first.0.weight",
             "recurrent_cell.fusion.0.weight",
         ),
-        module_file="vsr_arch",
-        module_class_name="MSRSWVSR",
+        module=Module(file="vsr_arch", class_name="MSRSWVSR"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

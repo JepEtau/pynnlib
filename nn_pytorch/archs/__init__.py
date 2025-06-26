@@ -98,12 +98,12 @@ def create_session(model: Type[PyTorchModel]) -> Type[PyTorchModel]:
     if model.ModuleClass is not None:
         TorchModule = model.ModuleClass
 
-    elif model.arch.ModuleClass is not None:
-        TorchModule = model.arch.ModuleClass
+    elif model.arch.module.module_class is not None:
+        TorchModule = model.arch.module.module_class
 
     else:
         model.arch.import_module()
-        TorchModule = model.arch.ModuleClass
+        TorchModule = model.arch.module.module_class
 
     if TorchModule is None:
         raise ValueError(f"No nn.module imported for arch {model.arch}")

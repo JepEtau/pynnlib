@@ -1,5 +1,10 @@
 import math
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import (
@@ -92,8 +97,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_before_upsample.weight",
             "conv_first.weight",
         ),
-        module_file="psrt_recurrent",
-        module_class_name="BasicRecurrentSwin",
+        module=Module(file="psrt_recurrent", class_name="BasicRecurrentSwin"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

@@ -1,6 +1,11 @@
 import math
 import re
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from pynnlib.nn_pytorch.torch_types import StateDict
 from ..helpers import get_nsequences
@@ -110,8 +115,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "blocks.0.attn.relative_position_bias",
             "blocks.2.ln_out.weight",
         ),
-        module_file="esc_arch",
-        module_class_name="ESC",
+        module=Module(file="esc_arch", class_name="ESC"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16', 'bf16'),

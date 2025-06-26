@@ -1,4 +1,9 @@
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
@@ -56,8 +61,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "body.0.denoiser.encoder_layers.1.0.blocks.0.0.rescale",
             "body.0.denoiser.encoder_layers.1.1.weight",
         ),
-        module_file="RetinexFormer",
-        module_class_name="RetinexFormer",
+        module=Module(file="RetinexFormer", class_name="RetinexFormer"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

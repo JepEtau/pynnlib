@@ -3,11 +3,17 @@ import functools
 import math
 import re
 from pynnlib.utils.p_print import *
-from pynnlib.architecture import NnPytorchArchitecture
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
 from ..helpers import get_max_indice
+
 
 
 def _get_block_count(state: StateDict, state_map: dict) -> int:
@@ -171,15 +177,15 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_first.weight",
             "RRDB_trunk.0.RDB1.conv1.weight",
             "trunk_conv.weight",
-            "conv_last.weight",
-        )
+            "conv_,last.weight",
+        ),
     ),
     NnPytorchArchitecture(
         name="ESRGAN+",
         detection_keys=(
             "model.0.weight",
             "model.1.sub.0.RDB1.conv1x1.weight",
-        )
+        ),
     ),
     NnPytorchArchitecture(
         # (legacy)
@@ -191,21 +197,20 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "body.0.rdb1.conv1.weight",
             "conv_body.weight",
             "conv_last.weight",
-        )
+        ),
     ),
     NnPytorchArchitecture(
         name="ESRGAN",
         detection_keys=(
             "model.0.weight",
             "model.1.sub.0.RDB1.conv1.0.weight"
-        )
+        ),
     ),
 )
 
 
 for arch in MODEL_ARCHITECTURES:
-    arch.module_file = "RRDB"
-    arch.module_class_name = "RRDBNet"
+    arch.module = Module(file="RRDB", class_name="RRDBNet")
     arch.parse = parse
     arch.to_onnx = to_onnx
     arch.dtypes = ['fp32', 'fp16']

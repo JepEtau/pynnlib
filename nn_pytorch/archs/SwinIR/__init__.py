@@ -1,7 +1,12 @@
 import math
 import re
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.utils.p_print import *
-from pynnlib.architecture import NnPytorchArchitecture
 from pynnlib.model import PyTorchModel
 from ..torch_to_onnx import to_onnx
 
@@ -157,8 +162,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "layers.0.residual_group.blocks.0.mlp.fc1.bias",
             "layers.0.residual_group.blocks.0.attn.relative_position_index",
         ),
-        module_file="SwinIR",
-        module_class_name="SwinIR",
+        module=Module(file="SwinIR", class_name="SwinIR"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

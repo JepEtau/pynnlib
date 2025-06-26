@@ -1,5 +1,8 @@
-import math
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
@@ -46,8 +49,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "fusion.0.weight",
             "backward_trunk.main.2.0.conv1.weight"
         ),
-        module_file="CAVSR",
-        module_class_name="CAVSR",
+        module=Module(file="CAVSR", class_name="CAVSR"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

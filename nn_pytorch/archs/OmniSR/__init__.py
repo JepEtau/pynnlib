@@ -1,5 +1,10 @@
 import math
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ..helpers import (
     get_scale_and_out_nc,
@@ -73,8 +78,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "input.weight",
             "up.0.weight",
         ),
-        module_file="OmniSR",
-        module_class_name="OmniSR",
+        module=Module(file="OmniSR", class_name="OmniSR"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

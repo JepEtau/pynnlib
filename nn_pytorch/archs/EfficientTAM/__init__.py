@@ -1,5 +1,10 @@
 import sys
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 import os
 
@@ -51,8 +56,7 @@ efficient_tam_arch = NnPytorchArchitecture(
     detection_keys=(
         "efficienttam",
     ),
-    module_file="etam",
-    module_class_name="_VirtualEfficientTAM",
+    module=Module(file="etam", class_name="_VirtualEfficientTAM"),
     parse=parse,
     dtypes=('fp32'),
     size_constraint=SizeConstraint(

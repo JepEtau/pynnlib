@@ -1,8 +1,10 @@
 from typing import Literal
 from warnings import warn
 from pynnlib.architecture import (
+    Module,
     NnPytorchArchitecture,
     SizeConstraint,
+    TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from pynnlib.utils.p_print import *
@@ -85,8 +87,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "backbone.conv1.weight",
             "backbone.conv2.weight",
         ),
-        module_file="unimatch",
-        module_class_name="UniMatch",
+        module=Module(file="unimatch", class_name="UniMatch"),
         parse=parse,
         # to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

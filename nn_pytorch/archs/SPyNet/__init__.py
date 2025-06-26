@@ -1,6 +1,8 @@
 from pynnlib.architecture import (
+    Module,
     NnPytorchArchitecture,
     SizeConstraint,
+    TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 
@@ -30,8 +32,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "basic_module.3.basic_module.0.weight",
             "basic_module.5.basic_module.0.weight",
         ),
-        module_file="SPyNet",
-        module_class_name="SpyNet",
+        module=Module(file="SPyNet", class_name="SpyNet"),
         parse=parse,
         # to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

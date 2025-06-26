@@ -147,15 +147,15 @@ class TensorRTConv:
 
 @dataclass
 class Module:
-    file: str
-    class_name: str
+    file: str = ""
+    class_name: str = ""
     module_class: nn.Module | None = None
 
 
 @dataclass
 class NnPytorchArchitecture(NnGenericArchitecture):
-    detection_keys: tuple[str | tuple[str]] | dict
-    module: Module
+    detection_keys: tuple[str | tuple[str]] | dict = field(default_factory=tuple)
+    module: Module = field(default_factory=Module)
 
     # TODO replace by a dataclass to indicate if this model
     # supports weak or strong typing
@@ -182,7 +182,7 @@ class NnPytorchArchitecture(NnGenericArchitecture):
     def import_module(self) -> None:
         """Dynamic import the nn.module
         """
-        if self.ModuleClass is not None:
+        if self.module.module_class is not None:
             return
 
         pynnlib_dir = absolute_path(
@@ -192,16 +192,17 @@ class NnPytorchArchitecture(NnGenericArchitecture):
             self.__caller_dir[len(pynnlib_dir) + 1:].replace(os.sep, ".")
         )
 
-        if any(not x for x in (self.module_file, self.module_class_name)):
+        arch_module: Module = self.module
+        if any(not x for x in (arch_module.file, arch_module.class_name)):
             print("[W] Missing module package or class_name")
 
         nn_module_filepath = os.path.join(
-            self.__caller_dir, "module", self.module_file.replace(".", os.sep)
+            self.__caller_dir, "module", arch_module.file.replace(".", os.sep)
         )
         if not nn_module_filepath.endswith(".py"):
             nn_module_filepath += ".py"
 
-        sys_module_key = f"{arch_module_key}.module.{self.module_file}"
+        sys_module_key = f"{arch_module_key}.module.{arch_module.file}"
         module_spec = importlib_util.spec_from_file_location(
             name=sys_module_key,
             location=nn_module_filepath
@@ -209,7 +210,7 @@ class NnPytorchArchitecture(NnGenericArchitecture):
         module = importlib_util.module_from_spec(module_spec)
         sys.modules[sys_module_key] = module
         module_spec.loader.exec_module(module)
-        self.ModuleClass = getattr(module, self.module_class_name)
+        self.module.module_class = getattr(module, arch_module.class_name)
 
 
 

@@ -1,8 +1,10 @@
 from typing import Literal
 from warnings import warn
 from pynnlib.architecture import (
+    Module,
     NnPytorchArchitecture,
     SizeConstraint,
+    TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from pynnlib.utils.p_print import *
@@ -37,8 +39,7 @@ from pynnlib.utils.p_print import *
 #             "flownets_d.upsampled_flow3_to_2.weigh",
 #             "flownetfusion.upsampled_flow1_to_0.weight",
 #         ),
-#         module_file="flownet2",
-#         module_class_name="FlowNet2",
+#         module=Module(file="flownet2", class_name="FlowNet2"),
 #         parse=parse,
 #         to_onnx=to_onnx,
 #         dtypes=('fp32'),

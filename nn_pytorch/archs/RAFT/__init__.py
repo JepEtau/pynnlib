@@ -1,8 +1,9 @@
-import re
 from pynnlib.architecture import (
     InferType,
+    Module,
     NnPytorchArchitecture,
     SizeConstraint,
+    TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
@@ -63,8 +64,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "update_block.flow_head.conv1.bias",
 
         ),
-        module_file="raft",
-        module_class_name="RAFT",
+        module=Module(file="raft", class_name="RAFT"),
         parse=parse,
         # to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

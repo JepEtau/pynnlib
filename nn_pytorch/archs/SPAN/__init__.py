@@ -1,8 +1,13 @@
 import torch
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.utils.p_print import *
 from pynnlib.architecture import NnPytorchArchitecture
 from pynnlib.model import PyTorchModel
-from ...inference.session import PyTorchSession
 from ..helpers import get_scale_and_out_nc
 from ..torch_to_onnx import to_onnx
 
@@ -67,8 +72,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_2.eval_conv.weight",
             "upsampler.0.weight",
         ),
-        module_file="span",
-        module_class_name="SPAN",
+        module=Module(file="span", class_name="SPAN"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16', 'bf16'),

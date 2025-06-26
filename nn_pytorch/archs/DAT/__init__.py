@@ -1,15 +1,13 @@
 import math
 from typing import Literal
 
-import onnx
 from pynnlib.architecture import (
+    Module,
     NnPytorchArchitecture,
     SizeConstraint,
     TensorRTConv,
-    Module,
 )
 from pynnlib.model import PyTorchModel
-from pynnlib.nn_types import Idtype, ShapeStrategy
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
@@ -17,26 +15,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .module.dat_arch import DAT
 
-def _to_onnx(
-    model: PyTorchModel,
-    dtype: Idtype,
-    opset: int,
-    static: bool = False,
-    shape_strategy: ShapeStrategy | None = None,
-    device: str = 'cpu',
-    batch: int = 1,
-) -> onnx.ModelProto | None:
-    # Whatever the dtype, convert to fp32 because others are not supported
-    model.dtypes = ('fp32',)
-    return to_onnx(
-        model=model,
-        dtype='fp32',
-        opset=opset,
-        static=False,
-        shape_strategy=shape_strategy,
-        device=device,
-        batch=batch,
-    )
 
 
 def parse(model: PyTorchModel) -> None:
@@ -156,10 +134,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "conv_first.weight",
             "layers.0.blocks.0.ffn.fc1.weight"
         ),
-        module=Module(
-            file="dat_arch",
-            class_name="DAT"
-        ),
+        module=Module(file="dat_arch", class_name="DAT"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'bf16'),

@@ -176,9 +176,10 @@ def main():
                     f"\n    in_dtype:", lightcyan(dtype),
                     f"\n    ({1000 * elapsed:.1f}ms)\n"
                 )
-                if arguments.verbose:
+                if arguments.verbose or arguments.debug:
                     print("Model:")
                     print(model)
+                if arguments.debug:
                     print("Arch:")
                     print(model.arch)
             except Exception as e:

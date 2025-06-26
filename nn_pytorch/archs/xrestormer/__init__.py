@@ -1,7 +1,11 @@
-import json
 import os
 from pprint import pprint
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
@@ -65,8 +69,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "encoder_level1.0.spatial_attn.project_out.weight",
             "output.weight",
         ),
-        module_file="xrestormer",
-        module_class_name="XRestormer",
+        module=Module(file="xrestormer", class_name="XRestormer"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

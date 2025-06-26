@@ -1,6 +1,11 @@
 from typing import Literal
 from pynnlib.utils.p_print import *
-from pynnlib.architecture import NnPytorchArchitecture
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
@@ -63,8 +68,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             'blocks.0.blocks.0.fc2.weight',
             'upscale.MetaUpsample',
         ),
-        module_file="MoESR",
-        module_class_name="MoESR",
+        module=Module(file="MoESR", class_name="MoESR"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=set(['fp32', 'fp16']),

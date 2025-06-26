@@ -1,10 +1,12 @@
 import math
-from typing import Literal
-import onnx
-from pynnlib.architecture import NnPytorchArchitecture,SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
+from pynnlib.logger import is_debugging
 from pynnlib.model import PyTorchModel
-from pynnlib.nn_pytorch.archs.FastDAT.module.fdat import SampleMods3
-from pynnlib.nn_types import Idtype, ShapeStrategy
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
 from ..torch_to_onnx import to_onnx
@@ -74,6 +76,11 @@ def parse(model: PyTorchModel) -> None:
     if embed_dim == 180 and num_groups == 6:
         arch_name = f"{model.arch.name} (xl)"
 
+    if is_debugging():
+        from .module.fdat import FDAT
+        print("update ModuleClass for Aether")
+        model.update(ModuleClass=FDAT)
+
     model.update(
         arch_name=arch_name,
         scale=scale,
@@ -81,7 +88,7 @@ def parse(model: PyTorchModel) -> None:
         out_nc=out_nc,
 
         num_in_ch=in_nc,
-        num_out=out_nc,
+        num_out_ch=out_nc,
         embed_dim=embed_dim,
         num_groups=num_groups,
         depth_per_group=depth_per_group,
@@ -108,8 +115,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "groups.0.blocks.0.inter.cg.1.weight",
             "upsampler.MetaUpsample",
         ),
-        module_file="fdat",
-        module_class_name="FDAT",
+        module=Module(file="fdat", class_name="FDAT"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16', 'bf16'),

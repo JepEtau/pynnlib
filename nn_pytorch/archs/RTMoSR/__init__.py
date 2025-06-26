@@ -1,6 +1,11 @@
 import math
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.utils.p_print import *
-from pynnlib.architecture import NnPytorchArchitecture
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
@@ -69,8 +74,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "to_img.0.conv3.conv.1.weight",
             "to_img.0.conv3.conv.2.weight",
         ),
-        module_file="RTMoSR",
-        module_class_name="RTMoSR",
+        module=Module(file="RTMoSR", class_name="RTMoSR"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=set(['fp32', 'fp16']),

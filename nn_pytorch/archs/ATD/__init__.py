@@ -1,5 +1,9 @@
 import math
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+)
 from pynnlib.model import PyTorchModel
 from pynnlib.nn_pytorch.archs.RCAN import get_pixelshuffle_params
 from ...torch_types import StateDict
@@ -103,8 +107,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "layers.0.residual_group.layers.0.wqkv.bias",
             "layers.0.residual_group.layers.0.attn_aca.logit_scale",
         ),
-        module_file="atd",
-        module_class_name="ATD",
+        module=Module(file="atd", class_name="ATD"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

@@ -1,8 +1,13 @@
 import math
 from typing import Literal
-from pynnlib.utils.p_print import *
-from pynnlib.architecture import NnPytorchArchitecture
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
+from pynnlib.utils.p_print import *
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx
@@ -81,8 +86,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "feats.1.channe_mixer.0.weight",
             "feats.1.channe_mixer.2.weight"
         ),
-        module_file="plksr_arch",
-        module_class_name="PLKSR",
+        module=Module(file="plksr_arch", class_name="PLKSR"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=set(['fp32', 'fp16', 'bf16']),

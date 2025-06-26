@@ -1,4 +1,5 @@
 from pynnlib.architecture import (
+    Module,
     NnPytorchArchitecture,
     SizeConstraint,
     TensorRTConv,
@@ -41,8 +42,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "body.0.weight",
             "body.1.weight"
         ),
-        module_file="SRVGG",
-        module_class_name="SRVGGNetCompact",
+        module=Module(file="SRVGG", class_name="SRVGGNetCompact"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16', 'bf16'),

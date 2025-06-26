@@ -1,5 +1,10 @@
 import math
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ..helpers import (
     get_max_indice,
@@ -69,8 +74,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "body.0.body.0.body.0.weight",
             "body.0.body.0.body.3.conv_du.0.weight",
         ),
-        module_file="rcan",
-        module_class_name="RCAN",
+        module=Module(file="rcan", class_name="RCAN"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

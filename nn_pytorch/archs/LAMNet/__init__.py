@@ -1,5 +1,10 @@
 import math
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ..helpers import get_max_indice
 from ...torch_types import StateDict
@@ -55,8 +60,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "deep_feature_extraction.0.alpha",
             "upsample.0.weight",
         ),
-        module_file="lamnet",
-        module_class_name="LAMNet",
+        module=Module(file="lamnet", class_name="LAMNet"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
@@ -71,8 +75,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "deep_feature_extraction.0.alpha",
             "upsample.0.weight",
         ),
-        module_file="lamnet",
-        module_class_name="LAMNet",
+        module=Module(file="lamnet", class_name="LAMNet"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

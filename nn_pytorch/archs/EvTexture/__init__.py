@@ -1,5 +1,10 @@
 import math
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import (
@@ -42,8 +47,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "spynet.basic_module.0.basic_module.0.weight",
             "conv_last.weight",
         ),
-        module_file="evtexture",
-        module_class_name="EvTexture",
+        module=Module(file="evtexture", class_name="EvTexture"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32'),

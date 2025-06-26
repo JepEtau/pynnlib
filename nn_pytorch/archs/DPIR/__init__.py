@@ -1,4 +1,9 @@
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
@@ -40,8 +45,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "m_body.0.res.0.weight",
             "m_tail.weight",
         ),
-        module_file="network_unet",
-        module_class_name="UNetRes",
+        module=Module(file="network_unet", class_name="UNetRes"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

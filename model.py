@@ -123,7 +123,7 @@ class GenericModel:
             )
             # Append args of the module
             if module is not None:
-                defined_keys.extend(arg_list(kwargs[module_key]))
+                defined_keys.extend(arg_list(module))
 
         for key, value in kwargs.items():
             if module is not None and key not in defined_keys:

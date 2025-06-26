@@ -1,8 +1,8 @@
-
-import math
 from pynnlib.architecture import (
     InferType,
+    Module,
     NnPytorchArchitecture,
+    SizeConstraint,
 )
 from pynnlib.model import PyTorchModel
 from pynnlib.utils.p_print import *
@@ -171,8 +171,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "base_model.nets_list.0.inc.convblock.0.weight",
             "base_model.nets_list.1.inc.convblock.0.weight",
         ),
-        module_file="bsvd",
-        module_class_name="BSVD",
+        module=Module(file="bsvd", class_name="BSVD"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),

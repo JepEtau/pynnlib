@@ -1,4 +1,9 @@
-from pynnlib.architecture import NnPytorchArchitecture, SizeConstraint
+from pynnlib.architecture import (
+    Module,
+    NnPytorchArchitecture,
+    SizeConstraint,
+    TensorRTConv,
+)
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import (
@@ -89,8 +94,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             "spynet.basic_module.0.basic_module.0.weight",
             "conv_before_upsample.weight",
         ),
-        module_file="iart",
-        module_class_name="IART",
+        module=Module(file="iart", class_name="IART"),
         parse=parse,
         to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
