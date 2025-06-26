@@ -15,31 +15,12 @@ from ..torch_to_onnx import to_onnx
 from pynnlib.logger import is_debugging
 
 
-# (state_dict: StateDict, keys: tuple[str | tuple[str]]) -> bool:
-def has_fused_keys(state_dict: StateDict, **kwargs) -> bool:
+def is_fused_arch(state_dict: StateDict, **kwargs) -> bool:
     """
     Checks if the state_dict contains keys typical of a fused AetherNet model.
     A fused model has 'fused_conv.weight' and 'fused_conv.bias' keys within its
     ReparamLargeKernelConv layers, but *not* the 'lk_conv', 'sk_conv', 'lk_bias', 'sk_bias' keys.
     """
-
-    # fused: bool = False
-    # unfused: bool = False
-    # for key in state_dict:
-    #     if '.conv.fused_conv.weight' in key:
-    #         fused = True
-    #     if '.conv.lk_conv.weight' in key or '.conv.sk_conv.weight' in key:
-    #         unfused = True
-    #         print("unfused detected")
-
-    #     # If both fused and unfused keys exist, it's a problematic state_dict,
-    #     # likely not a fully fused or unfused model.
-    #     if fused and unfused:
-    #         return False
-
-    # # A model is considered fully fused if it has fused keys and no unfused keys.
-    # return fused and not unfused
-
     def _is_unfused_key(key) -> bool:
         return (
             ".conv.lk_conv.weight" in key
@@ -62,10 +43,41 @@ def has_fused_keys(state_dict: StateDict, **kwargs) -> bool:
             return True
 
         elif _is_unfused_key(key):
-            warn("unfused")
             return False
 
     return False
+
+
+
+
+def is_unfused_arch(state_dict: StateDict, **kwargs) -> bool:
+    """
+    Detects if the given state_dict belongs to an unfused AetherNet model.
+    It checks for the presence of unfused convolution keys and absence of fused keys,
+    along with a characteristic key like 'conv_first.weight' to confirm it's AetherNet.
+    """
+    has_lk_conv: bool = False
+    has_sk_conv: bool = False
+    has_fused_conv: bool = False
+
+    for key in state_dict.keys():
+        if ".conv.lk_conv.weight" in key:
+            has_lk_conv = True
+        elif ".conv.sk_conv.weight" in key:
+            has_sk_conv = True
+        elif ".conv.fused_conv.weight" in key:
+            has_fused_conv = True
+
+        if (has_lk_conv or has_sk_conv) and has_fused_conv:
+            # Conflict
+            return False
+
+    # Check for core unfused structure and a distinctive AetherNet key
+    return (
+        (has_lk_conv or has_sk_conv)
+        and "conv_first.weight" in state_dict
+        and not has_fused_conv
+    )
 
 
 
@@ -82,7 +94,6 @@ def parse(model: PyTorchModel) -> None:
     out_nc: int = state_dict['conv_last.weight'].shape[0]
 
     embed_dim: int = state_dict['conv_first.weight'].shape[0]
-
 
 
     # Deduce depths by counting blocks in the 'layers' ModuleList.
@@ -185,7 +196,7 @@ def parse(model: PyTorchModel) -> None:
     # you could retrieve it, but it's not standard for generic checkpoints.
     img_range: float = 1.
 
-    fused_init: bool = True
+    fused_init: bool = "unfused" not in model.arch.name.lower()
 
     # Detect variant name
     arch_name = model.arch.name
@@ -225,19 +236,26 @@ def parse(model: PyTorchModel) -> None:
 
 MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
     NnPytorchArchitecture(
-        name="AetherNet",
-        detect=has_fused_keys,
-        module=Module(file="aether_arch", class_name="AetherNet"),
-        parse=parse,
-        to_onnx=to_onnx,
-        dtypes=('fp32', 'fp16', 'bf16'),
-        size_constraint=SizeConstraint(
-            min=(64, 64)
-        ),
-        to_tensorrt=TensorRTConv(
-            dtypes=set(['fp32', 'fp16']),
-        ),
-
+        name="AetherNet (Fused)",
+        detect=is_fused_arch,
+    ),
+    NnPytorchArchitecture(
+        name="AetherNet (Unfused)",
+        detect=is_unfused_arch,
     ),
 )
+
+for arch in MODEL_ARCHITECTURES:
+    arch.module = Module(file="aether_arch", class_name="AetherNet"),
+    arch.parse = parse
+    arch.to_onnx = to_onnx
+    arch.dtypes = ('fp32', 'fp16', 'bf16')
+    arch.size_constraint = SizeConstraint(
+        min=(64, 64)
+    )
+    arch.to_tensorrt = TensorRTConv(
+        dtypes=set(['fp32', 'fp16']),
+    )
+
+
 
