@@ -17,7 +17,6 @@ class GenericSession(abc.ABC):
         self.model: NnModel | None = None
         self._dtype: torch.dtype = IdtypeToTorch['fp32']
 
-
     def initialize(
         self,
         device: str = 'cpu',

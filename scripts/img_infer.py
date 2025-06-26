@@ -9,6 +9,8 @@ import time
 import cv2
 import numpy as np
 
+from pynnlib.utils.torch_tensor import TorchDtypeToIdtype
+
 # logging.config.fileConfig('config.ini')
 # logger = logging.getLogger("pynnlib")
 # logging.basicConfig(filename="logs.log", filemode="w", format="%(name)s → %(levelname)s: %(message)s")
@@ -86,7 +88,7 @@ def main():
         "-s",
         "--suffix",
         type=str,
-        default='_out',
+        default="",
         required=False,
         help="Append this text to the output image filename."
     )
@@ -213,12 +215,8 @@ Fallback to float if the execution provider does not support it
     except:
         sys.exit(red(f"Failed to open image: {arguments.img}"))
 
-    # Output image filepath:
-    dir, basename, ext = path_split(in_img_fp)
-    out_img_fp: str = os.path.join(dir, f"{basename}{arguments.suffix}{ext}")
 
     print(lightcyan(f"Input image:"), f"{in_img_fp}")
-    print(lightcyan(f"Output image:"), f"{out_img_fp}")
 
     # Select a device to run the inference
     # For a tensorrt engine, the device has to be a cuda device
@@ -333,6 +331,22 @@ Fallback to float if the execution provider does not support it
         print(lightcyan(f"fps:"), yellow(f"{float(inferences)/elapsed:.1f}fps"))
     else:
         print(lightcyan(f"Inference:"), yellow(f"{1000 * elapsed:.1f}ms"))
+
+    # Output image filepath:
+    dir, basename, ext = path_split(in_img_fp)
+    suffix: str = arguments.suffix
+    if not suffix:
+        suffix_array: list[str] = [
+            "",
+            model.arch_name.replace("(", "_").replace(")", "_").replace(" ", "").replace("__", "_"),
+            session.device.replace(":", ""),
+            TorchDtypeToIdtype[session.dtype],
+        ]
+        suffix = "_".join(suffix_array)
+    out_img_fp: str = os.path.join(dir, f"{basename}{suffix}{ext}")
+
+    print(lightcyan(f"Output image:"), f"{out_img_fp}")
+
 
     # Save image
     try:

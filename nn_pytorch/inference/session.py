@@ -161,7 +161,6 @@ class PyTorchSession(GenericSession):
             flip_r_b=True,
         )
         nnlogger.debug(f"[V]   in tensor: {d_in_tensor.shape}, {d_in_tensor.dtype}")
-        print(f"[V]   in tensor: {d_in_tensor.shape}, {d_in_tensor.dtype}")
 
         with context:
             d_out_tensor: Tensor = self.module(d_in_tensor)

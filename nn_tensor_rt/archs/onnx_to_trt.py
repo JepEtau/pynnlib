@@ -36,6 +36,7 @@ def onnx_to_trt_engine(
         is_tensorrt_min_10_12
         and model.shape_strategy.type in ('static', 'fixed', 'dynamic')
     )
+    # use_strongly_typed = False
     print(red(f"use_strongly_typed: {use_strongly_typed}"))
 
     has_fp16: bool = bool('fp16' in dtypes)
