@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from torch import nn
+from torch import nn, Tensor
 from torch.nn.init import trunc_normal_
 
 
@@ -29,7 +29,7 @@ class RMSNorm(nn.Module):
         self.scale = nn.Parameter(torch.ones(dim))
         self.offset = nn.Parameter(torch.zeros(dim))
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         norm_x = x.norm(2, dim=1, keepdim=True)
         d_x = x.size(1)
         rms_x = norm_x * (d_x ** (-1.0 / 2))
@@ -126,7 +126,7 @@ class Conv3XC(nn.Module):
         self.eval_conv.weight.data = self.weight_concat
         self.eval_conv.bias.data = self.bias_concat  # type: ignore
 
-    def forward(self, x):  # noqa: ANN201, ANN001
+    def forward(self, x: Tensor) -> Tensor:
         x_pad = F.pad(x, (1, 1, 1, 1), "constant", 0)
         out = self.conv(x_pad) + self.sk(x)
         return out
@@ -148,7 +148,7 @@ class SeqConv3x3(nn.Module):
         self.k1 = conv1.weight
         self.b1 = conv1.bias
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         # conv-1x1
         y0 = F.conv2d(input=x, weight=self.k0, bias=self.b0, stride=1)
         # explicitly padding with bias
@@ -219,7 +219,7 @@ class RepConv(nn.Module):
             self.fuse()
         return self
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         if self.training:
             return self.train_forward(x)
         else:
@@ -310,7 +310,7 @@ class OmniShift(nn.Module):
         if not mode:
             self.reparam_5x5()
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         if self.training:
             out = self.forward_train(x)
         else:
@@ -326,7 +326,7 @@ class ParPixelUnshuffle(nn.Module):
             nn.MaxPool2d(kernel_size=down, stride=down), RepConv(in_dim, out_dim)
         )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         return self.pu(x) + self.poll(x)
 
 
@@ -359,7 +359,7 @@ class GatedCNNBlock(nn.Module):
         )  # InceptionDWConv2d(dim*4)
         self.fc2 = RepConv(hidden, dim) if dccm else nn.Conv2d(hidden, dim, 1, 1)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         shortcut = x
         x = self.norm(x)
         g, i, c = torch.split(self.fc1(x), self.split_indices, dim=1)
@@ -421,7 +421,7 @@ class RTMoSR(nn.Module):
         mod_pad_w = (scaled_size - resolution[1] % scaled_size) % scaled_size
         return F.pad(x, (0, mod_pad_w, 0, mod_pad_h), "reflect")
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         b, c, h, w = x.shape
         out = self.check_img_size(x, (h, w))
         out = self.to_feat(out)
@@ -431,9 +431,3 @@ class RTMoSR(nn.Module):
         ] + F.interpolate(x, scale_factor=self.scale)
 
 
-def RTMoSR_L(**kwargs):
-    return RTMoSR(unshuffle_mod=True, **kwargs)
-
-
-def RTMoSR_UL(**kwargs):
-    return RTMoSR(ffn_expansion=1.5, dccm=False, unshuffle_mod=True, **kwargs)

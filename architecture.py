@@ -250,7 +250,6 @@ def detect_model_arch(
     """Detect the model architecture and returns it"""
 
     for arch in architectures.values():
-        nnlogger.debug(f"[V] check if {arch.name}")
 
         if (detect_fct := arch.detect) is None:
             raise NotImplementedError(f"Detection function is not implemented for {arch.name}")

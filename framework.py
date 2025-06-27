@@ -10,7 +10,7 @@ import re
 import sys
 from typing import OrderedDict
 
-from .logger import nnlogger
+from .logger import is_debugging, nnlogger
 from .import_libs import is_tensorrt_available
 from .nn_types import NnFrameworkType, NnModelObject
 from .model import NnModel
@@ -45,8 +45,9 @@ class NnFramework:
         try:
             return self.get_arch(model, self.architectures, device)
         except:
-            return self.get_arch(model, self.architectures, device)
-            nnlogger.error(f"[E] architecture not found for {model}")
+            nnlogger.warning(f"[W] architecture not found for {model}")
+            if is_debugging():
+                return self.get_arch(model, self.architectures, device)
 
         return (None, None)
 
