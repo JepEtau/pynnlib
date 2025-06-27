@@ -94,8 +94,6 @@ def to_onnx(
     )
     tensor_dtype: torch.dtype = IdtypeToTorch[dtype]
     dummy_input = dummy_input.to(dtype=tensor_dtype)
-    # dummy_input = dummy_input.half() if fp16 else dummy_input.float()
-    # dummy_input = dummy_input.float()
     print(f"[V]   use a dummy input: {dummy_input.shape}, {dummy_input.dtype}, {dummy_input.device}")
 
     model_proto: onnx.ModelProto
