@@ -19,7 +19,7 @@ def generate_onnx_basename(
     basename: str
 ) -> str:
     dtypes = '_'.join(
-        [fp for fp in ('fp32', 'fp16', 'bf16') if fp in model.dtypes]
+        [fp for fp in ('fp32', 'fp16', 'bf16', 'int8') if fp in model.dtypes]
     )
     shape: str = ""
     if model.shape_strategy.type == 'static':

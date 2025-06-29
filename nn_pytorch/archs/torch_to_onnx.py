@@ -23,7 +23,8 @@ def to_onnx(
     opset: int,
     shape_strategy: ShapeStrategy | None = None,
     device: str = 'cpu',
-    batch: int = 1,
+    export_args: dict = {},
+    # **kwargs,
 ) -> onnx.ModelProto | None:
     """Returns an Onnx model as a byte buffer
         if size is not None, use it to convert to a static shape
@@ -60,17 +61,10 @@ def to_onnx(
 
         else:
             print("[V]  shape strategy is dynamic or fixed")
-            if batch == 1:
-                dynamic_axes = {
-                    'input': {2: "height", 3: "width"},
-                    'output': {2: "height", 3: "width"},
-                }
-
-            else:
-                dynamic_axes = {
-                    'input': {0: "batch", 2: "height", 3: "width"},
-                    'output': {0: "batch", 2: "height", 3: "width"},
-                }
+            dynamic_axes = {
+                'input': {2: "height", 3: "width"},
+                'output': {2: "height", 3: "width"},
+            }
 
             size: SizeConstraint | None = model.size_constraint
             w, h = size.min if size is not None and size.min is not None else (32, 32)
@@ -84,16 +78,13 @@ def to_onnx(
         size: SizeConstraint | None = model.size_constraint
         w, h = size.min if size is not None and size.min is not None else (32, 32)
 
+    tensor_dtype: torch.dtype = IdtypeToTorch[dtype]
     dummy_input = torch.rand(
-        batch,
-        model.in_nc,
-        h,
-        w,
+        1, model.in_nc, h, w,
+        dtype=tensor_dtype,
         device=device,
         requires_grad=True
     )
-    tensor_dtype: torch.dtype = IdtypeToTorch[dtype]
-    dummy_input = dummy_input.to(dtype=tensor_dtype)
     print(f"[V]   use a dummy input: {dummy_input.shape}, {dummy_input.dtype}, {dummy_input.device}")
 
     model_proto: onnx.ModelProto
@@ -117,6 +108,7 @@ def to_onnx(
                 opset_version=opset,
                 do_constant_folding=True,
                 dynamic_axes=dynamic_axes,
+                **export_args,
             )
             bytes_io.seek(0)
             model_proto = onnx.load(bytes_io)

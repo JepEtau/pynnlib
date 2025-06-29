@@ -107,11 +107,6 @@ class PyTorchSession(GenericSession):
         nnlogger.debug(f"[V] load model to {self.device}, {dtype}, dtype={self.dtype}")
         self.module = self.module.to(self.device)
         self.module = self.module.to(dtype=self.dtype)
-        # self.module = (
-        #     self.module.half()
-        #     if self.dtype == torch.float16
-        #     else self.module.float()
-        # )
 
         if warmup and 'cuda' in device:
             self.warmup(3)

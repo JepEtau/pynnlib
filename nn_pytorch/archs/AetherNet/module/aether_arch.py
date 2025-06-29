@@ -361,7 +361,7 @@ class Upsample(nn.Sequential):
         super(Upsample, self).__init__(*m) # Initialize as an nn.Sequential module
 
 
-class aether(nn.Module):
+class AetherNet(nn.Module):
     r"""
     AetherNet: A high-performance Single Image Super-Resolution (SISR) network.
 

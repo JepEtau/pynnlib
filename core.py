@@ -233,8 +233,8 @@ class NnLib:
             onnx_model_object: onnx.ModelProto = convert_fct(
                 model=model,
                 dtype=dtype,
-                shape_strategy=shape_strategy,
                 opset=opset,
+                shape_strategy=shape_strategy,
                 device=device,
             )
         else:

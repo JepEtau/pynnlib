@@ -1,4 +1,7 @@
 from warnings import warn
+
+import onnx
+import torch
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
@@ -6,6 +9,7 @@ from pynnlib.architecture import (
     TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
+from pynnlib.nn_types import Idtype, ShapeStrategy
 from ...torch_types import StateDict
 from ..helpers import (
     get_max_indice,
@@ -13,6 +17,27 @@ from ..helpers import (
 )
 from ..torch_to_onnx import to_onnx
 from pynnlib.logger import is_debugging
+
+
+def _to_onnx(
+    model: PyTorchModel,
+    dtype: Idtype,
+    opset: int,
+    shape_strategy: ShapeStrategy | None = None,
+    device: str = 'cpu',
+) -> onnx.ModelProto | None:
+    return to_onnx(
+        model=model,
+        dtype=dtype,
+        opset=opset,
+        shape_strategy=shape_strategy,
+        device=device,
+        export_args={
+            # Critical for ensuring correct QAT node behavior
+            'training': torch.onnx.TrainingMode.EVAL
+        }
+    )
+
 
 
 def is_fused_arch(state_dict: StateDict, **kwargs) -> bool:
@@ -248,7 +273,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
 for arch in MODEL_ARCHITECTURES:
     arch.module = Module(file="aether_arch", class_name="AetherNet")
     arch.parse = parse
-    arch.to_onnx = to_onnx
+    arch.to_onnx = _to_onnx
     arch.dtypes = ('fp32', 'fp16', 'bf16')
     arch.size_constraint = SizeConstraint(
         min=(64, 64)
