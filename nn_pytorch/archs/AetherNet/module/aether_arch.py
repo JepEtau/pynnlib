@@ -4,8 +4,9 @@
 
 import math
 import torch
-from torch import nn, Tensor
+from torch import nn
 from torch.nn.init import trunc_normal_
+from torch import Tensor
 from typing import Any
 
 # This module contains the core architectural components of AetherNet.

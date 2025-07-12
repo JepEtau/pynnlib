@@ -186,8 +186,6 @@ class NnLib:
             try:
                 model_arch.parse(model)
             except Exception as e:
-                warn(f"_create_model: failed to parse {nn_model_path}")
-                print(type(e))
                 return None
 
         return model
