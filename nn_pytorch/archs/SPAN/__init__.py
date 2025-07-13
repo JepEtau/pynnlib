@@ -75,6 +75,9 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         module=Module(file="span", class_name="SPAN"),
         parse=parse,
         to_onnx=to_onnx,
+        to_tensorrt=TensorRTConv(
+            dtypes=set(['fp32', 'fp16']),
+        ),
         dtypes=('fp32', 'fp16', 'bf16'),
     ),
 )
