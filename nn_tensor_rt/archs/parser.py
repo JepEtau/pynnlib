@@ -6,8 +6,8 @@ from typing import Any, Type
 from warnings import warn
 import zipfile
 
-import tensorrt as trt
-from tensorrt import DataType as TrtDType
+from ...import_libs import trt
+TrtDType = trt.DataType
 
 from pynnlib.architecture import detect_model_arch
 from pynnlib.nn_types import Idtype, ShapeStrategy

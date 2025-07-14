@@ -4,7 +4,7 @@ from pynnlib import is_tensorrt_available
 from pynnlib.nn_types import Idtype
 from pynnlib.session import GenericSession
 if is_tensorrt_available():
-    import tensorrt as trt
+    from pynnlib.import_libs import trt
 
 import torch
 from pynnlib.logger import nnlogger
