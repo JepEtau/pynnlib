@@ -165,3 +165,6 @@ profiling.bat
 **/bias_act_cuda
 **/upfirdn2d_cuda
 **/fsa_cuda
+
+
+*.dll

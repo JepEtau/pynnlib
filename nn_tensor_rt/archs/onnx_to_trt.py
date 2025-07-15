@@ -4,10 +4,9 @@ import numpy as np
 from pynnlib.logger import nnlogger
 from pynnlib.nn_types import Idtype, ShapeStrategy
 from pynnlib.utils.p_print import *
-import tensorrt as trt
-from tensorrt import DataType as TrtDType
+from pynnlib.import_libs import trt
+TrtDType = trt.DataType
 
-import torch
 from pynnlib.model import OnnxModel
 from ..inference.session import TRT_LOGGER
 from ..trt_types import TrtEngine
@@ -103,14 +102,22 @@ def onnx_to_trt_engine(
         # builder.builder_optimization_level = 5
 
         if is_onnx_fp16 or has_fp16:
-            if builder.platform_has_fast_fp16:
-                if not use_strongly_typed:
-                    builder_config.set_flag(trt.BuilderFlag.FP16)
-                print(f"[V]   set fp16 flag")
-            else:
-                raise RuntimeError("Error: fp16 is requested but this platform does not support it")
+            has_fp16_support: bool = bool(
+                getattr(builder, "platform_has_fast_fp16", None) is not None
+            )
+            print(f"has_fp16_support: {has_fp16_support}")
+            if has_fp16_support:
+                if builder.platform_has_fast_fp16:
+                    if not use_strongly_typed:
+                        builder_config.set_flag(trt.BuilderFlag.FP16)
+                    print(f"[V]   set fp16 flag")
+                else:
+                    raise RuntimeError("Error: fp16 is requested but this platform does not support it")
+            # else:
+            #     builder_config.set_flag(trt.BuilderFlag.FP16)
 
         if not use_strongly_typed and has_bf16:
+            print(f"use_strongly_typed: {use_strongly_typed}, has_bf16: {has_bf16}")
             builder_config.set_flag(trt.BuilderFlag.BF16)
 
         onnx_h, onnx_w = onnx_in_tensor.shape[2:]

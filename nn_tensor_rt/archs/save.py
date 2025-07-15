@@ -14,7 +14,7 @@ from ...utils import is_access_granted
 from ...utils.p_print import *
 from pynnlib.model import TrtModel
 from pynnlib.nn_types import ShapeStrategy
-import tensorrt as trt
+from pynnlib.import_libs import trt
 _has_herlegon_system_ = False
 try:
     from system import (

@@ -5,31 +5,19 @@
 """
 Standalone FDAT (FastDAT) Architecture
 DAT Inspired Lightweight Attention Network for Real World Image Super Resolution
-
-External dependencies required:
-- torch
-- numpy
-- spandrel (for DySample and DropPath)
-  - pip install spandrel
 """
 
 import collections.abc
 import math
-from collections import OrderedDict
 from itertools import repeat
 from typing import Literal
 
-import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
 from torch.nn import init
 from torch.nn.init import trunc_normal_
 from torch.nn.modules.batchnorm import _BatchNorm
-
-from ..._shared.dysample import DySample
-
-
 
 # --------------------------------------------
 # Utility functions
@@ -466,4 +454,3 @@ class FDAT(nn.Module):
         x_deep = self.conv_after(x_deep)
         x_out = self.upsampler(x_deep + x_shallow)
         return x_out
-
