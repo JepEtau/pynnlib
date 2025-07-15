@@ -164,7 +164,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="SwinIR", class_name="SwinIR"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=('fp32'),
+        to_onnx=to_onnx,
+        to_tensorrt=TensorRTConv(
+            dtypes=set(['fp32', 'fp16']),
+        ),
     ),
 )

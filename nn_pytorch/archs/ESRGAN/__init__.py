@@ -212,6 +212,8 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
 for arch in MODEL_ARCHITECTURES:
     arch.module = Module(file="RRDB", class_name="RRDBNet")
     arch.parse = parse
-    arch.to_onnx = to_onnx
     arch.dtypes = ['fp32', 'fp16']
-
+    arch.to_onnx = to_onnx
+    arch.to_tensorrt=TensorRTConv(
+        dtypes=set(['fp32', 'fp16']),
+    )

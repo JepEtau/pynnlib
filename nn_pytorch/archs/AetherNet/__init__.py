@@ -273,11 +273,11 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
 for arch in MODEL_ARCHITECTURES:
     arch.module = Module(file="aether_arch", class_name="AetherNet")
     arch.parse = parse
-    arch.to_onnx = _to_onnx
     arch.dtypes = ('fp32', 'fp16', 'bf16')
     arch.size_constraint = SizeConstraint(
         min=(64, 64)
     )
+    arch.to_onnx = _to_onnx
     arch.to_tensorrt = TensorRTConv(
         dtypes=set(['fp32', 'fp16']),
         weak_typing=True,

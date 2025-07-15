@@ -4,6 +4,7 @@ from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
     SizeConstraint,
+    TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
@@ -77,10 +78,13 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="ASID", class_name="ASID"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
         size_constraint=SizeConstraint(
             min=(32, 32)
-        )
+        ),
+        to_onnx=to_onnx,
+        to_tensorrt=TensorRTConv(
+            dtypes=set(['fp32', 'fp16']),
+        ),
     ),
 )

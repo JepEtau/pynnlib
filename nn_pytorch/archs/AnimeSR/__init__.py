@@ -40,7 +40,6 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="vsr_arch", class_name="MSRSWVSR"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
         # size_constraint=SizeConstraint(
         #     min=(64, 64)
@@ -49,6 +48,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             type='temporal',
             inputs=3,
             outputs=1,
-        )
+        ),
+        to_onnx=to_onnx,
     ),
 )

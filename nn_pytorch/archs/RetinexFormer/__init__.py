@@ -63,12 +63,15 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="RetinexFormer", class_name="RetinexFormer"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
         size_constraint=SizeConstraint(
             min=(8, 8),
             max=(3000, 3000),
-        )
+        ),
+        to_onnx=to_onnx,
+        to_tensorrt=TensorRTConv(
+            dtypes=set(['fp32', 'fp16']),
+        ),
     ),
     # NnPytorchArchitecture(
     #     name='MST++',

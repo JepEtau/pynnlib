@@ -3,6 +3,7 @@ from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
     SizeConstraint,
+    TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from pynnlib.nn_pytorch.archs.RCAN import get_pixelshuffle_params
@@ -109,10 +110,13 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="atd", class_name="ATD"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
         size_constraint=SizeConstraint(
             min=(8, 8),
-        )
+        ),
+        to_onnx=to_onnx,
+        to_tensorrt=TensorRTConv(
+            dtypes=set(['fp32', 'fp16']),
+        ),
     ),
 )
