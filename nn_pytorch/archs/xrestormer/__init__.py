@@ -71,10 +71,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="xrestormer", class_name="XRestormer"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
         size_constraint=SizeConstraint(
             min=(64, 64)
-        )
+        ),
+        to_onnx=to_onnx,
     ),
 )

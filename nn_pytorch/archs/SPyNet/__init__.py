@@ -34,7 +34,6 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="SPyNet", class_name="SpyNet"),
         parse=parse,
-        # to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
         size_constraint=SizeConstraint(
             min=(8, 8)

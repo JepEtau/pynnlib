@@ -73,7 +73,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="RTMoSR", class_name="RTMoSR"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=set(['fp32', 'bf16', 'fp16']),
+        to_onnx=to_onnx,
+        to_tensorrt=TensorRTConv(
+            dtypes=set(['fp32', 'fp16']),
+        ),
     ),
 )

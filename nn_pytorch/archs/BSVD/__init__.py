@@ -173,14 +173,14 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="bsvd", class_name="BSVD"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=('fp32', 'fp16'),
         # size_constraint=SizeConstraint(
         #     min=(64, 64)
         # )
         infer_type=InferType(
             type='temporal',
-        )
+        ),
+        to_onnx=to_onnx,
     ),
 )
 

@@ -70,7 +70,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="MoESR", class_name="MoESR"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=set(['fp32', 'fp16']),
+        to_onnx=to_onnx,
+        to_tensorrt=TensorRTConv(
+            dtypes=set(['fp32', 'fp16']),
+        ),
     ),
 )

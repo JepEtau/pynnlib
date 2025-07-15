@@ -126,9 +126,9 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="lhan_arch", class_name="Lhan"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=('fp32', 'fp16', 'bf16'),
         size_constraint=SizeConstraint(min=(8, 8)),
+        to_onnx=to_onnx,
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'bf16', 'fp16']),
         ),

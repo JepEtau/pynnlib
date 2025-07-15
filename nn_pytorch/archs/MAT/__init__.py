@@ -161,13 +161,13 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         detect=contains_any_keys,
         module=Module(file="mat", class_name="MAT"),
         parse=parse,
-        to_onnx=None,
-        # to_onnx=to_onnx_inpaint,
         dtypes=set(['fp32', 'fp16']),
         infer_type=InferType(
             type='inpaint',
             inputs=2,
             outputs=1
-        )
+        ),
+        to_onnx=None,
+        # to_onnx=to_onnx_inpaint,
     ),
 )

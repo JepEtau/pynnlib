@@ -138,15 +138,13 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="dat_arch", class_name="DAT"),
         parse=parse,
-        to_onnx=to_onnx,
         dtypes=('fp32', 'bf16'),
         size_constraint=SizeConstraint(min=(16, 16)),
-
+        to_onnx=to_onnx,
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'bf16']),
             weak_typing=True,
             shape_strategy_types=set(['fixed']),
         ),
-
     ),
 )
