@@ -50,9 +50,14 @@ def generate_metadata(
         if model.arch_name.lower() not in ('unknown', 'generic'):
             metadata['arch_name'] = model.arch_name
 
-        if model.arch.to_tensorrt is not None:
-            if model.arch.to_tensorrt.weak_typing:
-                metadata['weak_typing'] = 'enforce'
+        if model.force_weak_typing:
+            metadata['typing'] = "weak"
+        elif model.arch.to_tensorrt is not None:
+            metadata['typing'] = (
+                "weak"
+                if model.arch.to_tensorrt.weak_typing
+                else "strong"
+            )
 
     elif model.framework.type == NnFrameworkType.PYTORCH:
         ext = get_extension(model.filepath)
@@ -76,5 +81,13 @@ def generate_metadata(
         if model.arch_name.lower() not in ('unknown', 'generic'):
             metadata['arch_name'] = model.arch_name
         metadata['shapes'] = model.shape_strategy.type
+        if model.force_weak_typing:
+            metadata['typing'] = "weak"
+        elif model.arch.to_tensorrt is not None:
+            metadata['typing'] = (
+                "weak"
+                if model.arch.to_tensorrt.weak_typing
+                else "strong"
+            )
 
     return metadata

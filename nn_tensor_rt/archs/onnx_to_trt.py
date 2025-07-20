@@ -28,14 +28,13 @@ def onnx_to_trt_engine(
         support only a single input tensor
 
     """
-    is_tensorrt_min_10_12 = False
     tensorrt_version = list(map(int, trt.__version__.split(".")))
     is_tensorrt_min_10_12 = bool(tensorrt_version[0] * 100 + tensorrt_version[1] >= 1012)
-    use_strongly_typed: bool = bool(
-        is_tensorrt_min_10_12
-        and model.shape_strategy.type in ('static', 'fixed', 'dynamic')
-    )
-    # use_strongly_typed = False
+    use_strongly_typed: bool = False
+    if is_tensorrt_min_10_12:
+        use_strongly_typed = not model.arch.to_tensorrt.weak_typing
+        if model.force_weak_typing:
+            use_strongly_typed = False
     print(red(f"use_strongly_typed: {use_strongly_typed}"))
 
     has_fp16: bool = bool('fp16' in dtypes)

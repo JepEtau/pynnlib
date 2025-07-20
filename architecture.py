@@ -72,6 +72,16 @@ class NnGenericArchitecture:
     # Simple, temporal, nb of inputs/outputs, etc.
     infer_type: InferType = field(default_factory=InferType)
 
+    _locked: bool = field(default=False, init=False, repr=False)
+
+    def lock(self):
+        self._locked = True
+
+    def __setattr__(self, key, value):
+        if getattr(self, '_locked', False) and key != '_locked':
+            raise AttributeError(f"Cannot modify '{key}'; object is locked.")
+        super().__setattr__(key, value)
+
     @overload
     def update(self, d: dict[Any, Any]) -> None: ...
     @overload
@@ -157,12 +167,7 @@ class NnPytorchArchitecture(NnGenericArchitecture):
     detection_keys: tuple[str | tuple[str]] | dict = field(default_factory=tuple)
     module: Module = field(default_factory=Module)
 
-    # TODO replace by a dataclass to indicate if this model
-    # supports weak or strong typing
-    # support some dtypes that torch doesn't
-    #   example: SCUNET does not support conversion to fp16
     to_onnx: ConvertToOnnxFct | None = None
-    # to_tensorrt: ConvertToTensorrtFct | None = None
     to_tensorrt: TensorRTConv | None = None
 
     __caller_dir: str = ""
@@ -217,8 +222,7 @@ class NnPytorchArchitecture(NnGenericArchitecture):
 @dataclass
 class NnOnnxArchitecture(NnGenericArchitecture):
     scale: int | None = None
-    to_tensorrt: Callable | None = None
-
+    to_tensorrt: TensorRTConv | None = None
 
 
 @dataclass

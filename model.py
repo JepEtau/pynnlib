@@ -10,7 +10,11 @@ from .nn_pytorch.torch_types import StateDict
 from .nn_tensor_rt.trt_types import TrtEngine
 from .nn_types import Idtype, NnFrameworkType, ShapeStrategy
 if TYPE_CHECKING:
-    from .architecture import NnArchitecture, SizeConstraint
+    from .architecture import (
+        NnArchitecture,
+        SizeConstraint,
+        NnPytorchArchitecture,
+    )
     from .nn_types import NnModelDtype, NnFrameworkType
     from .framework import NnFramework
 
@@ -87,6 +91,7 @@ class GenericModel:
     # PyTorch: use the dtypes specified by each arch
     # TODO: move this as a property like size_constraint
     dtypes: list[NnModelDtype] = field(default_factory=list)
+    force_weak_typing: bool = False
 
     # Object used to initialize an executor.
     # when in multiprocess. Useless otherwise
@@ -208,6 +213,7 @@ class OnnxModel(GenericModel):
     opset: int | None = None
     alt_arch_name: str = ''
     in_shape_order: str = 'NCHW'
+    torch_arch: NnPytorchArchitecture | None = None
 
 
 
@@ -227,6 +233,7 @@ class TrtModel(GenericModel):
     opset: int | None = None
     # Put here the device id? no? used for conversion load
     device: str = ""
+    torch_arch: NnPytorchArchitecture | None = None
 
 
 NnModel = OnnxModel | PyTorchModel | TrtModel

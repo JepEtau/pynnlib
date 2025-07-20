@@ -37,6 +37,7 @@ def convert_to_tensorrt(
     model: NnModel,
     device: str,
     dtype: Idtype,
+    force_weak_typing: bool = False,
     force: bool = False,
     debug: Optional[bool] = False
 ) -> TrtModel | None:
@@ -83,6 +84,7 @@ def convert_to_tensorrt(
         model=model,
         shape_strategy=shape_strategy,
         dtype=dtype,
+        force_weak_typing=force_weak_typing,
         optimization_level=opt_level,
         opset=arguments.opset,
         device=device,
@@ -245,7 +247,15 @@ format: WxH.
         help="""(TensorRT) (not yet supported) Optimization level. [1..5].
 \n"""
     )
-
+    parser.add_argument(
+        "--weak",
+        "-weak",
+        action="store_true",
+        required=False,
+        default=False,
+        help="""(TensorRT) Force weak typing.
+\n"""
+    )
     parser.add_argument(
         "-v",
         "--verbose",
@@ -339,6 +349,7 @@ format: WxH.
                 model=model,
                 device=device,
                 dtype=c_dtype,
+                force_weak_typing=arguments.weak,
                 force=force,
                 debug=True
             )

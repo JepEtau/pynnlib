@@ -34,7 +34,11 @@ def generate_tensorrt_basename(
     opset = f"op{model.opset}"
     shape: str
     if model.shape_strategy.type in ('static', 'fixed'):
-        shape = f"{model.shape_strategy.type}_" + 'x'.join([str(x) for x in model.shape_strategy.opt_size])
+        shape = (
+            f"{model.shape_strategy.type}_"
+            + 'x'.join([str(x) for x in model.shape_strategy.opt_size])
+        )
+
     else:
         shape_strategy = deepcopy(model.shape_strategy)
         if shape_strategy.min_size == (0, 0):
@@ -54,7 +58,13 @@ def generate_tensorrt_basename(
         import torch
         cc = '.'.join(map(str, torch.cuda.get_device_capability()))
 
-    return f"{basename}_cc{cc}_{opset}_{dtypes}_{shape}_{tensorrt_version}"
+    weak_typed: str = (
+        "_weak"
+        if model.force_weak_typing or model.arch.to_tensorrt.weak_typing
+        else ""
+    )
+
+    return f"{basename}_cc{cc}_{opset}_{dtypes}_{shape}{weak_typed}_{tensorrt_version}"
 
 
 

@@ -144,3 +144,6 @@ for arch in MODEL_ARCHITECTURES:
 
         # else:
         #   conversion to tensorrt is not supported
+
+    arch.lock()
+
