@@ -3,7 +3,7 @@ import onnx
 from typing import Literal
 from pynnlib.utils.p_print import *
 from pynnlib.logger import nnlogger
-from pynnlib.architecture import NnOnnxArchitecture # , TensorRTConv
+from pynnlib.architecture import NnOnnxArchitecture, TensorRTConv
 from pynnlib.model import OnnxModel
 from ..inference.session import OnnxSession
 from .onnx_to_tensorrt import to_tensorrt

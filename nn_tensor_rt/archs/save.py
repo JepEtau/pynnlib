@@ -58,10 +58,15 @@ def generate_tensorrt_basename(
         import torch
         cc = '.'.join(map(str, torch.cuda.get_device_capability()))
 
+    # Use the torch arch
+    weak_typing: bool = False
+    if model.torch_arch is not None:
+        weak_typing = model.torch_arch.to_tensorrt.weak_typing
+    else:
+        weak_typing = model.arch.to_tensorrt.weak_typing
+
     weak_typed: str = (
-        "_weak"
-        if model.force_weak_typing or model.arch.to_tensorrt.weak_typing
-        else ""
+        "_weak" if model.force_weak_typing or weak_typing else ""
     )
 
     return f"{basename}_cc{cc}_{opset}_{dtypes}_{shape}{weak_typed}_{tensorrt_version}"
