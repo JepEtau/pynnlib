@@ -8,21 +8,40 @@ __is_tensorrt_available__: bool = False
 
 def import_trt():
     trt = None
+    import sys
     try:
         import ctypes
         base_dir = os.path.dirname(os.path.abspath(__file__))
         tensor_rtx_libs = os.path.join(base_dir, "libs")
-        tensor_rtx_dll = os.path.join(tensor_rtx_libs, "tensorrt_rtx_1_0.dll")
 
-        current_path = os.environ.get("PATH", "").split(os.pathsep)
-        if tensor_rtx_libs not in current_path:
-            current_path.insert(0, tensor_rtx_libs)
-            os.environ["PATH"] = os.pathsep.join(current_path)
+        # Determine platform-specific library name and loader
+        if sys.platform == "win32":
+            tensor_rtx_dll = os.path.join(tensor_rtx_libs, "tensorrt_rtx_1_0.dll")
 
-        ctypes.WinDLL(tensor_rtx_dll)
+            current_path = os.environ.get("PATH", "").split(os.pathsep)
+            if tensor_rtx_libs not in current_path:
+                current_path.insert(0, tensor_rtx_libs)
+                os.environ["PATH"] = os.pathsep.join(current_path)
 
-        import tensorrt_rtx as trt
-        print("Imported tensorrt_rtx")
+            ctypes.WinDLL(tensor_rtx_dll)
+
+            import tensorrt_rtx as trt
+            print("Imported tensorrt_rtx")
+
+        elif sys.platform == "linux":
+            # Untested
+            lib_name = "libtensorrt_rtx_1_0.so"
+            full_lib_path = os.path.join(tensor_rtx_libs, lib_name)
+
+            # Add to LD_LIBRARY_PATH if not already there
+            current_ld_path = os.environ.get("LD_LIBRARY_PATH", "").split(os.pathsep)
+            if tensor_rtx_libs not in current_ld_path:
+                current_ld_path.insert(0, tensor_rtx_libs)
+                os.environ["LD_LIBRARY_PATH"] = os.pathsep.join(current_ld_path)
+
+            ctypes.CDLL(full_lib_path)
+        else:
+            raise NotImplementedError("Not supported platform")
 
     except (FileNotFoundError, OSError, ImportError):
         try:
@@ -32,7 +51,6 @@ def import_trt():
             nnlogger.debug("[W] Tensorrt package not found")
             print("[W] Tensorrt package not found")
 
-    import sys
     modules = set(sys.modules) & set(globals())
     module_names = [sys.modules[m] for m in modules]
     if 'tensorrt' in module_names:
