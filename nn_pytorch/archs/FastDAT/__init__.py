@@ -66,15 +66,17 @@ def parse(model: PyTorchModel) -> None:
     )
     img_range: float = 1.0
 
-    variants: dict[int, str] = {
-        96: " (tiny)",
-        108: " (light)",
-        120: " (medium)",
-        180: " (large)"
+    variants: dict[int, tuple[str, float]] = {
+        96: (" (tiny)", 0.5),
+        108: (" (light)", 0.08),
+        120: (" (medium)", 0.1),
+        180: (" (large)", 0.1),
     }
-    arch_name = f"{model.arch.name}{variants.get(embed_dim, '')}"
+    variant_name, drop_path_rate = variants.get(embed_dim, ('', 0.1))
+    arch_name = f"{model.arch.name}{variant_name}"
     if embed_dim == 180 and num_groups == 6:
         arch_name = f"{model.arch.name} (xl)"
+        drop_path_rate = 0.1
 
     if is_debugging():
         from .module.fdat import FDAT
@@ -96,13 +98,11 @@ def parse(model: PyTorchModel) -> None:
         ffn_expansion_ratio=ffn_expansion_ratio,
         aim_reduction_ratio=aim_reduction_ratio,
         group_block_pattern=group_block_pattern,
+        drop_path_rate=drop_path_rate,
         mid_dim=mid_dim,
         upsampler_type=sample_types[sample_type_index],
         img_range=img_range,
     )
-
-
-
 
 MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
     NnPytorchArchitecture(

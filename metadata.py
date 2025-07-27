@@ -77,17 +77,19 @@ def generate_metadata(
             warn(f"Adding metadata to a \'{ext}\' file is not supported")
 
     elif model.framework.type == NnFrameworkType.TENSORRT:
+        print(model)
         metadata['trtzip_version'] = "1.0"
         if model.arch_name.lower() not in ('unknown', 'generic'):
             metadata['arch_name'] = model.arch_name
+
         metadata['shapes'] = model.shape_strategy.type
         if model.force_weak_typing:
+            # weak typing may be forced for testing puprose, use it
             metadata['typing'] = "weak"
-        elif model.arch.to_tensorrt is not None:
+
+        elif model.torch_arch.to_tensorrt is not None:
             metadata['typing'] = (
-                "weak"
-                if model.arch.to_tensorrt.weak_typing
-                else "strong"
+                "weak" if model.torch_arch.to_tensorrt.weak_typing else "strong"
             )
 
     return metadata

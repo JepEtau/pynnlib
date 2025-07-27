@@ -369,24 +369,23 @@ class NnLib:
 
         # Convert to Onnx
         # Always use fp32 when converting to onnx
-        if model.fwk_type != NnFrameworkType.ONNX:
+        if model.fwk_type == NnFrameworkType.ONNX:
             nnlogger.debug(f"This model is already an ONNX model")
-            return model
-        nnlogger.debug(yellow(f"[I] Convert to onnx ({dtype}), use {device}"))
-        onnx_model: OnnxModel = self.convert_to_onnx(
-            model=model,
-            opset=opset,
-            dtype=dtype,
-            device=device,
-            shape_strategy=shape_strategy,
-            out_dir=out_dir,
-        )
+        else:
+            nnlogger.debug(yellow(f"[I] Convert to onnx ({dtype}), use {device}"))
+            onnx_model: OnnxModel = self.convert_to_onnx(
+                model=model,
+                opset=opset,
+                dtype=dtype,
+                device=device,
+                shape_strategy=shape_strategy,
+                out_dir=out_dir,
+            )
         if is_debugging():
             print(onnx_model)
         torch.cuda.empty_cache()
 
         # TODO: put the following code in an Try-Except block
-        onnx_model.torch_arch = model.arch
         trt_engine = None
         if onnx_model.torch_arch.to_tensorrt is not None:
             from pynnlib.nn_onnx.archs.onnx_to_tensorrt import to_tensorrt
@@ -413,7 +412,8 @@ class NnLib:
             model_obj=trt_engine,
         )
 
-        # Add specific params
+        # Update with onnx params
+        trt_model.torch_arch = onnx_model.torch_arch
         trt_model.arch_name = model.arch_name
         trt_model.opset = opset
         trt_model.shape_strategy = shape_strategy

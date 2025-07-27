@@ -31,8 +31,8 @@ def onnx_to_trt_engine(
     tensorrt_version = list(map(int, trt.__version__.split(".")))
     is_tensorrt_min_10_12 = bool(tensorrt_version[0] * 100 + tensorrt_version[1] >= 1012)
     use_strongly_typed: bool = False
-    if is_tensorrt_min_10_12:
-        use_strongly_typed = not model.arch.to_tensorrt.weak_typing
+    if is_tensorrt_min_10_12 and model.torch_arch is not None:
+        use_strongly_typed = not model.torch_arch.to_tensorrt.weak_typing
         if model.force_weak_typing:
             use_strongly_typed = False
     print(red(f"use_strongly_typed: {use_strongly_typed}"))
@@ -72,9 +72,8 @@ def onnx_to_trt_engine(
         if onnx_in_tensor is None:
             raise ValueError("Missing input tensor in model")
         input_name = onnx_in_tensor.name
-        print(onnx_in_tensor.dtype)
+
         if onnx_in_tensor.dtype == TrtDType.BF16:
-            print("BFLOAAAAAAAAAAAAAAAAAAAAA16")
             is_onnx_fp16 = False
         else:
             is_onnx_fp16 = bool(trt.nptype(onnx_in_tensor.dtype) == np.float16)

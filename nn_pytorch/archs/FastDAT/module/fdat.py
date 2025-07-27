@@ -1,61 +1,13 @@
-# fdat_arch.py
-#
-# A standalone, well-documented implementation of the FDAT architecture
-# for image super-resolution.
-"""
-Standalone FDAT (FastDAT) Architecture
-DAT Inspired Lightweight Attention Network for Real World Image Super Resolution
-"""
-
-import collections.abc
+# https://github.com/stinkybread/fdat/blob/main/fdat.py
 import math
-from itertools import repeat
 from typing import Literal
-
+import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
-from torch.nn import init
 from torch.nn.init import trunc_normal_
-from torch.nn.modules.batchnorm import _BatchNorm
-
-# --------------------------------------------
-# Utility functions
-# --------------------------------------------
-
-def _ntuple(n):
-    def parse(x):
-        if isinstance(x, collections.abc.Iterable):
-            return x
-        return tuple(repeat(x, n))
-    return parse
-
-
-to_2tuple = _ntuple(2)
-
-
-@torch.no_grad()
-def default_init_weights(module_list, scale=1, bias_fill=0, **kwargs) -> None:
-    """Initialize weights using Kaiming Normal initialization."""
-    if not isinstance(module_list, list):
-        module_list = [module_list]
-    for module in module_list:
-        for m in module.modules():
-            if isinstance(m, nn.Conv2d):
-                init.kaiming_normal_(m.weight, **kwargs)
-                m.weight.data *= scale
-                if m.bias is not None:
-                    m.bias.data.fill_(bias_fill)
-            elif isinstance(m, nn.Linear):
-                init.kaiming_normal_(m.weight, **kwargs)
-                m.weight.data *= scale
-                if m.bias is not None:
-                    m.bias.data.fill_(bias_fill)
-            elif isinstance(m, _BatchNorm):
-                init.constant_(m.weight, 1)
-                if m.bias is not None:
-                    m.bias.data.fill_(bias_fill)
-
+from einops import rearrange
+from ..._shared.timm import DropPath
 
 # Type definitions
 SampleMods = Literal[
@@ -66,20 +18,200 @@ SampleMods = Literal[
     "dysample",
 ]
 
-SampleMods3 = Literal[SampleMods, "transpose+conv"]
+SampleMods3 = Literal[SampleMods, "transpose+conv", "lda", "pa_up"]
+
+
+
+
+class LayerNorm(nn.Module):
+    def __init__(self, dim: int = 64, eps: float = 1e-6) -> None:
+        super().__init__()
+        self.weight = nn.Parameter(torch.ones(dim))
+        self.bias = nn.Parameter(torch.zeros(dim))
+        self.eps = eps
+        self.dim = (dim,)
+
+    def forward(self, x: Tensor) -> Tensor:
+        if x.is_contiguous(memory_format=torch.channels_last):
+            return F.layer_norm(
+                x.permute(0, 2, 3, 1), self.dim, self.weight, self.bias, self.eps
+            ).permute(0, 3, 1, 2)
+        u = x.mean(1, keepdim=True)
+        s = (x - u).pow(2).mean(1, keepdim=True)
+        x = (x - u) / torch.sqrt(s + self.eps)
+        return self.weight[:, None, None] * x + self.bias[:, None, None]
+
+
+
+class LDA_AQU(nn.Module):
+    def __init__(
+        self,
+        in_channels=48,
+        reduction_factor=4,
+        nh=1,
+        scale_factor=2.0,
+        k_e=3,
+        k_u=3,
+        n_groups=2,
+        range_factor=11,
+        rpb=True,
+    ) -> None:
+        super().__init__()
+        self.k_u = k_u
+        self.num_head = nh
+        self.scale_factor = scale_factor
+        self.n_groups = n_groups
+        self.offset_range_factor = range_factor
+
+        self.attn_dim = in_channels // (reduction_factor * self.num_head)
+        self.scale = self.attn_dim**-0.5
+        self.rpb = rpb
+        self.hidden_dim = in_channels // reduction_factor
+        self.proj_q = nn.Conv2d(
+            in_channels, self.hidden_dim, kernel_size=1, stride=1, padding=0, bias=False
+        )
+
+        self.proj_k = nn.Conv2d(
+            in_channels, self.hidden_dim, kernel_size=1, stride=1, padding=0, bias=False
+        )
+
+        self.group_channel = in_channels // (reduction_factor * self.n_groups)
+        # print(self.group_channel)
+        self.conv_offset = nn.Sequential(
+            nn.Conv2d(
+                self.group_channel,
+                self.group_channel,
+                3,
+                1,
+                1,
+                groups=self.group_channel,
+                bias=False,
+            ),
+            LayerNorm(self.group_channel),
+            nn.SiLU(),
+            nn.Conv2d(self.group_channel, 2 * k_u**2, k_e, 1, k_e // 2),
+        )
+        print(2 * k_u**2)
+        self.layer_norm = LayerNorm(in_channels)
+
+        self.pad = int((self.k_u - 1) / 2)
+        base = np.arange(-self.pad, self.pad + 1).astype(np.float32)
+        base_y = np.repeat(base, self.k_u)
+        base_x = np.tile(base, self.k_u)
+        base_offset = np.stack([base_y, base_x], axis=1).flatten()
+        base_offset = torch.tensor(base_offset).view(1, -1, 1, 1)
+        self.register_buffer("base_offset", base_offset, persistent=False)
+
+        if self.rpb:
+            self.relative_position_bias_table = nn.Parameter(
+                torch.zeros(
+                    1, self.num_head, 1, self.k_u**2, self.hidden_dim // self.num_head
+                )
+            )
+            nn.init.trunc_normal_(self.relative_position_bias_table, std=0.02)
+
+    def init_weights(self) -> None:
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.xavier_uniform(m)
+            elif isinstance(m, nn.LayerNorm):
+                nn.init.constant_(m.bias, 0)
+                nn.init.constant_(m.weight, 1.0)
+        nn.init.constant_(self.conv_offset[-1].weight, 0)
+        nn.init.constant_(self.conv_offset[-1].bias, 0)
+
+    def get_offset(self, offset: Tensor, Hout: int, Wout: int):
+        B, _, _, _ = offset.shape
+        device = offset.device
+        row_indices = torch.arange(Hout, device=device)
+        col_indices = torch.arange(Wout, device=device)
+        row_indices, col_indices = torch.meshgrid(row_indices, col_indices)
+        index_tensor = torch.stack((row_indices, col_indices), dim=-1).view(
+            1, Hout, Wout, 2
+        )
+        offset = rearrange(
+            offset, "b (kh kw d) h w -> b kh h kw w d", kh=self.k_u, kw=self.k_u
+        )
+        offset = offset + index_tensor.view(1, 1, Hout, 1, Wout, 2)
+        offset = offset.contiguous().view(B, self.k_u * Hout, self.k_u * Wout, 2)
+
+        offset[..., 0] = 2 * offset[..., 0] / (Hout - 1) - 1
+        offset[..., 1] = 2 * offset[..., 1] / (Wout - 1) - 1
+        offset = offset.flip(-1)
+        return offset
+
+    def extract_feats(self, x, offset, ks=3):
+        out = nn.functional.grid_sample(
+            x,
+            offset,
+            mode="bilinear",
+            padding_mode="zeros",
+            align_corners=True,
+        )
+        out = rearrange(out, "b c (ksh h) (ksw w) -> b (ksh ksw) c h w", ksh=ks, ksw=ks)
+        return out
+
+    def forward(self, x: Tensor) -> Tensor:
+        B, C, H, W = x.shape
+        out_H, out_W = int(H * self.scale_factor), int(W * self.scale_factor)
+        v = x
+        x = self.layer_norm(x)
+        q = self.proj_q(x)
+        k = self.proj_k(x)
+
+        q = torch.nn.functional.interpolate(
+            q, (out_H, out_W), mode="bilinear", align_corners=True
+        )
+        q_off = q.view(B * self.n_groups, -1, out_H, out_W)
+        pred_offset = self.conv_offset(q_off)
+        offset = pred_offset.tanh().mul(self.offset_range_factor) + self.base_offset.to(
+            x.dtype
+        )
+
+        k = k.view(B * self.n_groups, self.hidden_dim // self.n_groups, H, W)
+        v = v.view(B * self.n_groups, C // self.n_groups, H, W)
+        offset = self.get_offset(offset, out_H, out_W)
+        k = self.extract_feats(k, offset=offset)
+        v = self.extract_feats(v, offset=offset)
+
+        q = rearrange(q, "b (nh c) h w -> b nh (h w) () c", nh=self.num_head)
+        k = rearrange(k, "(b g) n c h w -> b (h w) n (g c)", g=self.n_groups)
+        v = rearrange(v, "(b g) n c h w -> b (h w) n (g c)", g=self.n_groups)
+        k = rearrange(k, "b n1 n (nh c) -> b nh n1 n c", nh=self.num_head)
+        v = rearrange(v, "b n1 n (nh c) -> b nh n1 n c", nh=self.num_head)
+
+        if self.rpb:
+            k = k + self.relative_position_bias_table
+
+        q = q * self.scale
+        attn = q @ k.transpose(-1, -2)
+        attn = attn.softmax(dim=-1)
+        out = attn @ v
+
+        out = rearrange(out, "b nh (h w) t c -> b (nh c) (t h) w", h=out_H)
+        return out
+
+
+class PA(nn.Module):
+    def __init__(self, dim) -> None:
+        super().__init__()
+        self.conv = nn.Sequential(nn.Conv2d(dim, dim, 1), nn.Sigmoid())
+
+    def forward(self, x: Tensor) -> Tensor:
+        return x.mul(self.conv(x))
+
 
 
 class UniUpsampleV3(nn.Sequential):
-    """Unified upsampling module with multiple upsampling methods."""
-
     def __init__(
         self,
-        upsample: SampleMods3,
+        upsample: SampleMods3 = "pa_up",
         scale: int = 2,
-        in_dim: int = 64,
+        in_dim: int = 48,
         out_dim: int = 3,
-        mid_dim: int = 64,  # Only pixelshuffle and DySample
+        mid_dim: int = 48,
         group: int = 4,  # Only DySample
+        dysample_end_kernel=1,  # needed only for compatibility with version 2
     ) -> None:
         m = []
 
@@ -139,10 +271,10 @@ class UniUpsampleV3(nn.Sequential):
                 m.extend(
                     [nn.Conv2d(in_dim, mid_dim, 3, 1, 1), nn.LeakyReLU(inplace=True)]
                 )
-                dys_dim = mid_dim
-            else:
-                dys_dim = in_dim
-            m.append(DySample(dys_dim, out_dim, scale, group))
+            m.append(
+                DySample(mid_dim, out_dim, scale, group, end_kernel=dysample_end_kernel)
+            )
+            # m.append(nn.Conv2d(mid_dim, out_dim, dysample_end_kernel, 1, dysample_end_kernel//2)) # kernel 1 causes chromatic artifacts
         elif upsample == "transpose+conv":
             if scale == 2:
                 m.append(nn.ConvTranspose2d(in_dim, out_dim, 4, 2, 1))
@@ -161,9 +293,46 @@ class UniUpsampleV3(nn.Sequential):
                     f"scale {scale} is not supported. Supported scales: 2, 3, 4"
                 )
             m.append(nn.Conv2d(out_dim, out_dim, 3, 1, 1))
+        elif upsample == "lda":
+            if mid_dim != in_dim:
+                m.extend(
+                    [nn.Conv2d(in_dim, mid_dim, 3, 1, 1), nn.LeakyReLU(inplace=True)]
+                )
+            m.append(LDA_AQU(mid_dim, scale_factor=scale))
+            m.append(nn.Conv2d(mid_dim, out_dim, 3, 1, 1))
+        elif upsample == "pa_up":
+            if (scale & (scale - 1)) == 0:
+                for _ in range(int(math.log2(scale))):
+                    m.extend(
+                        [
+                            nn.Upsample(scale_factor=2),
+                            nn.Conv2d(in_dim, mid_dim, 3, 1, 1),
+                            PA(mid_dim),
+                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                            nn.Conv2d(mid_dim, mid_dim, 3, 1, 1),
+                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                        ]
+                    )
+                    in_dim = mid_dim
+            elif scale == 3:
+                m.extend(
+                    [
+                        nn.Upsample(scale_factor=3),
+                        nn.Conv2d(in_dim, mid_dim, 3, 1, 1),
+                        PA(mid_dim),
+                        nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                        nn.Conv2d(mid_dim, mid_dim, 3, 1, 1),
+                        nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                    ]
+                )
+            else:
+                raise ValueError(
+                    f"scale {scale} is not supported. Supported scales: 2^n and 3."
+                )
+            m.append(nn.Conv2d(mid_dim, out_dim, 3, 1, 1))
         else:
             raise ValueError(
-                f"An invalid Upsample was selected. Please choose one of {SampleMods3.__args__}"
+                f"An invalid Upsample was selected. Please choose one of {SampleMods}"
             )
         super().__init__(*m)
 
@@ -171,7 +340,7 @@ class UniUpsampleV3(nn.Sequential):
             "MetaUpsample",
             torch.tensor(
                 [
-                    3,  # Block version
+                    3,  # Block version, if you change something, please number from the end so that you can distinguish between authorized changes and third parties
                     list(SampleMods3.__args__).index(upsample),  # UpSample method index
                     scale,
                     in_dim,
@@ -183,11 +352,7 @@ class UniUpsampleV3(nn.Sequential):
             ),
         )
 
-
-# --------------------------------------------
-# FDAT Components
-# --------------------------------------------
-
+# --- fdat Components ---
 class FastSpatialWindowAttention(nn.Module):
     def __init__(self, dim, window_size=8, num_heads=4, qkv_bias=False) -> None:
         super().__init__()
@@ -202,7 +367,8 @@ class FastSpatialWindowAttention(nn.Module):
         )
         trunc_normal_(self.bias, std=0.02)
 
-    def forward(self, x, H, W):
+
+    def forward(self, x: Tensor, H: int, W: int):
         B, L, C = x.shape
         pad_r, pad_b = (
             (self.ws - W % self.ws) % self.ws,
@@ -252,7 +418,7 @@ class FastChannelAttention(nn.Module):
             nn.Linear(dim, dim),
         )
 
-    def forward(self, x, H, W):  # H, W are unused but kept for API consistency
+    def forward(self, x: Tensor, H: int, W: int) -> Tensor:  # H, W are unused but kept for API consistency
         B, N, C = x.shape
         qkv = self.qkv(x).view(B, N, 3, self.nh, C // self.nh).permute(2, 0, 3, 1, 4)
         q, k, v = qkv.unbind(0)
@@ -278,7 +444,7 @@ class SimplifiedAIM(nn.Module):
             nn.Sigmoid(),
         )
 
-    def forward(self, attn_feat, conv_feat, interaction_type, H, W):
+    def forward(self, attn_feat: Tensor, conv_feat, interaction_type, H, W):
         B, L, C = attn_feat.shape
         if interaction_type == "spatial_modulates_channel":
             sm = (
@@ -308,7 +474,7 @@ class SimplifiedFFN(nn.Module):
         self.drop = nn.Dropout(drop)
         self.smix = nn.Conv2d(hd, hd, 3, 1, 1, groups=hd, bias=False)
 
-    def forward(self, x, H, W):
+    def forward(self, x: Tensor, H: int, W: int) -> Tensor:
         B, L, C = x.shape
         x = self.drop(self.act(self.fc1(x)))
         x_s = (
@@ -336,13 +502,13 @@ class SimplifiedDATBlock(nn.Module):
         self.dp = DropPath(dp) if dp > 0.0 else nn.Identity()
         self.ffn = SimplifiedFFN(dim, ffn_exp)
 
-    def _conv_fwd(self, x, H, W):
+    def _conv_fwd(self, x: Tensor, H: int, W: int) -> Tensor:
         B, L, C = x.shape
         return (
             self.conv(x.transpose(1, 2).view(B, C, H, W)).view(B, C, L).transpose(1, 2)
         )
 
-    def forward(self, x, H, W):
+    def forward(self, x: Tensor, H: int, W: int) -> Tensor:
         n1 = self.n1(x)
         itype = (
             "channel_modulates_spatial"
@@ -376,13 +542,7 @@ class SimplifiedResidualGroup(nn.Module):
         return self.conv(x_seq.transpose(1, 2).view(B, C, H, W)) + x
 
 
-# --------------------------------------------
-# Main FDAT Architecture
-# --------------------------------------------
-
 class FDAT(nn.Module):
-    """Fast Dual Attention Transformer for Super-Resolution."""
-
     def __init__(
         self,
         num_in_ch: int = 3,
@@ -454,3 +614,4 @@ class FDAT(nn.Module):
         x_deep = self.conv_after(x_deep)
         x_out = self.upsampler(x_deep + x_shallow)
         return x_out
+
