@@ -53,6 +53,8 @@ from .utils.torch_tensor import (
     to_hwc,
 )
 
+from .save import save_as
+
 __all__ = [
     "nnlogger",
     "nnlib",
@@ -91,4 +93,6 @@ __all__ = [
     "TrtEngine",
 
     "SizeConstraint",
+
+    "save_as",
 ]

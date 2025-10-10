@@ -97,7 +97,7 @@ class GenericModel:
     # when in multiprocess. Useless otherwise
     executor: ModelExecutor | None = None
 
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, str] = field(default_factory=dict)
 
     # Custom size constraints
     _size_constraint: SizeConstraint | None = None

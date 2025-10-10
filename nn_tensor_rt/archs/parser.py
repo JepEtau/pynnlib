@@ -9,7 +9,10 @@ import zipfile
 from ...import_libs import trt
 TrtDType = trt.DataType
 
-from pynnlib.architecture import detect_model_arch
+from pynnlib.architecture import (
+    NnArchitecture,
+    detect_model_arch,
+)
 from pynnlib.nn_types import Idtype, ShapeStrategy
 from pynnlib.utils.p_print import *
 from pynnlib.utils import get_extension
@@ -28,15 +31,6 @@ TrtDType_to_Idtype: dict[TrtDType, str] = {
     TrtDType.BF16: 'bf16',
 }
 
-
-
-def get_model_arch(
-    nn_model_path: str | Path,
-    nn_arch_database: dict[str, dict],
-    device: str = 'cuda'
-) -> tuple[str, str | Path | None]:
-    arch_name = detect_model_arch(nn_model_path, nn_arch_database)
-    return arch_name, nn_model_path
 
 
 
@@ -90,40 +84,13 @@ def get_shape_strategy(engine, tensor_name: str) -> ShapeStrategy:
 
 
 
-def parse_engine(model: TrtModel) -> None:
-    engine = None
-    # Load an engine from storage
-    if os.path.exists(model.filepath):
-        trt_runtime = trt.Runtime(TRT_LOGGER)
-
-        ext = get_extension(model.filepath)
-        if ext == '.trtzip':
-            with zipfile.ZipFile(model.filepath, 'r') as trtzip_file:
-                engine_filename: str = next(
-                    (s for s in trtzip_file.namelist() if s.endswith('.engine')),
-                    None
-                )
-                if engine_filename is None:
-                    raise ValueError("[E] Not a valid trtzip file")
-                engine_bytes = trtzip_file.read(engine_filename)
-                metadata = json.loads(trtzip_file.read("metadata.json"))
-            model.metadata = metadata
-
-            model.arch_name = model.metadata.get("arch_name", model.arch_name)
-
-        elif ext == '.engine':
-            with open(model.filepath, 'rb') as f:
-                engine_bytes = f.read()
-            model.metadata = {}
-
-        try:
-            engine = trt_runtime.deserialize_cuda_engine(engine_bytes)
-        except:
-            print("[E] Not a valid engine")
-
-    # The engine has already been deserialized
-    elif model.engine is not None:
-        engine = model.engine
+def parse_engine(engine_bytes: bytes) -> None:
+    # Load engine in CUDA device to parse it
+    trt_runtime = trt.Runtime(TRT_LOGGER)
+    try:
+        engine = trt_runtime.deserialize_cuda_engine(engine_bytes)
+    except:
+        print("[E] Not a valid engine")
 
     if engine is None:
         raise ValueError("[W] Not a compatible engine")
@@ -204,4 +171,17 @@ def parse_engine(model: TrtModel) -> None:
 
 def create_session(model: TrtModel) -> Type[TensorRtSession]:
     return model.framework.Session(model)
+
+
+
+
+def get_tensorrt_model_arch(
+    metadata: str | Path,
+    nn_arch_database: dict[str, dict],
+    device: str = 'cuda'
+) -> NnArchitecture:
+    # arch_name = metadata.get("arch_name", model.arch_name)
+
+    arch: NnArchitecture = detect_model_arch(metadata, nn_arch_database)
+    return arch
 

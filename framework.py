@@ -8,7 +8,7 @@ from pprint import pprint
 import random
 import re
 import sys
-from typing import OrderedDict
+from typing import Any, OrderedDict
 
 from .logger import is_debugging, nnlogger
 from .import_libs import is_tensorrt_available
@@ -29,6 +29,10 @@ class NnFramework:
     """
     type: NnFrameworkType
     architectures: OrderedDict[str, NnArchitecture]
+
+    # Load a file into a device: returns the object and metadata
+    load: Callable[[str], list[Any, dict[str, str]]] | None= None
+
     get_arch: GetModelArchFct | None = None
     save: Callable[[NnModel, Path | str, str, str], bool] | None = None
     Session: NnModelSession | None = None
@@ -49,7 +53,7 @@ class NnFramework:
             if is_debugging():
                 return self.get_arch(model, self.architectures, device)
 
-        return (None, None)
+        return None, None
 
 
     def add_model_arch(self, arch: NnArchitecture) -> None:

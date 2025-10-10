@@ -1,0 +1,57 @@
+import json
+import os
+from pathlib import Path
+from pprint import pprint
+from typing import Any, Type
+from warnings import warn
+import zipfile
+
+from ...import_libs import trt
+TrtDType = trt.DataType
+
+from pynnlib.architecture import detect_model_arch
+from pynnlib.nn_types import Idtype, ShapeStrategy
+from pynnlib.utils.p_print import *
+from pynnlib.utils import get_extension
+from pynnlib.model import TrtModel
+from pynnlib.logger import nnlogger
+from ..trt_types import TrtEngine
+from ..inference.session import (
+    TensorRtSession,
+    TRT_LOGGER,
+)
+
+
+
+def load_tensorrt_engine(
+    model_path: str,
+    device: str = 'cpu'
+) -> tuple[bytes, dict[str, str]]:
+    # We don't load engine in the cuda device, only in RAM,
+    # # loading in device will be done later....
+
+    engine_bytes: bytes | None = None
+    metadata: dict[str, str] = {}
+
+    # Load an engine from storage
+    if not os.path.exists(model_path):
+        return None, metadata
+
+    ext = get_extension(model_path)
+    if ext == '.trtzip':
+        with zipfile.ZipFile(model_path, 'r') as trtzip_file:
+            engine_filename: str = next(
+                (s for s in trtzip_file.namelist() if s.endswith('.engine')),
+                None
+            )
+            if engine_filename is None:
+                raise ValueError("[E] Not a valid trtzip file")
+            engine_bytes = trtzip_file.read(engine_filename)
+            metadata = json.loads(trtzip_file.read("metadata.json"))
+
+
+    elif ext == '.engine':
+        with open(model_path, 'rb') as f:
+            engine_bytes = f.read()
+
+    return engine_bytes, metadata

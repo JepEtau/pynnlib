@@ -49,7 +49,6 @@ from .nn_types import (
     NnModelObject,
     NnFrameworkType
 )
-from .nn_pytorch.archs.unpickler import RestrictedUnpickle
 from .session import NnModelSession
 
 
@@ -77,7 +76,7 @@ class NnLib:
 
     def open(
         self,
-        model_path: str | Path,
+        model_path: str,
         device: str = 'cpu',
     ) -> NnModel | None:
         """Open and parse a model and returns its parameters"""
@@ -85,17 +84,20 @@ class NnLib:
             warn(red(f"[E] {model_path} does not exist"))
             return None
 
-        fwk = self.get_framework_from_extension(model_path)
+        # Detect the framework to use to load, parse and detect arch
+        fwk: NnFramework = self.get_framework_from_extension(model_path)
         if fwk is None:
             warn(f"[E] No framework found for model {model_path}")
             return None
 
-        model_arch, model_obj = fwk.detect_arch(model_path, device)
+        # Load the model into a device and get metadata
+        model_obj, metadata = fwk.load(model_path, device)
         if model_arch is None:
-            # Model architecture not found
-            # model_arch, model_obj = fwk.find_model_arch(model_path, device)
-            warn(f"{red("[E] Erroneous model or unsupported architecture:")}: {model_path}")
+            warn(f"{red("[E] Failed to load model")} {model_path}")
             return None
+
+        # Get the model arch
+        model_arch, model_obj = fwk.detect_arch(model_obj, device)
         nnlogger.debug(yellow(f"fwk={fwk.type.value}, arch={model_arch.name}"))
 
         model = self._create_model(
@@ -103,6 +105,7 @@ class NnLib:
             framework=fwk,
             model_arch=model_arch,
             model_obj=model_obj,
+            metadata=metadata,
             device=device,
         )
         if model is None:
@@ -111,6 +114,7 @@ class NnLib:
 
         # Parse metadata
         if model.framework.type == NnFrameworkType.PYTORCH:
+            print(red("LD metadata"))
             if 'metadata' in model.state_dict and isinstance(model.state_dict['metadata'], dict):
                 model.metadata = model.state_dict['metadata']
         elif model.framework.type == NnFrameworkType.ONNX:
@@ -145,6 +149,7 @@ class NnLib:
         framework: NnFramework,
         model_arch: NnArchitecture,
         model_obj: NnModelObject,
+        metadata: dict[str, str] = {},
         device: str = 'cpu',
     ) -> NnModel:
 
@@ -154,6 +159,7 @@ class NnLib:
                 framework=framework,
                 arch=model_arch,
                 state_dict=model_obj,
+                metadata=metadata,
             )
         elif framework.type == NnFrameworkType.ONNX:
             model = OnnxModel(
@@ -161,6 +167,7 @@ class NnLib:
                 framework=framework,
                 arch=model_arch,
                 model_proto=model_obj,
+                metadata=metadata,
             )
         elif framework.type == NnFrameworkType.TENSORRT:
             model = TrtModel(
@@ -168,6 +175,7 @@ class NnLib:
                 framework=framework,
                 arch=model_arch,
                 engine=model_obj,
+                metadata=metadata,
             )
             if not device.startswith("cuda"):
                 nnlogger.debug("[W] wrong device to load a tensorRT model, use default cuda device")
@@ -176,7 +184,7 @@ class NnLib:
         else:
             raise ValueError("[E] Unknown framework")
 
-        # Parse a model object
+        # Parse a model object to detect the model info: scale, dtype, ...
         model.arch_name = model_arch.name
 
         if logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG":

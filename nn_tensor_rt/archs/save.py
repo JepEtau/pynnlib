@@ -77,7 +77,7 @@ def save_as(
     model: TrtModel,
     directory: str | Path,
     basename: str,
-    suffix: str | None = None,
+    suffix: str = "",
 ) -> bool:
     try:
         trt_engine = model.engine
@@ -91,7 +91,6 @@ def save_as(
     if basename == '':
         return False
     basename = generate_tensorrt_basename(model, basename)
-    suffix = suffix if suffix is not None else ''
     ext = '.trtzip'
     model.filepath = os.path.join(directory, f"{basename}{suffix}{ext}")
 
