@@ -58,9 +58,8 @@ def import_trt():
         __is_tensorrt_available__ = True
 
     if 'trt' in sys.modules or 'tensorrt' in sys.modules:
-        print(trt.__version__)
         __is_tensorrt_available__ = True
-    print(f"[I] Tensorrt package loaded (version {trt.__version__})")
+        print(f"[I] Tensorrt package loaded (version {trt.__version__})")
 
     return trt
 
