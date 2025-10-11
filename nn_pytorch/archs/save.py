@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING, Literal
 
 import torch
 
-from .parser import load_state_dict
+from .load import load_state_dict
 from pynnlib.metadata import generate_metadata
-from pynnlib.utils import is_access_granted
+from pynnlib.utils import absolute_path, is_access_granted
 if TYPE_CHECKING:
     from pynnlib.model import PyTorchModel
 
@@ -21,20 +21,18 @@ def save_as(
     basename: str,
     ext: Literal['.pth', '.safetensors'],
 ) -> PyTorchModel:
+    directory = absolute_path(directory)
     if not is_access_granted(directory, 'w'):
         raise PermissionError(f"{directory} is read only")
 
     filepath: str = os.path.join(directory, f"{basename}{ext}")
     metadata = generate_metadata(model, model.metadata)
 
-    state_dict = load_state_dict(model.filepath)
+    state_dict, _ = load_state_dict(model.filepath)
     if state_dict is None:
         raise ValueError(f"{model.filepath} is not a supported model")
 
     state_dict[f'metadata'] = json.dumps(metadata)
-    pprint(state_dict[f'metadata'])
     if ext == '.pth':
         torch.save(state_dict, filepath)
-
-
 

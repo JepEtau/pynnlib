@@ -28,6 +28,7 @@ class TrtLogger(trt.ILogger):
     def __init__(self, min_severity):
         trt.ILogger.__init__(self)
         self._min_severity = min_severity
+        self.last_error = None
 
     @property
     def severity(self):
@@ -39,7 +40,8 @@ class TrtLogger(trt.ILogger):
 
     def log(self, severity: trt.ILogger.Severity, msg: str):
         if severity <= self.severity:
-            print(f"{self.SEVERITY_LETTER_MAPPING[severity]} [TRT] {msg}")
+            # print(f"{self.SEVERITY_LETTER_MAPPING[severity]} [TRT] {msg}")
+            self.last_error = msg
 
 
 TRT_LOGGER = TrtLogger(trt.ILogger.INFO)

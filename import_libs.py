@@ -1,8 +1,7 @@
 import os
 from pprint import pprint
-
-from pynnlib.utils import absolute_path
 from .logger import nnlogger
+import tensorrt as trt
 
 __is_tensorrt_available__: bool = False
 
@@ -26,7 +25,7 @@ def import_trt():
             ctypes.WinDLL(tensor_rtx_dll)
 
             import tensorrt_rtx as trt
-            print("Imported tensorrt_rtx")
+            nnlogger.info("Imported tensorrt_rtx")
 
         elif sys.platform == "linux":
             # Untested
@@ -46,20 +45,18 @@ def import_trt():
     except (FileNotFoundError, OSError, ImportError):
         try:
             import tensorrt as trt
-            print("Imported tensorrt")
+            nnlogger.info("Imported tensorrt")
         except:
-            nnlogger.debug("[W] Tensorrt package not found")
-            print("[W] Tensorrt package not found")
+            nnlogger.warning("[W] Tensorrt package not found")
 
     modules = set(sys.modules) & set(globals())
     module_names = [sys.modules[m] for m in modules]
     if 'tensorrt' in module_names:
-        print(f"in modules: [{module_names}]")
         __is_tensorrt_available__ = True
 
     if 'trt' in sys.modules or 'tensorrt' in sys.modules:
         __is_tensorrt_available__ = True
-        print(f"[I] Tensorrt package loaded (version {trt.__version__})")
+        nnlogger.info(f"[I] Tensorrt package loaded (version {trt.__version__})")
 
     return trt
 

@@ -142,8 +142,8 @@ def main():
                 print(model.arch)
         except Exception as e:
             # For debug:
-            model: NnModel = nnlib.open(model_fp, device)
-            print(e)
+            # model: NnModel = nnlib.open(model_fp, device)
+            print(red(e))
         return
 
     ml_models_path: str = absolute_path(arguments.dir)

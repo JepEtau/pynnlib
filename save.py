@@ -7,6 +7,8 @@ from .utils import path_split
 
 def save_as(model_fp: str, model: NnModel) -> None:
     directory, basename, ext = path_split(model_fp)
+    if not directory:
+        directory="./"
 
     if model.framework.type == NnFrameworkType.PYTORCH:
         # PyTorch, SafeTensors
@@ -24,7 +26,6 @@ def save_as(model_fp: str, model: NnModel) -> None:
             basename=basename,
             suffix="",
         )
-
 
     elif model.framework.type == NnFrameworkType.TENSORRT:
         model.framework.save(

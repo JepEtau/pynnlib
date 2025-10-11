@@ -1,22 +1,20 @@
-import os
-from pathlib import Path
-
-
-from .parser import (
-    parse_engine,
-    create_session,
-)
+from .parser import parse
+from .inference.session import create_session
 from ...architecture import NnTensorrtArchitecture
 
-def is_model_generic(model: Path|str) -> bool:
+
+def is_model_generic(model) -> bool:
+    print("detect tensor architecture")
+    print(type(model))
+    print("--------------------")
     return True
 
 
 MODEL_ARCHITECTURES: tuple[NnTensorrtArchitecture] = (
     NnTensorrtArchitecture(
-        name='generic',
+        name='unknown',
         detect=is_model_generic,
-        parse=parse_engine,
+        parse=parse,
         create_session=create_session,
         dtypes=('fp32', 'fp16', 'bf16'),
     ),

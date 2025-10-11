@@ -325,10 +325,7 @@ def parse(
 def get_onnx_model_arch(
     onnx_model: onnx.ModelProto,
     architectures: dict[str, NnOnnxArchitecture],
-    device: str = 'cpu'
-) -> tuple[NnOnnxArchitecture|None, onnx.ModelProto]:
-
-    arch = detect_model_arch(onnx_model, architectures)
-    return arch, None
+) -> NnOnnxArchitecture | None:
+    return detect_model_arch(onnx_model, architectures)
 
 

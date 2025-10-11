@@ -33,27 +33,21 @@ class NnFramework:
     # Load a file into a device: returns the object and metadata
     load: Callable[[str], list[Any, dict[str, str]]] | None= None
 
-    get_arch: GetModelArchFct | None = None
+    detect_arch: GetModelArchFct | None = None
     save: Callable[[NnModel, Path | str, str, str], bool] | None = None
     Session: NnModelSession | None = None
 
 
-    def detect_arch(
-        self,
-        model: NnModelObject,
-        device: str = 'cpu'
-    ) -> tuple[NnArchitecture, NnModelObject]:
+    def detect_model_arch(self, model: NnModelObject) -> NnArchitecture:
         """Find the model architecture.
-         may be a path or any model type of the fwks
         """
         try:
-            return self.get_arch(model, self.architectures, device)
+            return self.detect_arch(model, self.architectures)
         except:
             nnlogger.warning(f"[W] architecture not found for {model}")
             if is_debugging():
-                return self.get_arch(model, self.architectures, device)
-
-        return None, None
+                return self.detect_arch(model, self.architectures)
+        return None
 
 
     def add_model_arch(self, arch: NnArchitecture) -> None:

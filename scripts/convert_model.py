@@ -288,7 +288,7 @@ format: WxH.
     # Open model file
     model_filepath: str = absolute_path(arguments.model)
     if not os.path.isfile(model_filepath):
-        sys.exit(red(f"[E] {model_filepath} is not a valid file"))
+        raise ValueError(red(f"[E] {model_filepath} is not a valid file"))
     model: NnModel = nnlib.open(model_filepath, device)
     print(lightgreen(f"[I] arch: {model.arch_name}"))
     print(model)

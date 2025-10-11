@@ -24,6 +24,7 @@ except:
 
 import torch
 from .utils import (
+    absolute_path,
     get_extension,
     os_path_basename,
 )
@@ -80,6 +81,7 @@ class NnLib:
         device: str = 'cpu',
     ) -> NnModel | None:
         """Open and parse a model and returns its parameters"""
+        model_path = absolute_path(model_path)
         if not os.path.exists(model_path):
             warn(red(f"[E] {model_path} does not exist"))
             return None
@@ -92,42 +94,32 @@ class NnLib:
 
         # Load the model into a device and get metadata
         model_obj, metadata = fwk.load(model_path, device)
-        if model_arch is None:
+        if model_obj is None:
             warn(f"{red("[E] Failed to load model")} {model_path}")
             return None
 
         # Get the model arch
-        model_arch, model_obj = fwk.detect_arch(model_obj, device)
+        model_arch = fwk.detect_model_arch(model_obj)
         nnlogger.debug(yellow(f"fwk={fwk.type.value}, arch={model_arch.name}"))
 
-        model = self._create_model(
-            nn_model_path=model_path,
-            framework=fwk,
-            model_arch=model_arch,
-            model_obj=model_obj,
-            metadata=metadata,
-            device=device,
-        )
-        if model is None:
-            warn(f"{red("[E] Erroneous model or unsupported architecture:")}: {model_path}")
-            return None
-
-        # Parse metadata
-        if model.framework.type == NnFrameworkType.PYTORCH:
-            print(red("LD metadata"))
-            if 'metadata' in model.state_dict and isinstance(model.state_dict['metadata'], dict):
-                model.metadata = model.state_dict['metadata']
-        elif model.framework.type == NnFrameworkType.ONNX:
-            pass
-        elif model.framework.type == NnFrameworkType.TENSORRT:
-            pass
+        model: NnModel = None
+        try:
+            model = self.create_model(
+                nn_model_path=model_path,
+                framework=fwk,
+                model_arch=model_arch,
+                model_obj=model_obj,
+                metadata=metadata,
+                device=device,
+            )
+        except Exception as e:
+            raise ValueError(f"Not a supported model: {model_path}. Reason: {str(e)}") from e
 
         if (
             model is not None
             and any(x <= 0 for x in (model.scale, model.in_nc, model.out_nc))
         ):
             nnlogger.debug("warning: at least a property has not been found, unsupported model")
-            # return None
 
         return model
 
@@ -144,7 +136,7 @@ class NnLib:
 
 
     @staticmethod
-    def _create_model(
+    def create_model(
         nn_model_path:str,
         framework: NnFramework,
         model_arch: NnArchitecture,
@@ -160,7 +152,9 @@ class NnLib:
                 arch=model_arch,
                 state_dict=model_obj,
                 metadata=metadata,
+                device=device,
             )
+
         elif framework.type == NnFrameworkType.ONNX:
             model = OnnxModel(
                 filepath=nn_model_path,
@@ -168,33 +162,47 @@ class NnLib:
                 arch=model_arch,
                 model_proto=model_obj,
                 metadata=metadata,
+                device=device,
             )
+
         elif framework.type == NnFrameworkType.TENSORRT:
+            if not device.startswith("cuda"):
+                nnlogger.debug("[W] wrong device to load a tensorRT model, use default cuda device")
+                device = "cuda:0"
             model = TrtModel(
                 filepath=nn_model_path,
                 framework=framework,
                 arch=model_arch,
                 engine=model_obj,
                 metadata=metadata,
+                device=device,
             )
-            if not device.startswith("cuda"):
-                nnlogger.debug("[W] wrong device to load a tensorRT model, use default cuda device")
-                device = "cuda:0"
-            model.device = device
+
         else:
             raise ValueError("[E] Unknown framework")
 
         # Parse a model object to detect the model info: scale, dtype, ...
         model.arch_name = model_arch.name
-
-        if logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG":
-            # Don't catch the exception when in development
+        print(model)
+        try:
             model_arch.parse(model)
-        else:
-            try:
-                model_arch.parse(model)
-            except Exception as e:
-                return None
+        except Exception as e:
+            raise ValueError(str(e))
+        # if logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG":
+        #     # Don't catch the exception when in development
+        #     model_arch.parse(model)
+        # else:
+        #     try:
+        #         model_arch.parse(model)
+        #     except Exception as e:
+        #         raise
+        #     return None
+
+        # try:
+        #     model_arch.parse(model)
+        # except Exception as e:
+        #     raise
+        # return None
 
         return model
 
@@ -248,8 +256,8 @@ class NnLib:
 
         # Instantiate a new model
         onnx_fwk = self.frameworks[NnFrameworkType.ONNX]
-        model_arch, _ = onnx_fwk.detect_arch(onnx_model_object)
-        onnx_model = self._create_model(
+        model_arch = onnx_fwk.detect_model_arch(onnx_model_object)
+        onnx_model = self.create_model(
             nn_model_path='',
             framework=onnx_fwk,
             model_arch=model_arch,
@@ -412,8 +420,8 @@ class NnLib:
 
         # Instantiate a new model
         trt_fwk = self.frameworks[NnFrameworkType.TENSORRT]
-        model_arch, _ = trt_fwk.detect_arch(trt_engine)
-        trt_model = self._create_model(
+        model_arch = trt_fwk.detect_model_arch(trt_engine)
+        trt_model = self.create_model(
             nn_model_path='',
             framework=trt_fwk,
             model_arch=model_arch,
@@ -464,7 +472,7 @@ class NnLib:
             'efficienttam_s_512x512': PREDEFINED_MODEL_ARCHITECTURES['efficienttam_s_512x512'],
         }
 
-        model = self._create_model(
+        model = self.create_model(
             nn_model_path="",
             framework=self.frameworks[NnFrameworkType.PYTORCH],
             model_arch=predefined_models[model_name],

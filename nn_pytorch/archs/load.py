@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 from pprint import pprint
 from warnings import warn
 from safetensors.torch import load_file
@@ -88,7 +89,9 @@ def load_state_dict(
                 f"Unsupported model file extension \'{ext}\'. Please try a supported model type."
             )
 
-        metadata: dict[str, str] = state_dict.get('metadata', {})
+        metadata_str = state_dict.get('metadata', "")
+        if metadata_str:
+            metadata = json.loads(metadata_str)
 
     except Exception as e:
         warn(f"Failed to load model {model_path}. {str(e)}")

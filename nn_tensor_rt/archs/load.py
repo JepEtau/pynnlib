@@ -1,25 +1,10 @@
 import json
 import os
-from pathlib import Path
 from pprint import pprint
-from typing import Any, Type
-from warnings import warn
 import zipfile
 
-from ...import_libs import trt
-TrtDType = trt.DataType
-
-from pynnlib.architecture import detect_model_arch
-from pynnlib.nn_types import Idtype, ShapeStrategy
 from pynnlib.utils.p_print import *
 from pynnlib.utils import get_extension
-from pynnlib.model import TrtModel
-from pynnlib.logger import nnlogger
-from ..trt_types import TrtEngine
-from ..inference.session import (
-    TensorRtSession,
-    TRT_LOGGER,
-)
 
 
 

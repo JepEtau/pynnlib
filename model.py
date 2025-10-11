@@ -235,5 +235,8 @@ class TrtModel(GenericModel):
     device: str = ""
     torch_arch: NnPytorchArchitecture | None = None
 
+    # For information
+    typing: Literal['', 'weak', 'strong'] = ''
+
 
 NnModel = OnnxModel | PyTorchModel | TrtModel

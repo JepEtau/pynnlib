@@ -16,7 +16,7 @@ FRAMEWORK: NnFramework = NnFramework(
     type=NnFrameworkType.PYTORCH,
     architectures=OrderedDict((a.name, a) for a in MODEL_ARCHITECTURES),
     load=load_state_dict,
-    get_arch=get_torch_model_arch,
+    detect_arch=get_torch_model_arch,
     Session=PyTorchSession,
     save=save_as,
 )
