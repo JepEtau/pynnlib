@@ -4,9 +4,6 @@ from ...architecture import NnTensorrtArchitecture
 
 
 def is_model_generic(model) -> bool:
-    print("detect tensor architecture")
-    print(type(model))
-    print("--------------------")
     return True
 
 

@@ -166,7 +166,7 @@ def parse(model: TrtModel) -> None:
 
     # Update model with metadata
     arch_name: str = model.arch_name
-    _typing: Literal['', 'strong', 'weak']
+    _typing: Literal['', 'strong', 'weak'] = ''
     if model.metadata and "pynnlib" in model.metadata.get('generated_by', ""):
         _arch_name = model.metadata.get('arch_name', "")
         if _arch_name:
