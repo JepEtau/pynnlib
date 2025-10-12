@@ -52,7 +52,7 @@ class InferType:
 class NnGenericArchitecture:
     name: str = 'unknown'
     type: NnArchitectureType = NnArchitectureType()
-    category: str = 'Generic'
+    category: str = 'unknown'
 
     # Function used to detect arch,
     # can be customized for more scalability

@@ -64,7 +64,6 @@ def get_shape_strategy(engine, tensor_name: str) -> ShapeStrategy:
     Returns only the 1st profile found
     """
     shape_strategy = ShapeStrategy()
-    # pprint(engine.get_tensor_profile_shape(tensor_name, 0))
     min_shapes, opt_shapes, max_shapes = engine.get_tensor_profile_shape(tensor_name, 0)
     shape_strategy.min_size = tuple(reversed(min_shapes[2:]))
     shape_strategy.opt_size = tuple(reversed(opt_shapes[2:]))
@@ -130,7 +129,7 @@ def parse(model: TrtModel) -> None:
     # Shape strategy
     # TODO: get shape strategy for each profile?
     shape_strategy = get_shape_strategy(engine, input_name)
-    shape_strategy.type = model.metadata.get("shapes", shape_strategy.type)
+    # shape_strategy.type = model.metadata.get("shapes", shape_strategy.type)
 
     # Scale
     if any(x == -1 for x in (in_w, in_h, out_w, out_h)):
@@ -167,12 +166,14 @@ def parse(model: TrtModel) -> None:
     # Update model with metadata
     arch_name: str = model.arch_name
     _typing: Literal['', 'strong', 'weak'] = ''
+    opset: int = 0
     if model.metadata and "pynnlib" in model.metadata.get('generated_by', ""):
         _arch_name = model.metadata.get('arch_name', "")
         if _arch_name:
             arch_name = _arch_name
 
         _typing = model.metadata.get('typing', '')
+        opset = int(model.metadata.get('opset', '0'))
 
     # Overwrite the engine by the deserialized one in the device
     model.update(
@@ -182,8 +183,10 @@ def parse(model: TrtModel) -> None:
         out_nc=out_nc,
         dtypes=dtypes,
         engine=engine,
+        engine_version=trt.__version__,
         shape_strategy=shape_strategy,
         typing=_typing,
+        opset=opset,
     )
 
 

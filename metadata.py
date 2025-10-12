@@ -82,6 +82,8 @@ def generate_metadata(
         if model.arch_name.lower() not in ('unknown', 'generic'):
             metadata['arch_name'] = model.arch_name
 
+        metadata['opset'] = f"{model.opset}"
+
         metadata['shapes'] = model.shape_strategy.type
         if model.force_weak_typing:
             # weak typing may be forced for testing puprose, use it

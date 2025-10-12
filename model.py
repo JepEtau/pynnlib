@@ -230,7 +230,8 @@ class PyTorchModel(GenericModel):
 @dataclass
 class TrtModel(GenericModel):
     engine: TrtEngine = None
-    opset: int | None = None
+    engine_version: int = 0
+    opset: int = 0
     # Put here the device id? no? used for conversion load
     device: str = ""
     torch_arch: NnPytorchArchitecture | None = None

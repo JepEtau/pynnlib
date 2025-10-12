@@ -74,7 +74,7 @@ MODEL_ARCHITECTURES: tuple[NnOnnxArchitecture] = (
         detect=is_model_rife,
     ),
     NnOnnxArchitecture(
-        name='Generic',
+        name='unknown',
         detect=is_model_generic,
         # to_tensorrt=TensorRTConv(),
     )
