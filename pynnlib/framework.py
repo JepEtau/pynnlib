@@ -31,11 +31,11 @@ class NnFramework:
     architectures: OrderedDict[str, NnArchitecture]
 
     # Load a file into a device: returns the object and metadata
-    load: Callable[[str], list[Any, dict[str, str]]] | None= None
+    load: Callable[[str], list[Any, dict[str, str]]] = None
 
-    detect_arch: GetModelArchFct | None = None
-    save: Callable[[NnModel, Path | str, str, str], bool] | None = None
-    Session: NnModelSession | None = None
+    detect_arch: GetModelArchFct = None
+    save: Callable[[NnModel, Path | str, str, str], bool] = None
+    Session: NnModelSession = None
 
 
     def detect_model_arch(self, model: NnModelObject) -> NnArchitecture:

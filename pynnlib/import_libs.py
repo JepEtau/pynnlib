@@ -43,7 +43,7 @@ def import_trt():
 
     except (FileNotFoundError, OSError, ImportError):
         try:
-            import tensorrt as trt
+            import tensorrt as trt # type: ignore
             nnlogger.info("Imported tensorrt")
         except:
             nnlogger.warning("[W] Tensorrt package not found")

@@ -34,3 +34,6 @@ def save_as(model_fp: str, model: NnModel) -> None:
             basename=basename,
             suffix="",
         )
+
+    else:
+        raise ValueError(f"Unknown framework: {model.framework.type}")

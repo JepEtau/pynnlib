@@ -75,20 +75,19 @@ class GenericSession(abc.ABC):
 from .nn_onnx.inference.session import OnnxSession
 from .nn_pytorch.inference.session import PyTorchSession
 
-# ModelSession = OnnxSession | PyTorchSession
 NnModelSession = TypeVar("NnModelSession", OnnxSession, PyTorchSession)
-
 try:
     from .nn_tensor_rt.inference.session import TensorRtSession
-    # ModelSession = OnnxSession | PyTorchSession | TensorRtSession
     NnModelSession = TypeVar(
         "NnModelSession",
         OnnxSession,
         PyTorchSession,
         TensorRtSession
     )
+    # NnModelSession = OnnxSession | PyTorchSession | TensorRtSession
+
 except:
+    # NnModelSession = OnnxSession | PyTorchSession
+    NnModelSession = TypeVar("NnModelSession", OnnxSession, PyTorchSession)
     pass
-
-
 

@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 
 @dataclass
 class SizeConstraint:
-    min: tuple[int, int] | None = None
-    max: tuple[int, int] | None = None
+    min: tuple[int, int] = None
+    max: tuple[int, int] = None
     modulo: int = 1
 
     def is_size_valid(
@@ -76,7 +76,7 @@ class GenericModel:
     in_nc: int = 0
     out_nc: int = 0
     # list IO dtypes, consider a single input/output
-    io_dtypes: dict[Literal['input', 'output']: NnModelDtype] = (
+    io_dtypes: dict[Literal['input', 'output'], NnModelDtype] = (
         field(default_factory=dict)
     )
 
@@ -170,7 +170,7 @@ class GenericModel:
     def supported_dtypes(self) -> set[NnModelDtype]:
         """Returns supported dtypes by this model
         """
-        return (
+        return set(
             self.arch.dtypes
             if self.arch.type != NnFrameworkType.TENSORRT
             else self.dtypes

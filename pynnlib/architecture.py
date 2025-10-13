@@ -61,13 +61,13 @@ class NnGenericArchitecture:
     """Parse a model object and update the model"""
     parse: ParseFunction | None = None
 
-    create_session: Callable[[NnModel], NnModelSession] | None = None
+    create_session: Callable[[NnModel], NnModelSession] = None
 
     # Supported datatypes for inference and conversion
     #   TODO: as it may differ, use a dataclass
     dtypes: list[Idtype] = field(default_factory=list)
 
-    size_constraint: SizeConstraint | None = None
+    size_constraint: SizeConstraint = None
 
     # Simple, temporal, nb of inputs/outputs, etc.
     infer_type: InferType = field(default_factory=InferType)
@@ -170,7 +170,7 @@ class NnPytorchArchitecture(NnGenericArchitecture):
     to_onnx: ConvertToOnnxFct | None = None
     to_tensorrt: TensorRTConv | None = None
 
-    __caller_dir: str = ""
+    _caller_dir: str = ""
 
 
     def __post_init__(self):
@@ -181,7 +181,7 @@ class NnPytorchArchitecture(NnGenericArchitecture):
             caller_file = frame.f_back.f_back.f_globals.get('__file__', 'unknown')
         finally:
             del frame
-        self.__caller_dir= absolute_path(path_split(caller_file)[0])
+        self._caller_dir= absolute_path(path_split(caller_file)[0])
 
 
     def import_module(self) -> None:
@@ -194,7 +194,7 @@ class NnPytorchArchitecture(NnGenericArchitecture):
             os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
         )
         arch_module_key: str = (
-            self.__caller_dir[len(pynnlib_dir) + 1:].replace(os.sep, ".")
+            self._caller_dir[len(pynnlib_dir) + 1:].replace(os.sep, ".")
         )
 
         arch_module: Module = self.module
@@ -202,7 +202,7 @@ class NnPytorchArchitecture(NnGenericArchitecture):
             print("[W] Missing module package or class_name")
 
         nn_module_filepath = os.path.join(
-            self.__caller_dir, "module", arch_module.file.replace(".", os.sep)
+            self._caller_dir, "module", arch_module.file.replace(".", os.sep)
         )
         if not nn_module_filepath.endswith(".py"):
             nn_module_filepath += ".py"
@@ -250,7 +250,7 @@ GetModelArchFct = Callable[[str | Path, dict[str, Any]], tuple[str, Any]]
 def detect_model_arch(
     model: Any,
     architectures: dict[str, NnArchitecture]
-) -> NnArchitecture:
+) -> NnArchitecture | None:
     """Detect the model architecture and returns it"""
 
     for arch in architectures.values():

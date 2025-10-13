@@ -1,8 +1,7 @@
 from __future__ import annotations
 import json
-from pprint import pprint
 from warnings import warn
-from safetensors.torch import load_file
+from safetensors.torch import load_file, safe_open
 import torch
 from .unpickler import RestrictedUnpickle
 from pynnlib.model import StateDict
@@ -79,19 +78,19 @@ def load_state_dict(
             )
 
         elif ext == ".safetensors":
-            state_dict = load_file(
-                model_path,
-                device=device
-            )
+            state_dict = load_file(model_path, device=device)
+            with safe_open(model_path, framework="pt") as f:
+                metadata = f.metadata()
 
         else:
             raise ValueError(
                 f"Unsupported model file extension \'{ext}\'. Please try a supported model type."
             )
 
-        metadata_str = state_dict.get('metadata', "")
-        if metadata_str:
-            metadata = json.loads(metadata_str)
+        if not metadata:
+            metadata_str = state_dict.get('metadata', "")
+            if metadata_str:
+                metadata = json.loads(metadata_str)
 
     except Exception as e:
         warn(f"Failed to load model {model_path}. {str(e)}")
