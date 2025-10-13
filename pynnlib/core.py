@@ -183,26 +183,10 @@ class NnLib:
 
         # Parse a model object to detect the model info: scale, dtype, ...
         model.arch_name = model_arch.name
-        print(model)
         try:
             model_arch.parse(model)
         except Exception as e:
             raise ValueError(str(e))
-        # if logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG":
-        #     # Don't catch the exception when in development
-        #     model_arch.parse(model)
-        # else:
-        #     try:
-        #         model_arch.parse(model)
-        #     except Exception as e:
-        #         raise
-        #     return None
-
-        # try:
-        #     model_arch.parse(model)
-        # except Exception as e:
-        #     raise
-        # return None
 
         return model
 
