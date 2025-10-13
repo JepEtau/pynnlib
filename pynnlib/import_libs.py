@@ -1,7 +1,6 @@
 import os
 from pprint import pprint
 from .logger import nnlogger
-import tensorrt as trt
 
 __is_tensorrt_available__: bool = False
 
