@@ -33,8 +33,13 @@ from .nn_types import (
     NnModelObject,
     Idtype,
     ShapeStrategy,
+    ShapeStrategyType,
 )
-
+from .architecture import (
+    NnPytorchArchitecture,
+    NnOnnxArchitecture,
+    NnTensorrtArchitecture,
+)
 from .framework import (
     get_supported_model_extensions,
 )
@@ -60,6 +65,10 @@ __all__ = [
     "nnlib",
     "NnFrameworkType",
 
+    "NnPytorchArchitecture",
+    "NnOnnxArchitecture",
+    "NnTensorrtArchitecture",
+
     "get_supported_model_extensions",
 
     "NnModel",
@@ -78,6 +87,7 @@ __all__ = [
 
     "ModelExecutor",
     "ShapeStrategy",
+    "ShapeStrategyType",
 
     "is_cuda_available",
     "is_tensorrt_available",

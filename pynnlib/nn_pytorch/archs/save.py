@@ -7,7 +7,7 @@ from pprint import pprint
 from typing import TYPE_CHECKING, Literal
 
 import torch
-from safetensors.torch import save_file, safe_open
+from safetensors.torch import save_file
 
 from .load import load_state_dict
 from pynnlib.metadata import generate_metadata
@@ -41,6 +41,10 @@ def save_as(
         torch.save(state_dict, filepath)
 
     elif ext == '.safetensors':
+        for k, v in state_dict.items():
+            if isinstance(v, torch.Tensor) and not v.is_contiguous():
+                state_dict[k] = v.contiguous()
+
         save_file(state_dict, filepath, metadata=metadata)
 
     else:
