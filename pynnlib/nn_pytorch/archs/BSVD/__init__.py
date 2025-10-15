@@ -3,11 +3,12 @@ from pynnlib.architecture import (
     InferType,
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
 )
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
-from ..torch_to_onnx import to_onnx
+
 
 
 
@@ -180,7 +181,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         infer_type=InferType(
             type='temporal',
         ),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
     ),
 )
 

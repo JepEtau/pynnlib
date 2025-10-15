@@ -1,13 +1,14 @@
+from hutils import path_split
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
-from pynnlib.utils import path_split
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
-from ..torch_to_onnx import to_onnx
+
 
 
 _shape_to_scale: dict[int, list[int]] = {
@@ -128,7 +129,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         size_constraint=SizeConstraint(
             min=(64, 64)
         ),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'fp16']),
         ),

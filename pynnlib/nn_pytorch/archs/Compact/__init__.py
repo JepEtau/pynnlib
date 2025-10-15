@@ -1,6 +1,7 @@
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
@@ -10,7 +11,7 @@ from ..helpers import (
     get_scale_and_out_nc,
     get_max_indice,
 )
-from ..torch_to_onnx import to_onnx
+
 
 
 def parse(model: PyTorchModel) -> None:
@@ -48,9 +49,13 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         size_constraint=SizeConstraint(
             min=(64, 64)
         ),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'fixed', 'static']),
         ),
     ),
 )

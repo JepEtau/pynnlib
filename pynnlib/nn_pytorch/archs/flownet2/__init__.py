@@ -8,7 +8,7 @@ from pynnlib.architecture import (
 )
 from pynnlib.model import PyTorchModel
 # from ...torch_types import StateDict
-# from ..torch_to_onnx import to_onnx
+#
 
 
 
@@ -40,7 +40,10 @@ from pynnlib.model import PyTorchModel
 #         ),
 #         module=Module(file="flownet2", class_name="FlowNet2"),
 #         parse=parse,
-#         to_onnx=to_onnx,
+#         to_onnx = OnnxConv(
+#             dtypes=set(['fp32']),
+#             shape_strategy_types=set(['dynamic', 'static']),
+#         ),
 #         dtypes=('fp32'),
 #         size_constraint=SizeConstraint(
 #             min=(8, 8)

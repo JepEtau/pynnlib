@@ -1,6 +1,7 @@
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
@@ -8,30 +9,7 @@ from pynnlib.logger import is_debugging
 from pynnlib.model import PyTorchModel
 from pynnlib.nn_pytorch.archs import contains_all_keys
 from ...torch_types import StateDict
-from ..torch_to_onnx import to_onnx
 
-
-
-# def _to_onnx(
-#     model: PyTorchModel,
-#     dtype: Idtype,
-#     opset: int,
-#     static: bool = False,
-#     shape_strategy: ShapeStrategy | None = None,
-#     device: str = 'cpu',
-#     batch: int = 1,
-# ) -> onnx.ModelProto | None:
-#     model.dtypes = ('fp32')
-#     model.to_onnx = True
-#     return to_onnx(
-#         model=model,
-#         dtype='fp32',
-#         opset=opset,
-#         static=False,
-#         shape_strategy=shape_strategy,
-#         device=device,
-#         batch=batch,
-#     )
 
 
 def lhan_detect(state_dict: StateDict, keys: tuple[str | tuple[str]]) -> bool:
@@ -128,9 +106,12 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         parse=parse,
         dtypes=('fp32', 'fp16', 'bf16'),
         size_constraint=SizeConstraint(min=(8, 8)),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16', 'bf16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         to_tensorrt=TensorRTConv(
-            dtypes=set(['fp32', 'bf16', 'fp16']),
+            dtypes=set(['fp32', 'fp16', 'bf16']),
         ),
     ),
 )

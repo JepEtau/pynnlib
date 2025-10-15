@@ -112,34 +112,28 @@ class NnGenericArchitecture:
         return class_str
 
 
-
-ConvertToOnnxFct = Callable[
-    [
-        PyTorchModel,
-        Idtype,
-        int,
-        bool,
-        torch_device | str,
-        ShapeStrategy,
-        int
-    ],
-    onnx.ModelProto
-]
-"""Convert a Pytorch model to an Onnx model.
-
-    Arguments:
-        model: PytorchModel
-        dtype: Idtype
-        opset: int
-        static: bool = False
-        device: str = 'cpu'
-        batch: int = 1
-"""
-
-ConvertToTensorrtFct = Callable[
-    [PyTorchModel | OnnxModel, str, bool, Any, bool],
-    bytes
-]
+@dataclass(slots=True)
+class OnnxConv:
+    dtypes: Set[Idtype] = field(
+        # default_factory=lambda: {'fp32', 'fp16', 'bf16'}
+        default_factory=set
+    )
+    shape_strategy_types: Set[ShapeStrategyType] = field(
+        # default_factory=lambda: {'dynamic', 'static'}
+        default_factory=set
+    )
+    fct: Callable[
+        [
+            PyTorchModel,
+            Idtype,
+            int,    # opset
+            bool,   # static
+            torch.device | str,
+            ShapeStrategy,
+            int
+        ],
+        onnx.ModelProto
+    ] = None
 
 
 @dataclass(slots=True)
@@ -147,11 +141,13 @@ class TensorRTConv:
     # Some archs don't support strong typing,
     #   caution: conversion might fail or slower inference
     dtypes: Set[Idtype] = field(
-        default_factory=lambda: {'fp32', 'fp16', 'bf16'}
+        # default_factory=lambda: {'fp32', 'fp16', 'bf16'}
+        default_factory=set
     )
     weak_typing: bool = False
     shape_strategy_types: Set[ShapeStrategyType] = field(
-        default_factory=lambda: {'dynamic', 'fixed', 'static'}
+        # default_factory=lambda: {'dynamic', 'fixed', 'static'}
+        default_factory=set
     )
 
 
@@ -167,8 +163,8 @@ class NnPytorchArchitecture(NnGenericArchitecture):
     detection_keys: tuple[str | tuple[str]] | dict = field(default_factory=tuple)
     module: Module = field(default_factory=Module)
 
-    to_onnx: ConvertToOnnxFct | None = None
-    to_tensorrt: TensorRTConv | None = None
+    to_onnx: OnnxConv = None
+    to_tensorrt: TensorRTConv = None
 
     _caller_dir: str = ""
 
@@ -222,7 +218,7 @@ class NnPytorchArchitecture(NnGenericArchitecture):
 @dataclass
 class NnOnnxArchitecture(NnGenericArchitecture):
     scale: int | None = None
-    to_tensorrt: TensorRTConv | None = None
+    to_tensorrt: TensorRTConv = None
 
 
 @dataclass

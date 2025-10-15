@@ -2,13 +2,14 @@ import torch
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
 from pynnlib.architecture import NnPytorchArchitecture
 from pynnlib.model import PyTorchModel
 from ..helpers import get_scale_and_out_nc
-from ..torch_to_onnx import to_onnx
+
 
 
 def parse(model: PyTorchModel) -> None:
@@ -74,7 +75,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         module=Module(file="span", class_name="SPAN"),
         parse=parse,
         dtypes=('fp32', 'fp16', 'bf16'),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'fp16']),
         ),

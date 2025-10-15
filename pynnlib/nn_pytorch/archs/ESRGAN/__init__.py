@@ -5,12 +5,13 @@ import re
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
-from ..torch_to_onnx import to_onnx
+
 from ..helpers import get_max_indice
 
 

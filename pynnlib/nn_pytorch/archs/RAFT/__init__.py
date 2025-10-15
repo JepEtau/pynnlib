@@ -2,6 +2,7 @@ from pynnlib.architecture import (
     InferType,
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
@@ -74,7 +75,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             type='optical_flow',
             inputs=4,
             outputs=1,
-        )
-        # to_onnx=to_onnx,
+        ),
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
     ),
 )

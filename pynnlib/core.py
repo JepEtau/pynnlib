@@ -4,6 +4,7 @@ from hutils import (
     get_extension,
     path_basename,
     yellow,
+    red,
 )
 import os
 from pathlib import Path
@@ -48,7 +49,6 @@ from .nn_types import (
     NnFrameworkType
 )
 from .session import NnModelSession
-
 
 
 class NnLib:
@@ -220,11 +220,18 @@ class NnLib:
              + f"device={device}, dtype={dtype}, opset={opset}, static={static}"
              + f", shape={'x'.join([str(x) for x in shape_strategy.opt_size]) if static else ''}"
         )
-        # TODO: put the following code in an Try-Except block
+
         if (
             model.arch is not None
+            and model.arch.to_onnx is not None
+            and model.arch.to_onnx.dtypes
             and (convert_fct := model.arch.to_onnx) is not None
         ):
+            from pynnlib.nn_pytorch.archs.torch_to_onnx import to_onnx
+
+            # Some architectures have their own conversion function
+            convert_fct = model.arch.to_onnx.fct
+            convert_fct = convert_fct if convert_fct is not None else to_onnx
             onnx_model_object: onnx.ModelProto = convert_fct(
                 model=model,
                 dtype=dtype,
@@ -290,7 +297,7 @@ class NnLib:
         out_dir: str | Path | None = None,
         suffix: str = "",
         overwrite: bool = False,
-    ) -> TrtModel:
+    ) -> TrtModel | None:
         """Convert a model into a tensorrt model.
         Returns a new instance of model.
         Refer to https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#trtexec
@@ -384,7 +391,10 @@ class NnLib:
 
         # TODO: put the following code in an Try-Except block
         trt_engine = None
-        if onnx_model.torch_arch.to_tensorrt is not None:
+        if (
+            onnx_model.torch_arch.to_tensorrt is not None
+            and onnx_model.torch_arch.to_tensorrt.dtypes
+        ):
             from pynnlib.nn_onnx.archs.onnx_to_tensorrt import to_tensorrt
             trt_engine = to_tensorrt(
                 model=onnx_model,

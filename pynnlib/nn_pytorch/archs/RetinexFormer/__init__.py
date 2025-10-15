@@ -1,12 +1,13 @@
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
-from ..torch_to_onnx import to_onnx
+
 from ..helpers import get_max_indice
 
 
@@ -68,7 +69,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
             min=(8, 8),
             max=(3000, 3000),
         ),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'fp16']),
         ),
@@ -84,7 +88,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
     #         "body.0.encoder_layers.1.1.weight",
     #     ),
     #     parse=parse,
-    #     to_onnx=to_onnx,
+    #
     #     dtypes=('fp32', 'fp16'),
     #     size_constraint=SizeConstraint(
     #         min=(8, 8),

@@ -2,13 +2,14 @@ import math
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
-from ..torch_to_onnx import to_onnx
+
 
 
 def parse(model: PyTorchModel) -> None:
@@ -71,7 +72,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         module=Module(file="realplksr_arch", class_name="RealPLKSR"),
         parse=parse,
         dtypes=set(['fp32', 'fp16', 'bf16']),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'fp16']),
         ),

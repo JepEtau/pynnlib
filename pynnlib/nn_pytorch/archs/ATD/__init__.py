@@ -2,13 +2,13 @@ import math
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from pynnlib.nn_pytorch.archs.RCAN import get_pixelshuffle_params
 from ...torch_types import StateDict
-from ..torch_to_onnx import to_onnx
 from ..helpers import (
     get_nsequences,
     get_pixelshuffle_params
@@ -114,7 +114,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         size_constraint=SizeConstraint(
             min=(8, 8),
         ),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'fp16']),
         ),

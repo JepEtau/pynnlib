@@ -5,6 +5,7 @@ import torch
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
@@ -15,7 +16,7 @@ from ..helpers import (
     get_max_indice,
     get_nsequences,
 )
-from ..torch_to_onnx import to_onnx
+
 from pynnlib.logger import is_debugging
 
 
@@ -277,7 +278,11 @@ for arch in MODEL_ARCHITECTURES:
     arch.size_constraint = SizeConstraint(
         min=(64, 64)
     )
-    arch.to_onnx = _to_onnx
+    arch.to_onnx = OnnxConv(
+        dtypes=set(['fp32', 'fp16', 'bf16']),
+        shape_strategy_types=set(['dynamic', 'static']),
+        fct=_to_onnx
+    )
     arch.to_tensorrt = TensorRTConv(
         dtypes=set(['fp32', 'fp16']),
         weak_typing=True,

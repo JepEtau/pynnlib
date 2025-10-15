@@ -137,13 +137,5 @@ for arch in MODEL_ARCHITECTURES:
     if _is_debug:
         print(f"[V] {arch.name}, detection keys:\n  {'\n  '.join(arch.detection_keys)}")
 
-    # if is_tensorrt_available():
-    #     if arch.to_tensorrt is not None:
-            # Use default onnx to trt conversion function
-
-
-        # else:
-        #   conversion to tensorrt is not supported
-
     arch.lock()
 

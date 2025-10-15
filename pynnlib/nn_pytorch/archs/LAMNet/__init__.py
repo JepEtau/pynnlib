@@ -2,13 +2,14 @@ import math
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
 from ..helpers import get_max_indice
 from ...torch_types import StateDict
-from ..torch_to_onnx import to_onnx
+
 
 
 def parse(model: PyTorchModel) -> None:
@@ -62,7 +63,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         module=Module(file="lamnet", class_name="LAMNet"),
         parse=parse,
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         dtypes=('fp32', 'fp16'),
         size_constraint=SizeConstraint(
             min=(8, 8)
@@ -81,7 +85,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         size_constraint=SizeConstraint(
             min=(8, 8)
         ),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'fp16']),
         ),

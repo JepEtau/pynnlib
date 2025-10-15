@@ -7,12 +7,13 @@ from warnings import warn
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
 )
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
-from ..torch_to_onnx import to_onnx
+
 
 # Impossible to differentiate unimatch from GMFlow
 
@@ -95,6 +96,5 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         size_constraint=SizeConstraint(
             min=(8, 8)
         ),
-        # to_onnx=to_onnx,
     ),
 )

@@ -8,8 +8,8 @@ from pynnlib.architecture import (
     InferType,
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
-    TensorRTConv,
 )
 from pynnlib.nn_types import Idtype
 from pynnlib import is_cuda_available

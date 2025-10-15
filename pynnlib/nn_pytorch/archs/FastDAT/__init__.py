@@ -2,6 +2,7 @@ import math
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,
+    OnnxConv,
     SizeConstraint,
     TensorRTConv,
 )
@@ -9,7 +10,7 @@ from pynnlib.logger import is_debugging
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_nsequences
-from ..torch_to_onnx import to_onnx
+
 
 
 # copy from module to avoid importing module right now
@@ -118,7 +119,10 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         parse=parse,
         dtypes=('fp32', 'fp16', 'bf16'),
         size_constraint=SizeConstraint(min=(8, 8)),
-        to_onnx=to_onnx,
+        to_onnx = OnnxConv(
+            dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static']),
+        ),
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'fp16']),
         ),
