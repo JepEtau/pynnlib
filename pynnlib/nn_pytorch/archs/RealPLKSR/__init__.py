@@ -78,6 +78,7 @@ MODEL_ARCHITECTURES: tuple[NnPytorchArchitecture] = (
         ),
         to_tensorrt=TensorRTConv(
             dtypes=set(['fp32', 'fp16']),
+            shape_strategy_types=set(['dynamic', 'static', 'fixed']),
         ),
     ),
 )

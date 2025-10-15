@@ -225,7 +225,7 @@ class NnLib:
             model.arch is not None
             and model.arch.to_onnx is not None
             and model.arch.to_onnx.dtypes
-            and (convert_fct := model.arch.to_onnx) is not None
+            and model.arch.to_onnx.shape_strategy_types
         ):
             from pynnlib.nn_pytorch.archs.torch_to_onnx import to_onnx
 
@@ -394,6 +394,7 @@ class NnLib:
         if (
             onnx_model.torch_arch.to_tensorrt is not None
             and onnx_model.torch_arch.to_tensorrt.dtypes
+            and onnx_model.torch_arch.to_tensorrt.shape_strategy_types
         ):
             from pynnlib.nn_onnx.archs.onnx_to_tensorrt import to_tensorrt
             trt_engine = to_tensorrt(

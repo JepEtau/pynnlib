@@ -146,8 +146,8 @@ class TensorRTConv:
     )
     weak_typing: bool = False
     shape_strategy_types: Set[ShapeStrategyType] = field(
-        # default_factory=lambda: {'dynamic', 'fixed', 'static'}
-        default_factory=set
+        default_factory=lambda: {'dynamic', 'fixed', 'static'}
+        # default_factory=set
     )
 
 
