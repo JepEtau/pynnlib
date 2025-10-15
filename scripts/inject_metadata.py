@@ -1,6 +1,12 @@
 from argparse import (
     ArgumentParser,
-    RawTextHelpFormatter
+    RawTextHelpFormatter,
+)
+from hutils import (
+    absolute_path,
+    lightcyan,
+    red,
+    yellow,
 )
 import logging
 import logging.config
@@ -30,8 +36,6 @@ from pynnlib import (
     NnFrameworkType,
     save_as,
 )
-from pynnlib.utils import absolute_path, get_extension
-from pynnlib.utils.p_print import *
 print(f"pynnlib loaded in {(time.time() - start_time):.02f}s")
 
 

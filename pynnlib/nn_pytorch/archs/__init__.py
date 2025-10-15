@@ -1,6 +1,7 @@
 
 from __future__ import annotations
 from functools import partial
+from hutils import *
 from importlib import util as importlib_util
 import os
 from pathlib import Path, PurePath
@@ -12,7 +13,6 @@ from torch import nn
 from ..torch_types import StateDict
 from pynnlib.logger import is_debugging, nnlogger
 from pynnlib.architecture import NnPytorchArchitecture
-from pynnlib.utils.p_print import *
 from pynnlib.model import PyTorchModel
 from pynnlib.import_libs import is_tensorrt_available
 from .helpers import parameters_to_args

@@ -7,7 +7,6 @@ from pynnlib.architecture import (
     TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
-from pynnlib.utils.p_print import *
 from ...torch_types import StateDict
 from ..helpers import get_max_indice
 from ..torch_to_onnx import to_onnx

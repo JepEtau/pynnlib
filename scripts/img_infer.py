@@ -1,4 +1,13 @@
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import (
+    ArgumentParser,
+    RawTextHelpFormatter,
+)
+from hutils import (
+    absolute_path,
+    path_split,
+    red,
+    yellow,
+)
 import logging
 import logging.config
 import os
@@ -31,7 +40,6 @@ from pynnlib import (
     NnFrameworkType,
 )
 from pynnlib.utils import absolute_path, path_split
-from pynnlib.utils.p_print import *
 
 
 

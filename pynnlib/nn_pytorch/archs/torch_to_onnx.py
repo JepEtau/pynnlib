@@ -1,4 +1,7 @@
 from __future__ import annotations
+from hutils import (
+    red,
+)
 from io import BytesIO
 from pprint import pprint
 from typing import TYPE_CHECKING
@@ -14,7 +17,7 @@ from pynnlib.utils.torch_tensor import IdtypeToTorch
 from ..inference.session import PyTorchSession
 if TYPE_CHECKING:
     from pynnlib.model import PyTorchModel
-from pynnlib.utils.p_print import *
+
 
 
 def to_onnx(

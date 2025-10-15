@@ -1,3 +1,4 @@
+from hutils import red, yellow
 from pynnlib.architecture import (
     InferType,
     Module,
@@ -5,7 +6,6 @@ from pynnlib.architecture import (
     SizeConstraint,
 )
 from pynnlib.model import PyTorchModel
-from pynnlib.utils.p_print import *
 from ...torch_types import StateDict
 from ..torch_to_onnx import to_onnx
 

@@ -1,4 +1,17 @@
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import (
+    ArgumentParser,
+    RawTextHelpFormatter,
+)
+import cv2
+from hutils import (
+    absolute_path,
+    path_split,
+    lightcyan,
+    lightgreen,
+    red,
+    yellow,
+)
+import numpy as np
 import logging
 import logging.config
 import os
@@ -8,8 +21,6 @@ import signal
 import sys
 import time
 from typing import Any
-import cv2
-import numpy as np
 
 from pynnlib.nn_types import Idtype
 
@@ -33,8 +44,7 @@ from pynnlib import (
     ShapeStrategy,
     TrtModel
 )
-from pynnlib.utils import absolute_path, path_split
-from pynnlib.utils.p_print import *
+
 
 
 

@@ -15,7 +15,10 @@ from pynnlib.model import PyTorchModel
 from pynnlib.architecture import SizeConstraint
 from pynnlib.nn_types import Idtype
 from pynnlib.session import GenericSession
-from pynnlib.utils.p_print import *
+from hutils import (
+    yellow,
+    red,
+)
 from pynnlib.utils.torch_tensor import (
     img_to_tensor,
     tensor_to_img,

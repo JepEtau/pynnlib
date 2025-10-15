@@ -1,14 +1,11 @@
 from datetime import datetime
+from hutils import get_extension
 import time
 from typing import Any
 from warnings import warn
 
-import onnx
-
-
 from .nn_types import NnFrameworkType
 from .model import NnModel
-from .utils import get_extension
 
 
 def parse_metadata_(model: NnModel) -> None:

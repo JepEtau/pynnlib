@@ -1,4 +1,5 @@
 from copy import deepcopy
+from hutils import red, yellow
 import math
 from warnings import warn
 import onnx
@@ -22,7 +23,6 @@ from .ms_utils import (
     make_input_shape_fixed,
     fix_output_shapes
 )
-from pynnlib.utils.p_print import *
 
 
 

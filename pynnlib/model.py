@@ -1,9 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 import onnx
-from typing import Any, TYPE_CHECKING, Literal
-
-from .utils import arg_list
+from typing import TYPE_CHECKING, Literal
+from hutils import arg_list
 
 from torch import nn
 from .nn_pytorch.torch_types import StateDict

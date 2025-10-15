@@ -1,4 +1,13 @@
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import (
+    ArgumentParser,
+    RawTextHelpFormatter,
+)
+from hutils import (
+    absolute_path,
+    path_split,
+    red,
+    yellow,
+)
 import logging
 import os
 import re
@@ -22,8 +31,6 @@ from pynnlib import (
     is_tensorrt_available,
     nnlogger,
 )
-from pynnlib.utils import absolute_path, path_split
-from pynnlib.utils.p_print import *
 
 
 def _str_to_size(size_str: str) -> tuple[int, int] | None:

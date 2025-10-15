@@ -1,5 +1,9 @@
 from __future__ import annotations
 from copy import deepcopy
+from hutils import (
+    absolute_path,
+    is_access_granted,
+)
 import json
 import os
 from pathlib import Path
@@ -11,7 +15,6 @@ from safetensors.torch import save_file
 
 from .load import load_state_dict
 from pynnlib.metadata import generate_metadata
-from pynnlib.utils import absolute_path, is_access_granted
 if TYPE_CHECKING:
     from pynnlib.model import PyTorchModel
 

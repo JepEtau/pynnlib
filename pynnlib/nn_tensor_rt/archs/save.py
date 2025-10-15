@@ -1,17 +1,15 @@
 
 from copy import deepcopy
+from hutils import is_access_granted
 import json
 import os
 from pathlib import Path
 from pprint import pprint
-import re
 from warnings import warn
 import zipfile
 
 from pynnlib.metadata import generate_metadata
 
-from ...utils import is_access_granted
-from ...utils.p_print import *
 from pynnlib.model import TrtModel
 from pynnlib.nn_types import ShapeStrategy
 from pynnlib.import_libs import trt

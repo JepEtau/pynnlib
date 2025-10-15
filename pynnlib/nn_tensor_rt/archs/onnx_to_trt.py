@@ -1,9 +1,10 @@
 from copy import deepcopy
-from pprint import pprint
+from hutils import red, yellow
 import numpy as np
+from pprint import pprint
+
 from pynnlib.logger import nnlogger
 from pynnlib.nn_types import Idtype, ShapeStrategy
-from pynnlib.utils.p_print import *
 from pynnlib.import_libs import trt
 TrtDType = trt.DataType
 

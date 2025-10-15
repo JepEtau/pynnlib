@@ -4,7 +4,6 @@ from pynnlib.architecture import (
     SizeConstraint,
     TensorRTConv,
 )
-from pynnlib.utils.p_print import *
 from pynnlib.utils import path_split
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict

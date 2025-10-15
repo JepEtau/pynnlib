@@ -6,9 +6,10 @@ from pynnlib.architecture import (
     SizeConstraint,
     TensorRTConv,
 )
-from pynnlib.utils.p_print import *
 from pynnlib.model import PyTorchModel
 from ..torch_to_onnx import to_onnx
+from torch import Tensor
+
 
 
 def parse(model: PyTorchModel) -> None:
@@ -41,7 +42,7 @@ def parse(model: PyTorchModel) -> None:
         upsampler = "pixelshuffledirect"
 
     num_feat_pre_layer = state_dict.get("conv_before_upsample.weight", None)
-    num_feat_layer = state_dict.get("conv_before_upsample.0.weight", None)
+    num_feat_layer: Tensor = state_dict.get("conv_before_upsample.0.weight", None)
     num_feat = (
         num_feat_layer.shape[1]
         if num_feat_layer is not None and num_feat_pre_layer is not None

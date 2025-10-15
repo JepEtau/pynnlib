@@ -1,5 +1,4 @@
 from typing import Literal
-from pynnlib.utils.p_print import *
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,

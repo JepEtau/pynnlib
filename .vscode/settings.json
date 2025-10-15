@@ -1,14 +1,24 @@
 {
     "files.exclude": {
         "**/__pycache__": true,
-        "**/*.bin": true,
-        "**/*.engine": true,
-        "**/*.onnx": true,
+        "**/dist": true,
+        "**/*.egg-info": true,
+
         "**/*.pt": true,
         "**/*.pth": true,
+        "**/*.safetensors": true,
+        "**/*.onnx": true,
+        "**/*.engine": true,
+        "**/*.ncnn": true,
+        "**/*.bin": true,
+        "**/*.param": true,
+
+        "**/*.png": true,
+        "**/*.jpg": true,
         "**/*.mkv": true,
         "**/*.mp4": true,
-        "**/*.png": true,
+        "**/*.mov": true,
+        "**/*.mxf": true,
     },
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": false,
@@ -19,10 +29,7 @@
             120
         ]
     },
-    "git.detectSubmodules": true,
-    "cSpell.words": [
-        "ndarray",
-        "pageable",
-        "tensorrt"
+    "python.analysis.extraPaths": [
+        "../hutils"
     ],
 }

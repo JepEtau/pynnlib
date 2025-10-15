@@ -1,3 +1,4 @@
+from hutils import red, yellow
 import os
 from pprint import pprint
 import sys
@@ -10,7 +11,6 @@ import importlib
 import hashlib
 
 from ...helpers import find_compiler_bindir
-from pynnlib.utils.p_print import *
 
 
 _lamnet_cuda_ext: dict[str, Any] = {}

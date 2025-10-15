@@ -1,4 +1,5 @@
 from __future__ import annotations
+from hutils import red, yellow
 from io import BytesIO
 import onnx
 import torch
@@ -11,7 +12,6 @@ from pynnlib.architecture import (
     TensorRTConv,
 )
 from pynnlib.nn_types import Idtype
-from pynnlib.utils.p_print import *
 from pynnlib import is_cuda_available
 from pynnlib.model import PyTorchModel, SizeConstraint
 from ...archs import contains_any_keys

@@ -2,7 +2,6 @@ from collections import OrderedDict
 import functools
 import math
 import re
-from pynnlib.utils.p_print import *
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,

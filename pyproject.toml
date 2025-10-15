@@ -1,15 +1,11 @@
-[build-system]
-requires = ["setuptools >= 77.0.3", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "pynnlib"
 version = "0.1"
+description = "A library to load neural network models for SISR and videoSR"
+readme = "README.md"
 authors = [
     {name = "Jep Etau", email = "jep.etau@gmail.com"},
 ]
-description = "A library to load neural network models for SISR and videoSR"
-readme = "README.md"
 requires-python = ">= 3.12"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -21,6 +17,7 @@ keywords = ["nn"]
 dependencies = [
     "numpy>=2.2.6",
     "opencv-python>=4.12",
+    "hutils @ git+https://github.com/JepEtau/hutils.git@main#egg=hutils",
 ]
 
 [project.urls]
@@ -28,6 +25,10 @@ Homepage = "https://github.com/JepEtau/pynnlib"
 Documentation = "https://github.com/JepEtau/pynnlib/README.md"
 Repository = "https://github.com/JepEtau/pynnlib"
 "Bug Tracker" = "https://github.com/JepEtau/pynnlib/issues"
+
+[build-system]
+requires = ["setuptools >= 77.0.3", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -37,11 +38,6 @@ exclude = ["tests*", "scripts"]
 [tool.black]
 line-length = 90
 target-version = ['py312']
-
-[tool.mypy]
-python_version = "3.12"
-warn_return_any = true
-warn_unused_configs = true
 
 [tool.ruff]
 exclude = ["*"]

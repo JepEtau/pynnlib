@@ -1,3 +1,4 @@
+from hutils import red, yellow
 import os
 import sys
 import time
@@ -9,7 +10,6 @@ import importlib
 import hashlib
 
 from ...helpers import find_compiler_bindir
-from pynnlib.utils.p_print import *
 
 
 

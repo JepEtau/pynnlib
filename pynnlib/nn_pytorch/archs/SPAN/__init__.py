@@ -5,7 +5,6 @@ from pynnlib.architecture import (
     SizeConstraint,
     TensorRTConv,
 )
-from pynnlib.utils.p_print import *
 from pynnlib.architecture import NnPytorchArchitecture
 from pynnlib.model import PyTorchModel
 from ..helpers import get_scale_and_out_nc

@@ -6,7 +6,6 @@ from pynnlib.architecture import (
     TensorRTConv,
 )
 from pynnlib.logger import is_debugging
-from pynnlib.utils.p_print import *
 from pynnlib.model import PyTorchModel
 from ...torch_types import StateDict
 from ..helpers import get_nsequences

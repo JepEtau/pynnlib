@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from .model import NnModel
 from .framework import NnFrameworkType
-from .utils import path_split
+from hutils import (
+    get_extension,
+    path_split,
+)
 
 
 def save_as(model_fp: str, model: NnModel) -> None:
     directory, basename, ext = path_split(model_fp)
+
     if not directory:
         directory="./"
 
@@ -36,4 +40,4 @@ def save_as(model_fp: str, model: NnModel) -> None:
         )
 
     else:
-        raise ValueError(f"Unknown framework: {model.framework.type}")
+        raise ValueError(get_extension(f"Unknown framework: {model.framework.type}"))

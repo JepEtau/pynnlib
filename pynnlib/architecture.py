@@ -1,6 +1,7 @@
 from __future__ import annotations
 from collections.abc import Callable, Set
 from dataclasses import dataclass, field
+from hutils import absolute_path, path_split
 from importlib import util as importlib_util
 import inspect
 import os
@@ -29,7 +30,6 @@ from .nn_types import (
     ShapeStrategyType,
 )
 from .session import NnModelSession
-from .utils import absolute_path, path_split
 
 
 ParseFunction = Callable[[NnModel], None]

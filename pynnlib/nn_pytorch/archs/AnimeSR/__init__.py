@@ -1,12 +1,11 @@
+from hutils import red, yellow
 import math
 from pynnlib.architecture import (
     InferType,
     Module,
     NnPytorchArchitecture,
-    SizeConstraint,
 )
 from pynnlib.model import PyTorchModel
-from pynnlib.utils.p_print import *
 from ..torch_to_onnx import to_onnx
 
 

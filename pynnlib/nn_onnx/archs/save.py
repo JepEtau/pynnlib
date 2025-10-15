@@ -1,17 +1,14 @@
 from __future__ import annotations
 from copy import deepcopy
 from datetime import datetime
-import json
+from hutils import is_access_granted
 from pprint import pprint
 from warnings import warn
 import onnx
-from onnx import helper
 import os
 from pathlib import Path
-import time
-from pynnlib.metadata import generate_metadata
-from pynnlib.utils import is_access_granted
 from pynnlib.model import OnnxModel
+
 
 
 def generate_onnx_basename(

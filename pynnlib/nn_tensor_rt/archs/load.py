@@ -1,10 +1,8 @@
+from hutils import get_extension
 import json
 import os
 from pprint import pprint
 import zipfile
-
-from pynnlib.utils.p_print import *
-from pynnlib.utils import get_extension
 
 
 

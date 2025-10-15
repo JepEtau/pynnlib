@@ -1,11 +1,14 @@
 from __future__ import annotations
-import logging
+from hutils import (
+    absolute_path,
+    get_extension,
+    path_basename,
+    yellow,
+)
 import os
 from pathlib import Path
-from pprint import pprint
 import re
 from warnings import warn
-
 
 from .import_libs import is_tensorrt_available
 from .logger import is_debugging, nnlogger
@@ -23,12 +26,6 @@ except:
         raise RuntimeError("TensorRT is not supported")
 
 import torch
-from .utils import (
-    absolute_path,
-    get_extension,
-    os_path_basename,
-)
-from .utils.p_print import *
 
 from .architecture import (
     NnArchitecture,
@@ -271,7 +268,7 @@ class NnLib:
         # Save this model
         filepath: str = ""
         if out_dir:
-            basename = os_path_basename(model.filepath)
+            basename = path_basename(model.filepath)
             filepath = onnx_fwk.save(onnx_model, out_dir, basename, suffix)
             if filepath:
                 nnlogger.debug(f"[I] Onnx model saved as {filepath}")
@@ -320,7 +317,7 @@ class NnLib:
         trt_dtypes = set([dtype])
 
         # Remove suffixes from ONNX basename
-        basename = os_path_basename(model.filepath)
+        basename = path_basename(model.filepath)
         if model.fwk_type == NnFrameworkType.ONNX:
             opset = model.opset
             basename = re.sub(r"_op\d{1,2}", '', basename)
