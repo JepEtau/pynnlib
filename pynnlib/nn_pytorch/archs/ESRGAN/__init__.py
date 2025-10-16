@@ -158,15 +158,15 @@ def parse(model: PyTorchModel) -> None:
     # from .module.RRDB import RRDBNet
     model.update(
         state_dict=state_dict,
-        arch_name="ESRGAN-2c2" if c2x2 else model.arch_name,
+        arch_name="ESRGAN-2c2" if c2x2 else '',
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,
 
-        # num_filters=num_filters,
-        # num_blocks=num_blocks,
-        # c2x2=c2x2,
-        # shuffle_factor=shuffle_factor,
+        num_filters=num_filters,
+        num_blocks=num_blocks,
+        c2x2=c2x2,
+        shuffle_factor=shuffle_factor,
     )
 
 

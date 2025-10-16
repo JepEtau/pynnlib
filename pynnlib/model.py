@@ -57,16 +57,7 @@ class ModelExecutor:
     in_max_shape: tuple[int, int, int]
 
 
-def get_class_keys(obj) -> list[str]:
-    defined_keys: list[str] = []
-    for cls in type(obj).__mro__:
-        if is_dataclass(cls):
-            # __dataclass_fields__ is a dict: field_name -> Field object
-            defined_keys.extend(cls.__dataclass_fields__.keys())
-    return defined_keys
-
-
-@dataclass(slots=True)
+@dataclass
 class GenericModel:
     framework: NnFramework
     arch: NnArchitecture
@@ -132,9 +123,7 @@ class GenericModel:
         """Update multiple fields of this class.
             \nRaises an exception if a key is not defined.
         """
-        # Get all slot names (field names) from the class hierarchy
-        defined_keys = get_class_keys(self)
-        print(defined_keys)
+        defined_keys: list[str] = list(self.__dict__.keys())
 
         # Append the list of arguments used by a PyTorch nn.Module
         module_key: str = 'ModuleClass'
@@ -151,44 +140,36 @@ class GenericModel:
 
         for key, value in kwargs.items():
             if module is not None and key not in defined_keys:
-                raise KeyError(f"Undefined key '{key}' in {self.__class__.__name__}")
+                raise KeyError(f"Undefined key \'{key}\' in {self.__class__.__name__}")
             setattr(self, key, value)
 
 
     def __str__(self) -> str:
         class_str = f"{self.__class__}: {'{'}\n"
         indent: str = "    "
+        for k, v in self.__dict__.items():
+            # Do not print content if too complex
+            if k in ['model_proto', 'state_dict', 'engine', 'arch', 'framework']:
+                class_str += (
+                    f"{indent}{k}: {f'{type(v).__name__} ...' if v is not None else 'None'}\n"
+                )
+                continue
+            # dict
+            if isinstance(v, dict):
+                class_str += f"{indent}{k}: {type(v).__name__} = {'{'}\n{indent}{indent}"
+                items = []
+                for key, value in v.items():
+                    items.append(
+                        f"\'{key}\': \'{value}\'"
+                        if isinstance(value, str)
+                        else f"\'{key}\': {value}"
+                    )
+                class_str += f",\n{indent}{indent}".join(items)
+                class_str += f"\n{indent}{'}'}\n"
 
-        for cls in type(self).__mro__:
-            if hasattr(cls, '__slots__'):
-                for k in cls.__slots__:
-                    if not hasattr(self, k):
-                        continue
-
-                    v = getattr(self, k)
-
-                    # Do not print content if too complex
-                    if k in ['model_proto', 'state_dict', 'engine', 'arch', 'framework']:
-                        class_str += (
-                            f"{indent}{k}: {f'{type(v).__name__} ...' if v is not None else 'None'}\n"
-                        )
-                        continue
-
-                    # dict
-                    if isinstance(v, dict):
-                        class_str += f"{indent}{k}: {type(v).__name__} = {{\n{indent}{indent}"
-                        items = []
-                        for key, value in v.items():
-                            items.append(
-                                f"'{key}': '{value}'"
-                                if isinstance(value, str)
-                                else f"'{key}': {value}"
-                            )
-                        class_str += f",\n{indent}{indent}".join(items)
-                        class_str += f"\n{indent}}}\n"
-                    else:
-                        v_str = f"'{v}'" if isinstance(v, str) else f"{v}"
-                        class_str += f"{indent}{k}: {type(v).__name__} = {v_str}\n"
+            else:
+                v_str = f"\'{v}\'" if isinstance(v, str) else f"{v}"
+                class_str += f"{indent}{k}: {type(v).__name__} = {v_str}\n"
 
         class_str += "}\n"
         return class_str
@@ -244,7 +225,7 @@ class OnnxModel(GenericModel):
 
 
 
-@dataclass(slots=True)
+@dataclass
 class PyTorchModel(GenericModel):
     state_dict: StateDict = field(default_factory=StateDict)
     num_feat: int = 0
