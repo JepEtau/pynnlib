@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields, is_dataclass
 import onnx
 from typing import TYPE_CHECKING, Literal
 from hutils import arg_list
@@ -56,6 +56,14 @@ class ModelExecutor:
     pinned_mem: bool
     in_max_shape: tuple[int, int, int]
 
+
+def get_class_keys(obj) -> list[str]:
+    defined_keys: list[str] = []
+    for cls in type(obj).__mro__:
+        if is_dataclass(cls):
+            # __dataclass_fields__ is a dict: field_name -> Field object
+            defined_keys.extend(cls.__dataclass_fields__.keys())
+    return defined_keys
 
 
 @dataclass(slots=True)
@@ -125,10 +133,8 @@ class GenericModel:
             \nRaises an exception if a key is not defined.
         """
         # Get all slot names (field names) from the class hierarchy
-        defined_keys: list[str] = []
-        for cls in type(self).__mro__:
-            if hasattr(cls, '__slots__'):
-                defined_keys.extend(cls.__slots__)
+        defined_keys = get_class_keys(self)
+        print(defined_keys)
 
         # Append the list of arguments used by a PyTorch nn.Module
         module_key: str = 'ModuleClass'

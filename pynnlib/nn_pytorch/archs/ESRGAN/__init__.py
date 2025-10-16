@@ -163,10 +163,10 @@ def parse(model: PyTorchModel) -> None:
         in_nc=in_nc,
         out_nc=out_nc,
 
-        num_filters=num_filters,
-        num_blocks=num_blocks,
-        c2x2=c2x2,
-        shuffle_factor=shuffle_factor,
+        # num_filters=num_filters,
+        # num_blocks=num_blocks,
+        # c2x2=c2x2,
+        # shuffle_factor=shuffle_factor,
     )
 
 
