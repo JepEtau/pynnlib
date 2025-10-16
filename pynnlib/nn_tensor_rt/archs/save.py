@@ -89,6 +89,7 @@ def save_as(
     if basename == '':
         return False
     basename = generate_tensorrt_basename(model, basename)
+    suffix = f"_{suffix}" if suffix else ""
     ext = '.trtzip'
     model.filepath = os.path.join(directory, f"{basename}{suffix}{ext}")
 

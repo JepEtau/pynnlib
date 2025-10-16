@@ -19,7 +19,13 @@ def generate_onnx_basename(
         [fp for fp in ('fp32', 'fp16', 'bf16', 'int8') if fp in model.dtypes]
     )
     shape: str = ""
+    if model.shape_strategy is None:
+        raise ValueError(f"the shape strategy must be specified")
+
     if model.shape_strategy.type == 'static':
+        # verify that the shape is valid
+        if not model.shape_strategy.is_valid():
+            raise ValueError(f"the shape strategy is not valid for strategy=\'{model.shape_strategy.type}\'")
         shape = "_static_" + 'x'.join([str(x) for x in model.shape_strategy.opt_size])
 
     return f"{basename}_op{model.opset}_{dtypes}{shape}"

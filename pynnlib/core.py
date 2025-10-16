@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 from hutils import (
     absolute_path,
     get_extension,
@@ -110,6 +111,15 @@ class NnLib:
                 device=device,
             )
         except Exception as e:
+            nnlogger.debug(f"exception while creating a model: {str(e)}")
+            model = self.create_model(
+                nn_model_path=model_path,
+                framework=fwk,
+                model_arch=model_arch,
+                model_obj=model_obj,
+                metadata=metadata,
+                device=device,
+            )
             raise ValueError(f"Not a supported model: {model_path}. Reason: {str(e)}") from e
 
         if (
@@ -179,11 +189,15 @@ class NnLib:
             raise ValueError("[E] Unknown framework")
 
         # Parse a model object to detect the model info: scale, dtype, ...
-        model.arch_name = model_arch.name
-        try:
+        if logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG":
+            # Don't catch the exception when in development
             model_arch.parse(model)
-        except Exception as e:
-            raise ValueError(str(e))
+        else:
+            try:
+                model_arch.parse(model)
+            except Exception as e:
+                nnlogger.error(str(e))
+                raise ValueError(f"Exception while parsing the model: {str(e)}")
 
         return model
 
@@ -294,7 +308,7 @@ class NnLib:
         optimization_level: int = 3,
         opset: int = 20,
         device: str = "cuda:0",
-        out_dir: str | Path | None = None,
+        out_dir: str = None,
         suffix: str = "",
         overwrite: bool = False,
     ) -> TrtModel | None:
@@ -345,12 +359,11 @@ class NnLib:
 
         # Verify if tensor engine already exists, create a fake model
         if out_dir is not None:
-            _fake_model: TrtModel = TrtModel(
+            dummy_model: TrtModel = TrtModel(
                 framework=self.frameworks[NnFrameworkType.TENSORRT],
                 arch=NnTensorrtArchitecture,
                 torch_arch=torch_arch,
-                arch_name='generic',
-                filepath='',
+                filepath="",
                 device=device,
                 dtypes=trt_dtypes,
                 force_weak_typing=force_weak_typing,
@@ -358,8 +371,7 @@ class NnLib:
                 shape_strategy=shape_strategy,
                 opset=opset,
             )
-            trt_basename: str = generate_tensorrt_basename(_fake_model, basename)
-            suffix = suffix if suffix is not None else ''
+            trt_basename: str = generate_tensorrt_basename(dummy_model, basename)
             filepath = os.path.join(out_dir, f"{trt_basename}{suffix}.trtzip")
             if os.path.exists(filepath):
                 if not overwrite:
@@ -369,7 +381,7 @@ class NnLib:
                     os.remove(filepath)
             else:
                 nnlogger.debug(f"[I] Engine {filepath} does not exist")
-            del _fake_model
+            del dummy_model
 
         # Convert to Onnx
         # Always use fp32 when converting to onnx

@@ -26,7 +26,6 @@ def parse(model: PyTorchModel) -> None:
 
     # from .module.SRVGG import SRVGGNetCompact
     model.update(
-        arch_name=model.arch.name,
         scale=scale,
         in_nc=in_nc,
         out_nc=out_nc,

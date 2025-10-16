@@ -1,3 +1,4 @@
+from hutils import yellow
 import logging
 
 nnlogger: logging.Logger = logging.getLogger("pynnlib")
@@ -11,3 +12,5 @@ nnlogger.setLevel("WARNING")
 def is_debugging() -> bool:
     return bool(logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG")
 
+import warnings
+warnings.formatwarning = lambda msg, *a, **kw: f"⚠️  {yellow(msg)}\n"

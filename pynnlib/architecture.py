@@ -59,7 +59,7 @@ class NnGenericArchitecture:
     detect: tuple[Callable] | Callable = None
 
     """Parse a model object and update the model"""
-    parse: ParseFunction | None = None
+    parse: ParseFunction = None
 
     create_session: Callable[[NnModel], NnModelSession] = None
 

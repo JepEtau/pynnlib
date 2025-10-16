@@ -58,7 +58,10 @@ from .utils.torch_tensor import (
     to_hwc,
 )
 
-from .save import save_as
+from .save import (
+    save_as,
+    generate_out_model_fp,
+)
 
 __all__ = [
     "nnlogger",
@@ -105,4 +108,6 @@ __all__ = [
     "SizeConstraint",
 
     "save_as",
+    "generate_out_model_fp",
+
 ]

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 
-@dataclass
+@dataclass(slots=True)
 class SizeConstraint:
     min: tuple[int, int] = None
     max: tuple[int, int] = None
@@ -58,18 +58,10 @@ class ModelExecutor:
 
 
 
-@dataclass
+@dataclass(slots=True)
 class GenericModel:
-    """
-        - (not supported)   model.to_tensorrt
-        -  use              nnlib.to_onnx(model)
-    """
     framework: NnFramework
     arch: NnArchitecture
-    # Use a variable as this name may differ from the
-    #   default arch name. This variable may be
-    #   updated when parsing the model
-    arch_name: str = 'unknown'
 
     scale: int = 0
     in_nc: int = 0
@@ -79,7 +71,7 @@ class GenericModel:
         field(default_factory=dict)
     )
 
-    filepath: str | None = None
+    filepath: str = None
 
     # Use this device to parse a TensorRT model
     # TBD: for inference?
@@ -94,15 +86,16 @@ class GenericModel:
 
     # Object used to initialize an executor.
     # when in multiprocess. Useless otherwise
-    executor: ModelExecutor | None = None
+    executor: ModelExecutor = None
 
     metadata: dict[str, str] = field(default_factory=dict)
 
-    # Custom size constraints
-    _size_constraint: SizeConstraint | None = None
-
     # Shape strategy when converting to onnx/tensorrt
     shape_strategy: ShapeStrategy = field(default_factory=ShapeStrategy)
+
+   # Private fields
+    _arch_name: str = field(default="", init=False, repr=False)
+    _size_constraint: SizeConstraint | None = field(default=None, init=False, repr=False)
 
 
     @property
@@ -110,11 +103,32 @@ class GenericModel:
         return self.framework.type
 
 
+    @property
+    def arch_name(self) -> str:
+        if self.arch is None and not self._arch_name:
+            return "unknown"
+        elif self._arch_name:
+            return self._arch_name
+        return self.arch.name
+
+
+    @arch_name.setter
+    def arch_name(self, name: str = "") -> None:
+        """Set to an empty string so that the property returns the arch name
+            and not the overwritten one
+        """
+        self._arch_name = name
+
+
     def update(self, **kwargs):
         """Update multiple fields of this class.
             \nRaises an exception if a key is not defined.
         """
-        defined_keys: list[str] = list(self.__dict__.keys())
+        # Get all slot names (field names) from the class hierarchy
+        defined_keys: list[str] = []
+        for cls in type(self).__mro__:
+            if hasattr(cls, '__slots__'):
+                defined_keys.extend(cls.__slots__)
 
         # Append the list of arguments used by a PyTorch nn.Module
         module_key: str = 'ModuleClass'
@@ -131,36 +145,44 @@ class GenericModel:
 
         for key, value in kwargs.items():
             if module is not None and key not in defined_keys:
-                raise KeyError(f"Undefined key \'{key}\' in {self.__class__.__name__}")
+                raise KeyError(f"Undefined key '{key}' in {self.__class__.__name__}")
             setattr(self, key, value)
 
 
     def __str__(self) -> str:
         class_str = f"{self.__class__}: {'{'}\n"
         indent: str = "    "
-        for k, v in self.__dict__.items():
-            # Do not print content if too complex
-            if k in ['model_proto', 'state_dict', 'engine', 'arch', 'framework']:
-                class_str += (
-                    f"{indent}{k}: {f'{type(v).__name__} ...' if v is not None else 'None'}\n"
-                )
-                continue
-            # dict
-            if isinstance(v, dict):
-                class_str += f"{indent}{k}: {type(v).__name__} = {'{'}\n{indent}{indent}"
-                items = []
-                for key, value in v.items():
-                    items.append(
-                        f"\'{key}\': \'{value}\'"
-                        if isinstance(value, str)
-                        else f"\'{key}\': {value}"
-                    )
-                class_str += f",\n{indent}{indent}".join(items)
-                class_str += f"\n{indent}{'}'}\n"
 
-            else:
-                v_str = f"\'{v}\'" if isinstance(v, str) else f"{v}"
-                class_str += f"{indent}{k}: {type(v).__name__} = {v_str}\n"
+        for cls in type(self).__mro__:
+            if hasattr(cls, '__slots__'):
+                for k in cls.__slots__:
+                    if not hasattr(self, k):
+                        continue
+
+                    v = getattr(self, k)
+
+                    # Do not print content if too complex
+                    if k in ['model_proto', 'state_dict', 'engine', 'arch', 'framework']:
+                        class_str += (
+                            f"{indent}{k}: {f'{type(v).__name__} ...' if v is not None else 'None'}\n"
+                        )
+                        continue
+
+                    # dict
+                    if isinstance(v, dict):
+                        class_str += f"{indent}{k}: {type(v).__name__} = {{\n{indent}{indent}"
+                        items = []
+                        for key, value in v.items():
+                            items.append(
+                                f"'{key}': '{value}'"
+                                if isinstance(value, str)
+                                else f"'{key}': {value}"
+                            )
+                        class_str += f",\n{indent}{indent}".join(items)
+                        class_str += f"\n{indent}}}\n"
+                    else:
+                        v_str = f"'{v}'" if isinstance(v, str) else f"{v}"
+                        class_str += f"{indent}{k}: {type(v).__name__} = {v_str}\n"
 
         class_str += "}\n"
         return class_str
@@ -206,36 +228,36 @@ class GenericModel:
 
 
 
-@dataclass
+@dataclass(slots=True)
 class OnnxModel(GenericModel):
-    model_proto: onnx.ModelProto | None = None
-    opset: int | None = None
+    model_proto: onnx.ModelProto = None
+    opset: int = 21
     alt_arch_name: str = ''
     in_shape_order: str = 'NCHW'
-    torch_arch: NnPytorchArchitecture | None = None
+    torch_arch: NnPytorchArchitecture = None
 
 
 
-@dataclass
+@dataclass(slots=True)
 class PyTorchModel(GenericModel):
     state_dict: StateDict = field(default_factory=StateDict)
     num_feat: int = 0
     num_conv: int = 0
-    ModuleClass: nn.Module | None = None
-    module: nn.Module | None = None
+    ModuleClass: nn.Module = None
+    module: nn.Module = None
 
 
 
-@dataclass
+@dataclass(slots=True)
 class TrtModel(GenericModel):
     engine: TrtEngine = None
     engine_version: int = 0
-    opset: int = 0
+    opset: int = 21
     # Put here the device id? no? used for conversion load
     device: str = ""
-    torch_arch: NnPytorchArchitecture | None = None
+    torch_arch: NnPytorchArchitecture = None
 
-    # For information
+    # For information only
     typing: Literal['', 'weak', 'strong'] = ''
 
 
