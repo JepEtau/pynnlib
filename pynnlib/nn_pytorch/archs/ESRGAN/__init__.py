@@ -216,7 +216,7 @@ for arch in MODEL_ARCHITECTURES:
     arch.to_onnx = OnnxConv(
         dtypes=set(['fp32', 'fp16']),
         shape_strategy_types=set(['dynamic', 'static', 'fixed']),
-    ),
+    )
     arch.to_tensorrt=TensorRTConv(
         dtypes=set(['fp32', 'fp16']),
     )
