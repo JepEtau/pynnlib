@@ -1,8 +1,8 @@
 from __future__ import annotations
-from copy import deepcopy
-from datetime import datetime
-from hutils import is_access_granted
-from pprint import pprint
+from hutils import (
+    is_access_granted,
+    parent_directory,
+)
 from warnings import warn
 import onnx
 import os
@@ -33,25 +33,29 @@ def generate_onnx_basename(
 
 def save_as(
     model: OnnxModel,
-    directory: str | Path,
-    basename: str,
-    suffix: str = ""
+    filepath: str | Path | None = None,
+    directory: str | Path | None = None,
+    basename: str | None = None,
+    suffix: str = "",
 ) -> str:
-    out_filepath: str = ""
+
     model_proto: onnx.ModelProto = model.model_proto
     if model_proto is None:
         return ""
 
-    directory = str(directory) if isinstance(directory, Path) else directory
+    if filepath is not None:
+        directory = parent_directory(filepath)
+
+    else:
+        # Generate filepath based on args
+        directory = str(directory) if isinstance(directory, Path) else directory
+        if not basename:
+            return ""
+        basename = generate_onnx_basename(model, basename)
+        filepath = os.path.join(directory, f"{basename}{suffix}.onnx")
+
     if not is_access_granted(directory, 'w'):
         raise PermissionError(f"{directory} is read only")
-
-    if not basename:
-        return ""
-
-    # Generate filepath based on args
-    basename = generate_onnx_basename(model, basename)
-    out_filepath = os.path.join(directory, f"{basename}{suffix}.onnx")
 
     # Add metadata to the proto
     del model_proto.metadata_props[:]
@@ -68,9 +72,9 @@ def save_as(
 
     try:
         onnx.checker.check_model(model=model_proto)
-        onnx.save(model_proto, out_filepath)
+        onnx.save(model_proto, filepath)
     except Exception as e:
         print(f"[E] Failed to save onnx model: {e}")
         return ""
 
-    return out_filepath
+    return filepath

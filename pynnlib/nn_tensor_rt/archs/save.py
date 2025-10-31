@@ -1,6 +1,6 @@
 
 from copy import deepcopy
-from hutils import is_access_granted
+from hutils import is_access_granted, parent_directory
 import json
 import os
 from pathlib import Path
@@ -73,26 +73,34 @@ def generate_tensorrt_basename(
 
 def save_as(
     model: TrtModel,
-    directory: str | Path,
-    basename: str,
+    filepath: str | Path | None = None,
+    directory: str | Path | None = None,
+    basename: str | None = None,
     suffix: str = "",
 ) -> bool:
+
     try:
         trt_engine = model.engine
     except:
         return False
 
-    directory = str(directory) if isinstance(directory, Path) else directory
+    if filepath is not None:
+        directory = parent_directory(filepath)
+
+    else:
+        directory = str(directory) if isinstance(directory, Path) else directory
+        if basename is None or not basename:
+            return False
+        basename = generate_tensorrt_basename(model, basename)
+        suffix = f"_{suffix}" if suffix else ""
+        ext = '.trtzip'
+        filepath = os.path.join(directory, f"{basename}{suffix}{ext}")
+
+    model.filepath = filepath
     if not is_access_granted(directory, 'w'):
-        raise PermissionError(red(f"[E] \'{directory}\' is read only"))
+        raise PermissionError(f"[E] \'{directory}\' is read only")
 
-    if basename == '':
-        return False
-    basename = generate_tensorrt_basename(model, basename)
-    suffix = f"_{suffix}" if suffix else ""
-    ext = '.trtzip'
-    model.filepath = os.path.join(directory, f"{basename}{suffix}{ext}")
-
+    print(model)
     generate_metadata(model, {})
     try:
         with zipfile.ZipFile(
@@ -108,5 +116,6 @@ def save_as(
             )
     except Exception as e:
         raise ValueError(red(f"[E] Failed to save engine as \'{model.filepath}\': {e}"))
+
 
     return True

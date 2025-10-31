@@ -215,7 +215,7 @@ class GenericModel:
 
 
 
-@dataclass(slots=True)
+@dataclass
 class OnnxModel(GenericModel):
     model_proto: onnx.ModelProto = None
     opset: int = 21
@@ -235,7 +235,7 @@ class PyTorchModel(GenericModel):
 
 
 
-@dataclass(slots=True)
+@dataclass
 class TrtModel(GenericModel):
     engine: TrtEngine = None
     engine_version: int = 0

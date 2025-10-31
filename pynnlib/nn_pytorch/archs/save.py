@@ -1,13 +1,12 @@
 from __future__ import annotations
-from copy import deepcopy
 from hutils import (
     absolute_path,
     is_access_granted,
+    parent_directory,
 )
 import json
 import os
 from pathlib import Path
-from pprint import pprint
 from typing import TYPE_CHECKING, Literal
 
 import torch
@@ -21,15 +20,22 @@ if TYPE_CHECKING:
 
 def save_as(
     model: PyTorchModel,
-    directory: str | Path,
-    basename: str,
-    ext: Literal['.pth', '.safetensors'],
-) -> PyTorchModel:
+    filepath: str | Path | None = None,
+    directory: str | Path | None = None,
+    basename: str | None = None,
+    ext: Literal['.pth', '.safetensors'] = '.pth',
+) -> str:
+
+    if filepath is not None:
+        directory = parent_directory(filepath)
+
+    else:
+        filepath: str = os.path.join(directory, f"{basename}{ext}")
+
     directory = absolute_path(directory)
     if not is_access_granted(directory, 'w'):
         raise PermissionError(f"{directory} is not writable")
 
-    filepath: str = os.path.join(directory, f"{basename}{ext}")
     metadata: dict[str, str] = generate_metadata(model, model.metadata)
 
     state_dict, _ = load_state_dict(model.filepath, device='cpu')
@@ -53,3 +59,4 @@ def save_as(
     else:
         raise ValueError(f"Not supported: {ext}")
 
+    return filepath

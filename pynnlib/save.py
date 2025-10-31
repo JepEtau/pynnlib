@@ -25,8 +25,13 @@ except:
         raise RuntimeError("TensorRT is not supported")
 
 
-def save_as(model_fp: str, model: NnModel) -> None:
+def save_as(
+    model_fp: str,
+    model: NnModel,
+    autonaming: bool = True,
+) -> None:
     directory, basename, ext = path_split(model_fp)
+    out_model_fp = model_fp if not autonaming else None
 
     if not directory:
         directory="./"
@@ -34,6 +39,7 @@ def save_as(model_fp: str, model: NnModel) -> None:
     if model.framework.type == NnFrameworkType.PYTORCH:
         # PyTorch, SafeTensors
         model.framework.save(
+            filepath=out_model_fp,
             model=model,
             directory=directory,
             basename=basename,
@@ -43,6 +49,7 @@ def save_as(model_fp: str, model: NnModel) -> None:
     elif model.framework.type == NnFrameworkType.ONNX:
         model.framework.save(
             model=model,
+            filepath=out_model_fp,
             directory=directory,
             basename=basename,
             suffix="",
@@ -51,6 +58,7 @@ def save_as(model_fp: str, model: NnModel) -> None:
     elif model.framework.type == NnFrameworkType.TENSORRT:
         model.framework.save(
             model=model,
+            filepath=out_model_fp,
             directory=directory,
             basename=basename,
             suffix="",
@@ -111,7 +119,7 @@ def generate_out_model_fp(
         elif model.fwk_type == NnFrameworkType.ONNX:
             opset = model.opset
             basename = re.sub(r"_op\d{1,2}", '', basename)
-            for dt in ('_fp32', '_fp16', '_bf16'):
+            for dt in ('_fp32', '_fp16', '_bf16', '_int8'):
                 basename = basename.replace(dt, '')
         else:
             raise ValueError(f"Cannot convert to {to.value}")
