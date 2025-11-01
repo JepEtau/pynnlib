@@ -29,6 +29,8 @@ def onnx_to_trt_engine(
         support only a single input tensor
 
     """
+    # Typing is strong by default, it can be forced to weak
+    # if the initial arch forces it or if forced by the user.
     tensorrt_version = list(map(int, trt.__version__.split(".")))
     is_tensorrt_min_10_12 = bool(tensorrt_version[0] * 100 + tensorrt_version[1] >= 1012)
     use_strongly_typed: bool = False

@@ -32,6 +32,7 @@ def save_as(
 ) -> None:
     directory, basename, ext = path_split(model_fp)
     out_model_fp = model_fp if not autonaming else None
+    print(f"autonaming: {autonaming}")
 
     if not directory:
         directory="./"

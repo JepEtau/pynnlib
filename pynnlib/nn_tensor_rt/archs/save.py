@@ -1,17 +1,15 @@
 
 from copy import deepcopy
-from hutils import is_access_granted, parent_directory
+from hutils import is_access_granted, parent_directory, red
 import json
 import os
 from pathlib import Path
-from pprint import pprint
-from warnings import warn
 import zipfile
 
 from pynnlib.metadata import generate_metadata
 
 from pynnlib.model import TrtModel
-from pynnlib.nn_types import ShapeStrategy
+from pynnlib.nn_types import NnFrameworkType
 from pynnlib.import_libs import trt
 _has_herlegon_system_ = False
 try:
@@ -58,10 +56,21 @@ def generate_tensorrt_basename(
 
     # Use the torch arch
     weak_typing: bool = False
-    if model.torch_arch is not None:
+    if (
+        model.torch_arch is not None
+        and model.torch_arch.to_tensorrt is not None
+    ):
         weak_typing = model.torch_arch.to_tensorrt.weak_typing
-    else:
+    # Or the onnx arch
+    elif (
+        model.arch.type != NnFrameworkType.TENSORRT
+        and model.arch.to_tensorrt is not None
+    ):
         weak_typing = model.arch.to_tensorrt.weak_typing
+
+    # forced by the user
+    if model.force_weak_typing and weak_typing != model.force_weak_typing:
+        print(red(f"weak typing mismatch: {weak_typing} and forced {model.force_weak_typing}"))
 
     weak_typed: str = (
         "_weak" if model.force_weak_typing or weak_typing else ""
@@ -102,6 +111,7 @@ def save_as(
 
     print(model)
     generate_metadata(model, {})
+    print(filepath)
     try:
         with zipfile.ZipFile(
             model.filepath, "w", compression=zipfile.ZIP_DEFLATED

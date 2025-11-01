@@ -43,6 +43,7 @@ def save_as(
     if model_proto is None:
         return ""
 
+    print(f"filepath: {filepath}")
     if filepath is not None:
         directory = parent_directory(filepath)
 
@@ -74,7 +75,7 @@ def save_as(
         onnx.checker.check_model(model=model_proto)
         onnx.save(model_proto, filepath)
     except Exception as e:
-        print(f"[E] Failed to save onnx model: {e}")
+        print(f"[E] Failed to save onnx model as {filepath}: {e}")
         return ""
 
     return filepath

@@ -290,7 +290,13 @@ class NnLib:
         filepath: str = ""
         if out_dir:
             basename = path_basename(model.filepath)
-            filepath = onnx_fwk.save(onnx_model, out_dir, basename, suffix)
+            filepath = onnx_fwk.save(
+                filepath=None,
+                model=onnx_model,
+                directory=out_dir,
+                basename=basename,
+                suffix=suffix,
+            )
             if filepath:
                 nnlogger.debug(f"[I] Onnx model saved as {filepath}")
                 onnx_model.filepath = filepath
@@ -445,7 +451,13 @@ class NnLib:
         # Save this engine as a model
         if out_dir is not None:
             nnlogger.debug(f"[V] save tensort RT engine to {out_dir}")
-            success = trt_fwk.save(trt_model, out_dir, basename, suffix)
+            success = trt_fwk.save(
+                filepath=None,
+                model=trt_model,
+                directory=out_dir,
+                basename=basename,
+                suffix=suffix,
+            )
             if success:
                 nnlogger.debug(f"[I] TRT engine saved as {trt_model.filepath}")
             else:
