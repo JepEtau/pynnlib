@@ -5,6 +5,7 @@ from argparse import (
 from hutils import (
     absolute_path,
     lightcyan,
+    path_split,
     red,
     yellow,
 )
@@ -35,6 +36,7 @@ from pynnlib import (
     get_supported_model_extensions,
     NnFrameworkType,
     save_as,
+    print_metadata,
 )
 print(f"pynnlib loaded in {(time.time() - start_time):.02f}s")
 
@@ -52,32 +54,49 @@ def main():
         required=False,
         help="model"
     )
-
     parser.add_argument(
-        "-v",
-        "--verbose",
+        "-o", "--out",
+        type=str,
+        default="",
+        help="Path to save the output model file (.pth) (ignored if --overwrite is used)",
+    )
+    parser.add_argument(
+        "--overwrite",
         action="store_true",
         required=False,
-        help="Print the model info"
+        help="Overwrite the input model instead of saving to a new file",
     )
+    parser.add_argument("-v", "--verbose", action="store_true", required=False, help="Print the model info")
+    parser.add_argument("--debug", action="store_true", required=False, help="Used to debug")
+    parser.add_argument("--author", type=str, default="", help="Author name")
+    parser.add_argument("--comment", type=str, default="", help="Model comment (can include \\n)")
+    parser.add_argument("--comment-file", type=str, default="", help="Path to a text file containing comment")
+    parser.add_argument("--date", type=str, default="", help="Creation date (e.g. 2025-11-02)")
+    parser.add_argument("--license", type=str, default="", help="License (e.g. MIT)")
+    parser.add_argument("--name", type=str, default="", help="Model name")
+    parser.add_argument("--version", type=str, default="", help="Model version")
 
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        required=False,
-        help="Used to debug"
-    )
+    args = parser.parse_args()
 
-    arguments = parser.parse_args()
+    # Determine output model path
+    model_fp: str = absolute_path(args.model)
+    if args.overwrite:
+        out_model_fp = args.model
+    elif args.out:
+        out_model_fp = args.out
+    else:
+        directory, basename, extension = path_split(args.model)
+        out_model_fp = os.path.join(directory, f"{basename}_metadata{extension}")
 
-    debug: bool = arguments.debug
+    # Debug
+    debug: bool = args.debug
     if debug:
         # FileOutputHandler = logging.FileHandler('logs.log', mode='w')
         # nnlogger.addHandler(FileOutputHandler)
         nnlogger.addHandler(logging.StreamHandler(sys.stdout))
         nnlogger.setLevel("DEBUG")
 
-    model_fp: str = absolute_path(arguments.model)
+
     device: str = 'cpu'
 
     try:
@@ -89,7 +108,7 @@ def main():
             f"scale:", lightcyan(model.scale),
             f"\t\t({1000 * elapsed:.1f}ms)"
         )
-        if arguments.verbose:
+        if args.verbose:
             print("Model:")
             print(model)
             print("\nArchitecture:")
@@ -100,29 +119,40 @@ def main():
         model: NnModel = nnlib.open(model_fp, device)
         print(e)
 
-    metadata: dict[str, str] = {
-        'name': "my_small_model",
-        'date': "2025-10-10",
-        'version': "1.0",
-        'license': "Common",
-        'author': "john doe",
-        'comment': "a comment",
+    # List of standard metadata keys
+    metadata_keys = ["author", "date", "license", "name", "version"]
+    # Start with normal keys
+    metadata = {
+        key: getattr(args, key)
+        for key in metadata_keys
+        if getattr(args, key).strip()
     }
+    # Handle comment separately, supporting --comment-file > --comment
+    comment_text = ""
+    if args.comment_file:
+        with open(args.comment_file, "r", encoding="utf-8") as f:
+            comment_text = f.read().strip()
+    elif args.comment.strip():
+        comment_text = args.comment.encode("utf-8").decode("unicode_escape")
 
-    out_model_fp: str = "test.pth"
-    if absolute_path(out_model_fp) == absolute_path(model_fp):
-        print("metadata")
-        pprint(metadata)
-    else:
-        model.metadata = metadata
-        save_as("test.pth", model)
+    if comment_text:
+        metadata["comment"] = comment_text
 
-        new_model: NnModel = nnlib.open("test.pth")
-        print("metadata to inject:")
-        pprint(metadata)
-        print("injected metadata")
-        pprint(new_model.metadata)
+    # Inject
+    print("Model path:", args.model)
+    print("Metadata to inject:")
+    print_metadata(metadata)
 
+    for k, v in metadata.items():
+        print(f"  {k}: {v}")
+
+    model.metadata = metadata
+    save_as(out_model_fp, model)
+
+    # Verify
+    new_model: NnModel = nnlib.open(out_model_fp)
+    print("Injected metadata:")
+    print_metadata(new_model.metadata)
 
 
 if __name__ == "__main__":

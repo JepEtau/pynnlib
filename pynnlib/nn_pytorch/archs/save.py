@@ -1,4 +1,6 @@
 from __future__ import annotations
+import copy
+import gc
 from hutils import (
     absolute_path,
     is_access_granted,
@@ -50,11 +52,21 @@ def save_as(
         torch.save(state_dict, filepath)
 
     elif ext == '.safetensors':
-        for k, v in state_dict.items():
-            if isinstance(v, torch.Tensor) and not v.is_contiguous():
-                state_dict[k] = v.contiguous()
+        state_dict_cloned = {
+            k: v.clone()
+            if isinstance(v, torch.Tensor)
+            else copy.deepcopy(v)
+            for k, v in state_dict.items()
+        }
 
-        save_file(state_dict, filepath, metadata=metadata)
+        for k, v in state_dict_cloned.items():
+            if isinstance(v, torch.Tensor) and not v.is_contiguous():
+                state_dict_cloned[k] = v.contiguous()
+
+        del state_dict
+        gc.collect()
+        save_file(state_dict_cloned, filepath, metadata=metadata)
+        del state_dict_cloned
 
     else:
         raise ValueError(f"Not supported: {ext}")

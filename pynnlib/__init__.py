@@ -63,6 +63,8 @@ from .save import (
     generate_out_model_fp,
 )
 
+from .metadata import print_metadata
+
 __all__ = [
     "nnlogger",
     "nnlib",
@@ -109,5 +111,7 @@ __all__ = [
 
     "save_as",
     "generate_out_model_fp",
+
+    "print_metadata",
 
 ]

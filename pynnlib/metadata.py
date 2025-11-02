@@ -1,5 +1,6 @@
 from datetime import datetime
-from hutils import get_extension
+import textwrap
+from hutils import get_extension, lightcyan
 import time
 from typing import Any
 from warnings import warn
@@ -96,3 +97,33 @@ def generate_metadata(
             metadata['typing'] = model.typing
 
     return metadata
+
+
+
+def print_metadata(metadata: dict[str, str]) -> None:
+    indent = " " * 8
+    print( f"{indent}metadata:")
+    indent += " " * 4
+    # aligns wrapped comment lines
+    line_width = 80
+    subindent = " " * 18
+    for key, value in metadata.items():
+        key_fmt = lightcyan(f"{key.title():<15} : ")
+
+        if key.lower() == "comment" and isinstance(value, str):
+            # Split paragraphs while preserving blank lines
+            paragraphs = [p.strip() for p in value.split("\n") if p.strip()]
+
+            first_para = True
+            for para in paragraphs:
+                wrapped = textwrap.fill(
+                    para,
+                    width=line_width,
+                    initial_indent=indent + (key_fmt if first_para else subindent),
+                    subsequent_indent=indent + subindent,
+                )
+                print(wrapped)
+                first_para = False
+                print()  # blank line between paragraphs
+        else:
+            print(f"{indent}{key_fmt}{value}")

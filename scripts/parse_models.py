@@ -16,6 +16,7 @@ import os
 from pprint import pprint
 import signal
 import sys
+import textwrap
 import time
 
 # logging.config.fileConfig('config.ini')
@@ -36,6 +37,7 @@ from pynnlib import (
     is_tensorrt_available,
     get_supported_model_extensions,
     NnFrameworkType,
+    print_metadata,
 )
 print(f"pynnlib loaded in {(time.time() - start_time):.02f}s")
 
@@ -100,6 +102,14 @@ def main():
         help="Used to debug"
     )
 
+    parser.add_argument(
+        "--metadata",
+        action="store_true",
+        required=False,
+        help="display metadata"
+    )
+
+
     arguments = parser.parse_args()
 
     debug: bool = arguments.debug
@@ -141,6 +151,11 @@ def main():
                 f"scale:", lightcyan(model.scale),
                 f"\t\t({1000 * elapsed:.1f}ms)"
             )
+            # Display metadata
+            if arguments.metadata:
+                print_metadata(model.metadata)
+
+
             if arguments.verbose:
                 print("Model:")
                 print(model)
@@ -182,6 +197,11 @@ def main():
                     f"\n    in_dtype:", lightcyan(dtype),
                     f"\n    ({1000 * elapsed:.1f}ms)\n"
                 )
+
+                # Display metadata
+                if arguments.metadata:
+                    print_metadata(model.metadata)
+
                 if arguments.verbose or arguments.debug:
                     print("Model:")
                     print(model)
