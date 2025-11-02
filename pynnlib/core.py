@@ -41,13 +41,11 @@ from .framework import (
 from .model import (
     NnModel,
     OnnxModel,
-    PyTorchModel,
     TrtModel,
     create_model,
 )
 from .nn_types import (
     Idtype,
-    NnModelObject,
     NnFrameworkType
 )
 from .session import NnModelSession
@@ -288,18 +286,8 @@ class NnLib:
         if model.fwk_type == NnFrameworkType.TENSORRT:
             raise ValueError(f"This model is already a TensorRT model")
 
-        model.shape_strategy = shape_strategy
         model.force_weak_typing = force_weak_typing
-
         trt_dtypes = set([dtype])
-
-        # Remove suffixes from ONNX basename
-        basename = path_basename(model.filepath)
-        if model.fwk_type == NnFrameworkType.ONNX:
-            opset = model.opset
-            basename = re.sub(r"_op\d{1,2}", '', basename)
-            for dt in ('_fp32', '_fp16', '_bf16'):
-                basename = basename.replace(dt, '')
 
         # Check if conversion is possible: PyTorch
         # TODO: add ONNX check:
@@ -313,7 +301,22 @@ class NnLib:
             if dtype not in torch_arch.to_tensorrt.dtypes:
                 raise ValueError(red(f"[E]: Conversion to tensorRT: dtype \'{dtype}\' is not supported"))
 
-        # Verify if tensor engine already exists, create a fake model
+        # Do not use the specified shape strategy if the model is onnx+static
+        # verify that the strategy is supported by the model arch
+        # TODO: bypass when in dev
+        if model.fwk_type == NnFrameworkType.ONNX:
+            if model.shape_strategy.type == 'static':
+                shape_strategy = model.shape_strategy
+
+        # Verify if tensor engine already exists
+        # Remove suffixes from ONNX basename
+        basename = path_basename(model.filepath)
+        if model.fwk_type == NnFrameworkType.ONNX:
+            opset = model.opset
+            basename = re.sub(r"_op\d{1,2}", '', basename)
+            for dt in ('_fp32', '_fp16', '_bf16'):
+                basename = basename.replace(dt, '')
+
         if out_dir is not None:
             dummy_model: TrtModel = TrtModel(
                 framework=self.frameworks[NnFrameworkType.TENSORRT],

@@ -1,5 +1,5 @@
 from copy import deepcopy
-from hutils import red, yellow
+from hutils import purple, red, yellow
 import math
 from warnings import warn
 import onnx
@@ -151,7 +151,7 @@ def get_shapes_from_session(
     # Works for a single input only
     input_shape: tuple[int, int, int, int] = [0] * 4
     output_shape: tuple[int, int, int, int] = [0] * 4
-    nnlogger.debug(purple("[W] ONNX: get shapes from session"))
+    nnlogger.debug("[W] ONNX: get shapes from session")
     options = ort.SessionOptions()
     options.enable_cpu_mem_arena = False
     options.enable_mem_pattern = False
@@ -206,15 +206,15 @@ def get_scale_from_shape_inference(
         warn(f"[V] failed to detect scale, default to 2")
         return 2, 2, 3
 
-
     # If shape inference "failed", create an onnx session
     img_shape = guess_shape(out_shape)[1:]
     if math.prod(img_shape) == 0:
+        nnlogger.debug(f"[V] try by performing a simple inference")
         try:
             in_shape, out_shape = get_shapes_from_session(model_proto_tmp)
             nnlogger.debug(f"[V] onnx session returned: in={in_shape}, out={out_shape}")
         except:
-            pass
+            nnlogger.debug(f"[V] onnx session failed")
 
     # Now, shapes should be valid
     nnlogger.debug(f"[V] shapes: in={in_shape}, out={out_shape}")

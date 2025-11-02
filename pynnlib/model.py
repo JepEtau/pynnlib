@@ -63,6 +63,7 @@ class ModelExecutor:
 class GenericModel:
     framework: NnFramework
     arch: NnArchitecture
+    alt_arch_name: str = ''
 
     scale: int = 0
     in_nc: int = 0
@@ -106,6 +107,8 @@ class GenericModel:
 
     @property
     def arch_name(self) -> str:
+        if self.alt_arch_name:
+            return self.alt_arch_name
         if self.arch is None and not self._arch_name:
             return "unknown"
         elif self._arch_name:
