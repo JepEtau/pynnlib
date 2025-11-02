@@ -53,7 +53,7 @@ def main():
         type=str,
         default="",
         required=False,
-        help="model"
+        help="Path to a specific model file."
     )
 
     parser.add_argument(
@@ -62,7 +62,7 @@ def main():
         type=str,
         default="",
         required=False,
-        help="Directory"
+        help="Directory containing model files."
     )
 
     parser.add_argument(
@@ -70,7 +70,7 @@ def main():
         "--recursive",
         action="store_true",
         required=False,
-        help="Walk through subfolders"
+        help="Recursively search through subdirectories."
     )
 
     parser.add_argument(
@@ -81,10 +81,18 @@ def main():
             'pytorch',
             'onnx',
             'trt',
+            'trtzip',
         ],
         default="",
         required=False,
-        help="Filter by model extension or by framework"
+        help="Filter models by file extension or framework (e.g., pytorch, onnx, trtzip)."
+    )
+
+    parser.add_argument(
+        "--metadata",
+        action="store_true",
+        required=False,
+        help="Display model metadata."
     )
 
     parser.add_argument(
@@ -92,23 +100,15 @@ def main():
         "--verbose",
         action="store_true",
         required=False,
-        help="Print the model info"
+        help="Display detailed model information."
     )
 
     parser.add_argument(
         "--debug",
         action="store_true",
         required=False,
-        help="Used to debug"
+        help="Enable debug mode for additional logging."
     )
-
-    parser.add_argument(
-        "--metadata",
-        action="store_true",
-        required=False,
-        help="display metadata"
-    )
-
 
     arguments = parser.parse_args()
 

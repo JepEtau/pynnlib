@@ -106,7 +106,7 @@ def convert_to_tensorrt(
 
 def main():
     parser = ArgumentParser(
-        description="Convert model into Onnx model or TensorRT engine",
+        description="Convert a model to ONNX format or a TensorRT engine.",
         formatter_class=RawTextHelpFormatter
     )
     parser.add_argument(
@@ -115,7 +115,7 @@ def main():
         type=str,
         default='',
         required=True,
-        help="""Model (PyTorch, ONNX) to convert.
+        help="""Path to the input model file (PyTorch or ONNX).
 \n"""
     )
 
@@ -125,9 +125,20 @@ def main():
         action="store_true",
         required=False,
         default=False,
-        help="""Force to regenerate model
+        help="""Force regeneration of the model (overwrite existing output).
 \n"""
     )
+
+    parser.add_argument(
+        "-overwrite",
+        "--overwrite",
+        action="store_true",
+        required=False,
+        default=False,
+        help="""Force regeneration of the model (same as --force).
+\n"""
+    )
+
 
     parser.add_argument(
         "-onnx",
@@ -135,17 +146,17 @@ def main():
         action="store_true",
         required=False,
         default=False,
-        help="""Save model as an Onnx model.
+        help="""Export the model to ONNX format.
 \n"""
     )
 
     parser.add_argument(
         "-trt",
-        "--trt",
+        "--tensorrt",
         action="store_true",
         required=False,
         default=False,
-        help="""Generates a TensorRT engine.
+        help="""Convert the model to a TensorRT engine.
 \n"""
     )
 
@@ -155,7 +166,7 @@ def main():
         action="store_true",
         required=False,
         default=True,
-        help="""Support full precision (fp32).
+        help="""Use full precision (FP32).
 \n"""
     )
 
@@ -165,7 +176,7 @@ def main():
         action="store_true",
         required=False,
         default=False,
-        help="""Support half precision (fp16).
+        help="""Use half precision (FP16).
 \n"""
     )
 
@@ -175,7 +186,7 @@ def main():
         action="store_true",
         required=False,
         default=False,
-        help="""Support mixed precision (bf16).
+        help="""Use mixed precision (BF16).
 \n"""
     )
 
@@ -185,7 +196,7 @@ def main():
         type=int,
         required=False,
         default=20,
-        help="""Onnx opset version. Used when converting a PyTorch Model to onnx/tensorrt.
+        help="""ONNX opset version to use when exporting from PyTorch.
 \n"""
     )
     parser.add_argument(
@@ -194,7 +205,7 @@ def main():
         action="store_true",
         required=False,
         default=False,
-        help="""(TensorRT) Use a static shape (opt_size) when converting the model.
+        help="""(TensorRT) Use a static shape (based on opt_size) for engine generation.
 \n"""
     )
     parser.add_argument(
@@ -203,8 +214,7 @@ def main():
         type=str,
         default='0x0',
         required=False,
-        help="""(ONNX) size used to generate a ONNX static model. Mandatory if static is selected
-format: WxH
+        help="""(ONNX) Static input size (required if --static is set). Format: WxH.
 \n"""
     )
     parser.add_argument(
@@ -213,8 +223,7 @@ format: WxH
         type=str,
         default='64x64',
         required=False,
-        help="""(TensorRT) min. size used to generate a tensorRT engine.
-format: WxH
+        help="""(TensorRT) Minimum input size. Format: WxH.
 \n"""
     )
     parser.add_argument(
@@ -223,9 +232,7 @@ format: WxH
         type=str,
         default='768x576',
         required=False,
-        help="""(TensorRT) opt. size used to generate a tensorRT engine.
-format: WxH.
-use the input video dimension if set to \'input\'.
+        help="""(TensorRT) Optimal input size. Format: WxH. Use 'input' to match the input video dimensions.
 \n"""
     )
     parser.add_argument(
@@ -234,8 +241,7 @@ use the input video dimension if set to \'input\'.
         type=str,
         default='1920x1080',
         required=False,
-        help="""(TensorRT) max. size used to generate a tensorRT engine.
-format: WxH.
+        help="""(TensorRT) Maximum input size. Format: WxH.
 \n"""
     )
     parser.add_argument(
@@ -244,7 +250,7 @@ format: WxH.
         action="store_true",
         required=False,
         default=False,
-        help="""(TensorRT) use the opt_size for both min_size and max_size.
+        help="""(TensorRT) Use the same dimensions for min_size, opt_size, and max_size.
 \n"""
     )
     parser.add_argument(
@@ -252,7 +258,7 @@ format: WxH.
         type=int,
         default=3,
         required=False,
-        help="""(TensorRT) (not yet supported) Optimization level. [1..5].
+        help="""(TensorRT) Optimization level (1–5). Currently not supported.
 \n"""
     )
     parser.add_argument(
@@ -261,7 +267,7 @@ format: WxH.
         action="store_true",
         required=False,
         default=False,
-        help="""(TensorRT) Force weak typing.
+        help="""(TensorRT) Use weak typing during engine conversion.
 \n"""
     )
     parser.add_argument(
@@ -270,19 +276,19 @@ format: WxH.
         action="store_true",
         required=False,
         default=False,
-        help="""Verbose.
+        help="""Enable verbose output.
 \n"""
     )
 
     arguments = parser.parse_args()
-    force: bool = arguments.force
+    force: bool = arguments.force or arguments.overwrite
 
     if arguments.verbose:
         nnlogger.addHandler(logging.StreamHandler(sys.stdout))
         nnlogger.setLevel("DEBUG")
 
-    if not arguments.trt and not arguments.onnx:
-        sys.exit(red(f"[E] at least --onnx or --trt must be specified"))
+    if not arguments.tensorrt and not arguments.onnx:
+        sys.exit(red(f"[E] at least --onnx or --tensorrt must be specified"))
 
     if arguments.fp16 and not is_cuda_available():
         sys.exit(red(f"[E] No CUDA device found, cannot convert with fp16 support"))
@@ -322,7 +328,7 @@ format: WxH.
     static: bool = arguments.static
     shape_strategy: ShapeStrategy | None = None
     if static and arguments.size == "0x0":
-        sys.exit(red(f"[E] A size has to be specified to convert to static ONNX"))
+        sys.exit(red(f"Error: requires --size when converting to a static ONNX model."))
     elif static:
         print(f"Static strategy: {arguments.size}")
         shape_strategy: ShapeStrategy = ShapeStrategy(
@@ -348,7 +354,7 @@ format: WxH.
         print(f"[V] Converted in {elapsed_time:.2f}s")
         print(onnx_model)
 
-    if arguments.trt:
+    if arguments.tensorrt:
         if is_tensorrt_available():
             print(f"[V] Convert {model.filepath} to TensorRT (c_dtype={c_dtype}): ")
             start_time = time.time()
@@ -362,13 +368,13 @@ format: WxH.
                 debug=True
             )
             if trt_model is None:
-                print(red("[E] Failed to convert to a TensorRT engine"))
+                print(red("Error: Failed to convert to a TensorRT engine."))
             else:
                 elapsed_time = time.time() - start_time
                 print(lightgreen(f"[I] TensorRT engine saved as {trt_model.filepath}"))
                 print(f"[V] Converted in {elapsed_time:.2f}s")
         else:
-            print(red("[E] No compatible device found, cannot convert to an TensorRT engine"))
+            print(red("Error: No compatible device detected — TensorRT engine conversion requires a supported NVIDIA GPU."))
 
 
 if __name__ == "__main__":

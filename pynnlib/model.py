@@ -1,10 +1,12 @@
 from __future__ import annotations
 from dataclasses import dataclass, field, fields, is_dataclass
+import logging
 import onnx
 from typing import TYPE_CHECKING, Literal
 from hutils import arg_list
 
 from torch import nn
+from .logger import nnlogger
 from .nn_pytorch.torch_types import StateDict
 from .nn_tensor_rt.trt_types import TrtEngine
 from .nn_types import Idtype, NnFrameworkType, ShapeStrategy
@@ -14,7 +16,7 @@ if TYPE_CHECKING:
         SizeConstraint,
         NnPytorchArchitecture,
     )
-    from .nn_types import NnModelDtype, NnFrameworkType
+    from .nn_types import NnModelDtype, NnFrameworkType, NnModelObject
     from .framework import NnFramework
 
 
@@ -249,3 +251,64 @@ class TrtModel(GenericModel):
 
 
 NnModel = OnnxModel | PyTorchModel | TrtModel
+
+
+
+
+def create_model(
+    nn_model_path:str,
+    framework: NnFramework,
+    model_arch: NnArchitecture,
+    model_obj: NnModelObject,
+    metadata: dict[str, str] = {},
+    device: str = 'cpu',
+) -> NnModel:
+
+    if framework.type == NnFrameworkType.PYTORCH:
+        model = PyTorchModel(
+            filepath=nn_model_path,
+            framework=framework,
+            arch=model_arch,
+            state_dict=model_obj,
+            metadata=metadata,
+            device=device,
+        )
+
+    elif framework.type == NnFrameworkType.ONNX:
+        model = OnnxModel(
+            filepath=nn_model_path,
+            framework=framework,
+            arch=model_arch,
+            model_proto=model_obj,
+            metadata=metadata,
+            device=device,
+        )
+
+    elif framework.type == NnFrameworkType.TENSORRT:
+        if not device.startswith("cuda"):
+            nnlogger.debug("[W] wrong device to load a tensorRT model, use default cuda device")
+            device = "cuda:0"
+        model = TrtModel(
+            filepath=nn_model_path,
+            framework=framework,
+            arch=model_arch,
+            engine=model_obj,
+            metadata=metadata,
+            device=device,
+        )
+
+    else:
+        raise ValueError("[E] Unknown framework")
+
+    # Parse a model object to detect the model info: scale, dtype, ...
+    if logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG":
+        # Don't catch the exception when in development
+        model_arch.parse(model)
+    else:
+        try:
+            model_arch.parse(model)
+        except Exception as e:
+            nnlogger.error(str(e))
+            raise ValueError(f"Exception while parsing the model: {str(e)}")
+
+    return model

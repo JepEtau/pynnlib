@@ -5,7 +5,7 @@ from hutils import (
 import onnx
 from typing import Literal
 from pynnlib.logger import nnlogger
-from pynnlib.architecture import NnOnnxArchitecture
+from pynnlib.architecture import NnOnnxArchitecture, TensorRTConv
 from pynnlib.model import OnnxModel
 from ..inference.session import OnnxSession
 from .parser import parse
@@ -77,7 +77,12 @@ MODEL_ARCHITECTURES: tuple[NnOnnxArchitecture] = (
     NnOnnxArchitecture(
         name='unknown',
         detect=is_model_generic,
-        # to_tensorrt=TensorRTConv(),
+        # Allow conversion to tensorrt
+        to_tensorrt=TensorRTConv(
+            dtypes=('fp32', 'fp16', 'bf16'),
+            weak_typing=False,
+            shape_strategy_types=('dynamic', 'fixed', 'static'),
+        ),
     )
 )
 

@@ -43,6 +43,7 @@ from .model import (
     OnnxModel,
     PyTorchModel,
     TrtModel,
+    create_model,
 )
 from .nn_types import (
     Idtype,
@@ -105,7 +106,7 @@ class NnLib:
 
         model: NnModel = None
         try:
-            model = self.create_model(
+            model = create_model(
                 nn_model_path=model_path,
                 framework=fwk,
                 model_arch=model_arch,
@@ -115,7 +116,7 @@ class NnLib:
             )
         except Exception as e:
             nnlogger.debug(f"exception while creating a model: {str(e)}")
-            model = self.create_model(
+            model = create_model(
                 nn_model_path=model_path,
                 framework=fwk,
                 model_arch=model_arch,
@@ -144,65 +145,6 @@ class NnLib:
 
         return session
 
-
-    @staticmethod
-    def create_model(
-        nn_model_path:str,
-        framework: NnFramework,
-        model_arch: NnArchitecture,
-        model_obj: NnModelObject,
-        metadata: dict[str, str] = {},
-        device: str = 'cpu',
-    ) -> NnModel:
-
-        if framework.type == NnFrameworkType.PYTORCH:
-            model = PyTorchModel(
-                filepath=nn_model_path,
-                framework=framework,
-                arch=model_arch,
-                state_dict=model_obj,
-                metadata=metadata,
-                device=device,
-            )
-
-        elif framework.type == NnFrameworkType.ONNX:
-            model = OnnxModel(
-                filepath=nn_model_path,
-                framework=framework,
-                arch=model_arch,
-                model_proto=model_obj,
-                metadata=metadata,
-                device=device,
-            )
-
-        elif framework.type == NnFrameworkType.TENSORRT:
-            if not device.startswith("cuda"):
-                nnlogger.debug("[W] wrong device to load a tensorRT model, use default cuda device")
-                device = "cuda:0"
-            model = TrtModel(
-                filepath=nn_model_path,
-                framework=framework,
-                arch=model_arch,
-                engine=model_obj,
-                metadata=metadata,
-                device=device,
-            )
-
-        else:
-            raise ValueError("[E] Unknown framework")
-
-        # Parse a model object to detect the model info: scale, dtype, ...
-        if logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG":
-            # Don't catch the exception when in development
-            model_arch.parse(model)
-        else:
-            try:
-                model_arch.parse(model)
-            except Exception as e:
-                nnlogger.error(str(e))
-                raise ValueError(f"Exception while parsing the model: {str(e)}")
-
-        return model
 
 
     def convert_to_onnx(
@@ -262,7 +204,7 @@ class NnLib:
         # Instantiate a new model
         onnx_fwk = self.frameworks[NnFrameworkType.ONNX]
         model_arch = onnx_fwk.detect_model_arch(onnx_model_object)
-        onnx_model = self.create_model(
+        onnx_model = create_model(
             nn_model_path='',
             framework=onnx_fwk,
             model_arch=model_arch,
@@ -270,6 +212,7 @@ class NnLib:
         )
         onnx_model.opset = opset
         onnx_model.arch_name = model.arch.name
+        onnx_model._arch_name = model._arch_name
         onnx_model.torch_arch = model.arch
         onnx_model.force_weak_typing = model.force_weak_typing
         onnx_model.dtypes = set([dtype])
@@ -287,7 +230,11 @@ class NnLib:
 
         # Remove metadata from proto and generate new ones in the model
         del onnx_model.model_proto.metadata_props[:]
-        onnx_model.metadata = generate_metadata(model, {})
+        onnx_model.metadata = model.metadata.copy()
+        onnx_model.metadata = generate_metadata(
+            onnx_model,
+            metadata=model.metadata
+        )
 
         # Save this model
         filepath: str = ""
@@ -394,11 +341,13 @@ class NnLib:
 
         # Convert to Onnx
         # Always use fp32 when converting to onnx
+        onnx_model: OnnxModel
         if model.fwk_type == NnFrameworkType.ONNX:
             nnlogger.debug(f"This model is already an ONNX model")
+            onnx_model = model
         else:
             nnlogger.debug(yellow(f"[I] Convert to onnx ({dtype}), use {device}"))
-            onnx_model: OnnxModel = self.convert_to_onnx(
+            onnx_model = self.convert_to_onnx(
                 model=model,
                 opset=opset,
                 dtype=dtype,
@@ -412,10 +361,15 @@ class NnLib:
 
         # TODO: put the following code in an Try-Except block
         trt_engine = None
+        if onnx_model.torch_arch is not None:
+            to_tensorrt_conv = onnx_model.torch_arch.to_tensorrt
+        else:
+            to_tensorrt_conv = onnx_model.arch.to_tensorrt
+
         if (
-            onnx_model.torch_arch.to_tensorrt is not None
-            and onnx_model.torch_arch.to_tensorrt.dtypes
-            and onnx_model.torch_arch.to_tensorrt.shape_strategy_types
+            to_tensorrt_conv is not None
+            and to_tensorrt_conv.dtypes
+            and to_tensorrt_conv.shape_strategy_types
         ):
             from pynnlib.nn_onnx.archs.onnx_to_tensorrt import to_tensorrt
             trt_engine = to_tensorrt(
@@ -434,7 +388,7 @@ class NnLib:
         # Instantiate a new model
         trt_fwk = self.frameworks[NnFrameworkType.TENSORRT]
         model_arch = trt_fwk.detect_model_arch(trt_engine)
-        trt_model = self.create_model(
+        trt_model = create_model(
             nn_model_path='',
             framework=trt_fwk,
             model_arch=model_arch,
@@ -491,7 +445,7 @@ class NnLib:
             'efficienttam_s_512x512': PREDEFINED_MODEL_ARCHITECTURES['efficienttam_s_512x512'],
         }
 
-        model = self.create_model(
+        model = create_model(
             nn_model_path="",
             framework=self.frameworks[NnFrameworkType.PYTORCH],
             model_arch=predefined_models[model_name],

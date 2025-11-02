@@ -1,6 +1,6 @@
 from datetime import datetime
 import textwrap
-from hutils import get_extension, lightcyan
+from hutils import get_extension, lightcyan, red
 import time
 from typing import Any
 from warnings import warn
@@ -45,17 +45,30 @@ def generate_metadata(
         metadata = builtin_metadata
 
     if model.framework.type == NnFrameworkType.ONNX:
-        if model.arch_name.lower() not in ('unknown', 'generic'):
-            metadata['arch_name'] = model.arch_name
+        metadata['arch_name'] = model.arch_name
 
-        if model.force_weak_typing:
-            metadata['typing'] = "weak"
-        elif model.arch.to_tensorrt is not None:
-            metadata['typing'] = (
-                "weak"
-                if model.arch.to_tensorrt.weak_typing
-                else "strong"
-            )
+        # No need to specify the typing for an onnx model
+        # typing = ''
+        # if model.force_weak_typing:
+        #     typing = "weak"
+        #
+        # elif (
+        #     model.torch_arch is not None
+        #     and model.torch_arch.to_tensorrt is not None
+        # ):
+        #     typing = (
+        #         "weak"
+        #         if model.torch_arch.to_tensorrt.weak_typing
+        #         else "strong"
+        #     )
+        # elif model.arch.to_tensorrt is not None:
+        #     typing = (
+        #         "weak"
+        #         if model.arch.to_tensorrt.weak_typing
+        #         else "strong"
+        #     )
+        # if typing:
+        #     metadata['typing'] = typing
 
     elif model.framework.type == NnFrameworkType.PYTORCH:
         ext = get_extension(model.filepath)
