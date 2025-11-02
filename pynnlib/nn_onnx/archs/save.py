@@ -1,4 +1,5 @@
 from __future__ import annotations
+from pprint import pprint
 from hutils import (
     is_access_granted,
     parent_directory,
@@ -43,7 +44,6 @@ def save_as(
     if model_proto is None:
         return ""
 
-    print(f"filepath: {filepath}")
     if filepath is not None:
         directory = parent_directory(filepath)
 
@@ -70,6 +70,8 @@ def save_as(
         entry = model_proto.metadata_props.add()
         entry.key = k
         entry.value = v
+
+    pprint(model_proto.metadata_props)
 
     try:
         onnx.checker.check_model(model=model_proto)

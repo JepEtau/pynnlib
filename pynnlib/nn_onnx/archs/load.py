@@ -6,7 +6,7 @@ def load_onnx_model(
     device: str = 'cpu'
 ) -> tuple[onnx.ModelProto | None, dict[str, str]]:
     onnx_model: onnx.ModelProto = onnx.load_model(model_path)
-    metadata: dict[str, str] = {}
+    metadata: dict[str, str] = {prop.key: prop.value for prop in onnx_model.metadata_props}
 
     return onnx_model, metadata
 

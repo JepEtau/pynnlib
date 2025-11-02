@@ -58,7 +58,7 @@ def main():
         "-o", "--out",
         type=str,
         default="",
-        help="Path to save the output model file (.pth) (ignored if --overwrite is used)",
+        help="Path to save the output model file (ignored if --overwrite is used)",
     )
     parser.add_argument(
         "--overwrite",
@@ -69,12 +69,10 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true", required=False, help="Print the model info")
     parser.add_argument("--debug", action="store_true", required=False, help="Used to debug")
     parser.add_argument("--author", type=str, default="", help="Author name")
-    parser.add_argument("--comment", type=str, default="", help="Model comment (can include \\n)")
-    parser.add_argument("--comment-file", type=str, default="", help="Path to a text file containing comment")
-    parser.add_argument("--date", type=str, default="", help="Creation date (e.g. 2025-11-02)")
+    parser.add_argument("--purpose", type=str, default="", help="Model purpose (can include \\n)")
+    parser.add_argument("--purpose-file", type=str, default="", help="Path to a text file containing purpose")
     parser.add_argument("--license", type=str, default="", help="License (e.g. MIT)")
     parser.add_argument("--name", type=str, default="", help="Model name")
-    parser.add_argument("--version", type=str, default="", help="Model version")
 
     args = parser.parse_args()
 
@@ -120,23 +118,23 @@ def main():
         print(e)
 
     # List of standard metadata keys
-    metadata_keys = ["author", "date", "license", "name", "version"]
+    metadata_keys = ["name", "author", "license"]
     # Start with normal keys
     metadata = {
         key: getattr(args, key)
         for key in metadata_keys
         if getattr(args, key).strip()
     }
-    # Handle comment separately, supporting --comment-file > --comment
-    comment_text = ""
-    if args.comment_file:
-        with open(args.comment_file, "r", encoding="utf-8") as f:
-            comment_text = f.read().strip()
-    elif args.comment.strip():
-        comment_text = args.comment.encode("utf-8").decode("unicode_escape")
+    # Handle purpose separately, supporting --purpose-file > --purpose
+    purpose_text = ""
+    if args.purpose_file:
+        with open(args.purpose_file, "r", encoding="utf-8") as f:
+            purpose_text = f.read().strip()
+    elif args.purpose.strip():
+        purpose_text = args.purpose.encode("utf-8").decode("unicode_escape")
 
-    if comment_text:
-        metadata["comment"] = comment_text
+    if purpose_text:
+        metadata["purpose"] = purpose_text
 
     # Inject
     print("Model path:", args.model)

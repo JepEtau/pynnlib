@@ -98,6 +98,9 @@ class NnLib:
 
         # Get the model arch
         model_arch = fwk.detect_model_arch(model_obj)
+        if model_arch is None:
+            nnlogger.error(red(f"Not a supported model: {model_path}"))
+            return
         nnlogger.debug(yellow(f"fwk={fwk.type.value}, arch={model_arch.name}"))
 
         model: NnModel = None

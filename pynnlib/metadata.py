@@ -124,6 +124,7 @@ def print_metadata(metadata: dict[str, str]) -> None:
                 )
                 print(wrapped)
                 first_para = False
-                print()  # blank line between paragraphs
+                # blank line between paragraphs
+                print()
         else:
             print(f"{indent}{key_fmt}{value}")

@@ -63,7 +63,7 @@ def generate_tensorrt_basename(
         weak_typing = model.torch_arch.to_tensorrt.weak_typing
     # Or the onnx arch
     elif (
-        model.arch.type != NnFrameworkType.TENSORRT
+        model.framework.type != NnFrameworkType.TENSORRT
         and model.arch.to_tensorrt is not None
     ):
         weak_typing = model.arch.to_tensorrt.weak_typing

@@ -52,21 +52,13 @@ def save_as(
         torch.save(state_dict, filepath)
 
     elif ext == '.safetensors':
-        state_dict_cloned = {
-            k: v.clone()
-            if isinstance(v, torch.Tensor)
-            else copy.deepcopy(v)
-            for k, v in state_dict.items()
-        }
-
-        for k, v in state_dict_cloned.items():
+        for k, v in state_dict.items():
             if isinstance(v, torch.Tensor) and not v.is_contiguous():
-                state_dict_cloned[k] = v.contiguous()
+                state_dict[k] = v.contiguous()
 
-        del state_dict
-        gc.collect()
-        save_file(state_dict_cloned, filepath, metadata=metadata)
-        del state_dict_cloned
+        tmp_fp = filepath + ".tmp"
+        save_file(state_dict, tmp_fp, metadata=metadata)
+        os.replace(tmp_fp, filepath)
 
     else:
         raise ValueError(f"Not supported: {ext}")
