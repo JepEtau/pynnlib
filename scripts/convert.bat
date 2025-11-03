@@ -24,13 +24,50 @@
 ::     --overwrite ^
 ::     --verbose
 
+:: python -m scripts.convert_model ^
+::     --tensorrt ^
+::     -m A:\ml_models\FDAT-Models-1.0.0-AF\2x_animefilm_light_161k.pth ^
+::     --fp16 ^
+::     --static ^
+::     --size 720x540 ^
+::     --weak ^
+::     --overwrite ^
+::     --verbose
+
+::python -m scripts.convert_model ^
+::    --tensorrt ^
+::    -m A:\ml_models\span\2x_AniSD_G6i1_SPAN_215K.pth ^
+::    --fp16 ^
+::    --static ^
+::    --size 720x540 ^
+::    --overwrite ^
+::    --verbose
+::    -m A:\ml_models\span\2x_AniSD_G6i1_SPAN_215K.pth
+
+:: python -m scripts.convert_model ^
+::     --onnx ^
+::     -m A:\ml_models\span\2x_AniSD_DC_SPAN_92500.pth ^
+::     --fp16 ^
+::     --static ^
+::     --size 720x540 ^
+::     --overwrite ^
+::     --verbose
+::
+::
+:: python -m scripts.convert_model ^
+::     --onnx ^
+::     -m A:\ml_models\span\2x_AniSD_DC_SPAN_92500.pth ^
+::     --fp32 ^
+::     --overwrite ^
+::     --verbose
+
+
 python -m scripts.convert_model ^
     --tensorrt ^
-    -m A:\ml_models\FDAT-Models-1.0.0-AF\2x_animefilm_light_161k.pth ^
+    -m A:\ml_models\span\2x_AniSD_G6i1_SPAN_215K.pth ^
     --fp16 ^
     --static ^
     --size 720x540 ^
-    --weak ^
     --overwrite ^
     --verbose
 

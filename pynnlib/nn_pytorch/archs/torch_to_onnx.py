@@ -111,6 +111,7 @@ def to_onnx(
                 opset_version=opset,
                 do_constant_folding=True,
                 dynamic_axes=dynamic_axes,
+                dynamo=False,
                 **export_args,
             )
             bytes_io.seek(0)
