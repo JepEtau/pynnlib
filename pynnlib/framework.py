@@ -172,7 +172,8 @@ framework_to_extensions: dict[NnFrameworkType, list[str]] = {
 }
 extensions_to_framework: dict[str, NnFrameworkType] = swap_keys_values(framework_to_extensions)
 
-def get_supported_model_extensions(framework: NnFrameworkType | None = None) -> tuple[int]:
+def get_supported_model_extensions(framework: NnFrameworkType | None = None) -> tuple[str, ...]:
     if framework is None:
         return tuple(extensions_to_framework.keys())
     return tuple(framework_to_extensions[framework])
+
