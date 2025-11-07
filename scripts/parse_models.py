@@ -58,7 +58,7 @@ def main():
 
     parser.add_argument(
         "-d",
-        "--dir",
+        "--directory",
         type=str,
         default="",
         required=False,
@@ -167,7 +167,7 @@ def main():
             print(red(e))
         return
 
-    ml_models_path: str = absolute_path(arguments.dir)
+    ml_models_path: str = absolute_path(arguments.directory)
     for root, _, files in os.walk(ml_models_path):
         for f in sorted(files):
             ext = get_extension(f)
