@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 from functools import partial
-from hutils import *
+from hytils import *
 from importlib import util as importlib_util
 import os
 from pathlib import Path, PurePath

@@ -3,8 +3,8 @@ import abc
 from typing import TypeVar
 import torch
 
-from .utils.torch_tensor import IdtypeToTorch, TorchDtypeToIdtype
-from .nn_types import Idtype, NnFrameworkType
+from .utils.torch_tensor import HdtypeToTorch, TorchDtypeToHdtype
+from .nn_types import Hdtype, NnFrameworkType
 from .model import NnModel
 
 
@@ -15,12 +15,12 @@ class GenericSession(abc.ABC):
         super().__init__()
         self._device: str = 'cpu'
         self.model: NnModel | None = None
-        self._dtype: torch.dtype = IdtypeToTorch['fp32']
+        self._dtype: torch.dtype = HdtypeToTorch['fp32']
 
     def initialize(
         self,
         device: str = 'cpu',
-        dtype: Idtype | torch.dtype = 'fp32',
+        dtype: Hdtype | torch.dtype = 'fp32',
     ):
         if dtype not in self.model.arch.dtypes:
             raise ValueError(
@@ -36,15 +36,15 @@ class GenericSession(abc.ABC):
 
 
     @dtype.setter
-    def dtype(self, dtype: Idtype | torch.dtype) -> None:
+    def dtype(self, dtype: Hdtype | torch.dtype) -> None:
         self._dtype = (
-            dtype if isinstance(dtype, torch.dtype) else IdtypeToTorch[dtype]
+            dtype if isinstance(dtype, torch.dtype) else HdtypeToTorch[dtype]
         )
 
 
     @property
-    def idtype(self) -> Idtype:
-        return TorchDtypeToIdtype[self._dtype]
+    def idtype(self) -> Hdtype:
+        return TorchDtypeToHdtype[self._dtype]
 
 
     @property

@@ -1,10 +1,10 @@
 from copy import deepcopy
-from hutils import red, yellow
+from hytils import red, yellow
 import numpy as np
 from pprint import pprint
 
 from pynnlib.logger import nnlogger
-from pynnlib.nn_types import Idtype, ShapeStrategy
+from pynnlib.nn_types import Hdtype, ShapeStrategy
 from pynnlib.import_libs import trt
 TrtDType = trt.DataType
 
@@ -19,7 +19,7 @@ from ..trt_types import TrtEngine
 def onnx_to_trt_engine(
     model: OnnxModel,
     device: str,
-    dtypes: set[Idtype],
+    dtypes: set[Hdtype],
     shape_strategy: ShapeStrategy,
 ) -> TrtEngine:
     """
@@ -65,7 +65,7 @@ def onnx_to_trt_engine(
         if not success:
             for idx in range(onnx_parser.num_errors):
                 print(f"Error: {onnx_parser.get_error(idx)}")
-            raise ValueError("Failed to parse the onnx model")
+            raise ValueError("TensorRT: failed to parse the ONNX model")
 
         # Input tensors
         onnx_in_tensor = None

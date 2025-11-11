@@ -1,4 +1,4 @@
-from hutils import path_split
+from hytils import path_split
 from pynnlib.architecture import (
     Module,
     NnPytorchArchitecture,

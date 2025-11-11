@@ -3,20 +3,20 @@ from dataclasses import dataclass, field, fields, is_dataclass
 import logging
 import onnx
 from typing import TYPE_CHECKING, Literal
-from hutils import arg_list
+from hytils import arg_list
 
 from torch import nn
 from .logger import nnlogger
 from .nn_pytorch.torch_types import StateDict
 from .nn_tensor_rt.trt_types import TrtEngine
-from .nn_types import Idtype, NnFrameworkType, ShapeStrategy
+from .nn_types import Hdtype, NnFrameworkType, ShapeStrategy
 if TYPE_CHECKING:
     from .architecture import (
         NnArchitecture,
         SizeConstraint,
         NnPytorchArchitecture,
     )
-    from .nn_types import NnModelDtype, NnFrameworkType, NnModelObject
+    from .nn_types import Hdtype, NnFrameworkType, NnModelObject
     from .framework import NnFramework
 
 
@@ -54,7 +54,7 @@ class SizeConstraint:
 class ModelExecutor:
     """Used for inference in a mp"""
     device: str
-    dtype: Idtype
+    dtype: Hdtype
     pinned_mem: bool
     in_max_shape: tuple[int, int, int]
 
@@ -69,7 +69,7 @@ class GenericModel:
     in_nc: int = 0
     out_nc: int = 0
     # list IO dtypes, consider a single input/output
-    io_dtypes: dict[Literal['input', 'output'], NnModelDtype] = (
+    io_dtypes: dict[Literal['input', 'output'], Hdtype] = (
         field(default_factory=dict)
     )
 
@@ -83,7 +83,7 @@ class GenericModel:
     # is supported by this model.
     # PyTorch: use the dtypes specified by each arch
     # TODO: move this as a property like size_constraint
-    dtypes: list[NnModelDtype] = field(default_factory=list)
+    dtypes: list[Hdtype] = field(default_factory=list)
     force_weak_typing: bool = False
 
     # Object used to initialize an executor.
@@ -180,7 +180,7 @@ class GenericModel:
         return class_str
 
 
-    def supported_dtypes(self) -> set[NnModelDtype]:
+    def supported_dtypes(self) -> set[Hdtype]:
         """Returns supported dtypes by this model
         """
         return set(

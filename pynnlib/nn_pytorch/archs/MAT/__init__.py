@@ -1,5 +1,5 @@
 from __future__ import annotations
-from hutils import red, yellow
+from hytils import red, yellow
 from io import BytesIO
 import onnx
 import torch
@@ -11,7 +11,7 @@ from pynnlib.architecture import (
     OnnxConv,
     SizeConstraint,
 )
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Hdtype
 from pynnlib import is_cuda_available
 from pynnlib.model import PyTorchModel, SizeConstraint
 from ...archs import contains_any_keys
@@ -22,7 +22,7 @@ from ...inference.session import PyTorchSession
 
 def to_onnx_inpaint(
     model: PyTorchModel,
-    dtype: Idtype,
+    dtype: Hdtype,
     opset: int,
     static: bool = False,
     device: str = 'cpu',

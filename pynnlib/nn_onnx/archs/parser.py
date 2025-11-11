@@ -1,5 +1,5 @@
 from copy import deepcopy
-from hutils import purple, red, yellow
+from hytils import purple, red, yellow
 import math
 from warnings import warn
 import onnx
@@ -7,7 +7,7 @@ import onnxruntime as ort
 from onnx import TensorProto
 
 from pynnlib.logger import nnlogger
-from pynnlib.nn_types import NnModelDtype, ShapeStrategy
+from pynnlib.nn_types import Hdtype, ShapeStrategy
 nnlogger.debug(f"[I] ONNX runtime package loaded (version {ort.__version__})")
 
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidGraph
@@ -27,7 +27,7 @@ from .ms_utils import (
 
 
 OnnxShapeOrder = Literal['NCHW', 'NHWC']
-_onnx_dtype_to_str: dict[str, NnModelDtype] = {
+_onnx_dtype_to_str: dict[str, Hdtype] = {
     'TensorProto.INT64': 'int64',
     'TensorProto.FLOAT': 'fp32',
     'TensorProto.FLOAT16': 'fp16',
@@ -40,7 +40,7 @@ def get_opset_version(model_proto: onnx.ModelProto) -> int:
 
 
 
-def get_input_dtype(model_proto: onnx.ModelProto) -> NnModelDtype:
+def get_input_dtype(model_proto: onnx.ModelProto) -> Hdtype:
     """Returns the datatype of the first input of the model.
     It may return an erroneous datatype when there are multiple inputs"""
     if len(model_proto.graph.output) > 1:
@@ -57,7 +57,7 @@ def get_input_dtype(model_proto: onnx.ModelProto) -> NnModelDtype:
 
 
 
-def get_output_dtype(model_proto: onnx.ModelProto) -> NnModelDtype:
+def get_output_dtype(model_proto: onnx.ModelProto) -> Hdtype:
     """Returns the datatype of the first input of the model.
     It may return an erroneous datatype when there are multiple inputs"""
     if len(model_proto.graph.output) > 1:
@@ -74,7 +74,7 @@ def get_output_dtype(model_proto: onnx.ModelProto) -> NnModelDtype:
 
 
 
-def get_initializer_dtypes(model_proto: onnx.ModelProto) -> list[NnModelDtype]:
+def get_initializer_dtypes(model_proto: onnx.ModelProto) -> list[Hdtype]:
     warn(red("To be validated"))
     types = set()
     for init in model_proto.graph.initializer:

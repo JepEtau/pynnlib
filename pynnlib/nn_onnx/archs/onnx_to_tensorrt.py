@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pynnlib.import_libs import is_tensorrt_available
 from pynnlib.model import OnnxModel
-from pynnlib.nn_types import Idtype, ShapeStrategy
+from pynnlib.nn_types import Hdtype, ShapeStrategy
 if is_tensorrt_available():
     from pynnlib.nn_tensor_rt.trt_types import TensorrtModel
     from pynnlib.nn_tensor_rt.archs.onnx_to_trt import onnx_to_trt_engine
@@ -14,7 +14,7 @@ else:
 def to_tensorrt(
     model: OnnxModel,
     device: str,
-    dtypes: set[Idtype],
+    dtypes: set[Hdtype],
     shape_strategy: ShapeStrategy,
 ) -> TensorrtModel:
 

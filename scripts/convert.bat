@@ -66,8 +66,9 @@ python -m scripts.convert_model ^
     --tensorrt ^
     -m A:\ml_models\span\2x_AniSD_G6i1_SPAN_215K.pth ^
     --fp16 ^
-    --static ^
-    --size 720x540 ^
+    --fixed ^
+    --opt_size 720x540 ^
     --overwrite ^
     --verbose
+
 

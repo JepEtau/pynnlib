@@ -1,5 +1,5 @@
 from functools import partial
-from hutils import (
+from hytils import (
     yellow,
 )
 import onnx

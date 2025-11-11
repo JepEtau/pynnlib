@@ -2,7 +2,7 @@ from argparse import (
     ArgumentParser,
     RawTextHelpFormatter
 )
-from hutils import (
+from hytils import (
     get_extension,
     lightcyan,
     lightgreen,
@@ -182,7 +182,7 @@ def main():
 
             else:
                 opset = 20
-                dtype: Idtype = 'fp32'
+                dtype: Hdtype = 'fp32'
                 shape_strategy: ShapeStrategy = ShapeStrategy(type=strategy, opt_size=(720, 540))
                 suffix: str = ""
 

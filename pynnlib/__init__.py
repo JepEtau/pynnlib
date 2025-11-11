@@ -1,3 +1,5 @@
+__version__ = "0.1.0"
+
 from .logger import nnlogger
 from .import_libs import *
 if not is_cuda_available():
@@ -31,9 +33,10 @@ except:
 from .nn_types import (
     NnFrameworkType,
     NnModelObject,
-    Idtype,
+    Hdtype,
     ShapeStrategy,
     ShapeStrategyType,
+    Hdtype,
 )
 from .architecture import (
     NnPytorchArchitecture,
@@ -52,7 +55,7 @@ from .utils.torch_tensor import (
 
 from .utils.torch_tensor import (
     flip_r_b_channels,
-    IdtypeToTorch,
+    HdtypeToTorch,
     np_dtype_to_torch,
     to_nchw,
     to_hwc,
@@ -82,8 +85,8 @@ __all__ = [
     "TrtModel",
 
     "NnModelObject",
-    "Idtype",
-    "IdtypeToTorch",
+    "Hdtype",
+    "HdtypeToTorch",
 
     "NnModelSession",
     "OnnxSession",
@@ -113,5 +116,7 @@ __all__ = [
     "generate_out_model_fp",
 
     "print_metadata",
+
+    "Hdtype",
 
 ]

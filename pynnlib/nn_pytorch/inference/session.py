@@ -13,9 +13,9 @@ from pynnlib import is_cuda_available
 from pynnlib.logger import nnlogger
 from pynnlib.model import PyTorchModel
 from pynnlib.architecture import SizeConstraint
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Hdtype
 from pynnlib.session import GenericSession
-from hutils import (
+from hytils import (
     yellow,
     red,
 )
@@ -88,7 +88,7 @@ class PyTorchSession(GenericSession):
     def initialize(
         self,
         device: str,
-        dtype: Idtype | torch.dtype = 'fp32',
+        dtype: Hdtype | torch.dtype = 'fp32',
         warmup: bool = False,
         **kwargs,
     ) -> None:

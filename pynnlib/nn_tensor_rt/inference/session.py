@@ -1,7 +1,7 @@
 import numpy as np
 from pprint import pprint
 from pynnlib import is_tensorrt_available
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Hdtype
 from pynnlib.session import GenericSession
 if is_tensorrt_available():
     from pynnlib.import_libs import trt
@@ -87,7 +87,7 @@ class TensorRtSession(GenericSession):
     @torch.inference_mode()
     def initialize(self,
         device: str = 'cuda:0',
-        dtype: Idtype = 'fp32',
+        dtype: Hdtype = 'fp32',
         warmup: bool = False,
         create_stream: bool = False,
     ):

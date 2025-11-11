@@ -10,11 +10,11 @@ import torch.nn.functional as F
 
 from pynnlib.import_libs import is_cuda_available
 from pynnlib.model import OnnxModel
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Hdtype
 from pynnlib.session import GenericSession
 from pynnlib.utils.torch_tensor import (
-    IdtypeToNumpy,
-    IdtypeToTorch,
+    HdtypeToNumpy,
+    HdtypeToTorch,
     flip_r_b_channels,
     to_nchw,
     to_hwc,
@@ -39,7 +39,7 @@ class OnnxSession(GenericSession):
     def initialize(
         self,
         device: Literal['cpu', 'dml'] = 'cpu',
-        dtype: Idtype | torch.dtype = 'fp32',
+        dtype: Hdtype | torch.dtype = 'fp32',
         **kwargs,
     ):
         super().initialize(device=device, dtype=dtype)
@@ -144,11 +144,11 @@ class OnnxSession(GenericSession):
             raise ValueError("np.float32 img only")
 
         in_h, in_w, c = in_img.shape
-        in_tensor_dtype: torch.dtype = IdtypeToTorch[self.model.io_dtypes['input']]
+        in_tensor_dtype: torch.dtype = HdtypeToTorch[self.model.io_dtypes['input']]
 
         out_shape = (in_h * self.model.scale, in_w * self.model.scale, c)
         out_tensor_shape = (1, self.model.out_nc, *out_shape[:2])
-        out_tensor_dtype: torch.dtype = IdtypeToTorch[self.model.io_dtypes['output']]
+        out_tensor_dtype: torch.dtype = HdtypeToTorch[self.model.io_dtypes['output']]
 
         device: str = 'cpu'
         if self.device_type == 'cuda':
@@ -212,7 +212,7 @@ class OnnxSession(GenericSession):
         #     name=self.input_name,
         #     device_type=device_type,
         #     device_id=0 if device in ('cpu', 'dml') else self.cuda_device_id,
-        #     element_type=IdtypeToNumpy[self.model.io_dtypes['input']],
+        #     element_type=HdtypeToNumpy[self.model.io_dtypes['input']],
         #     shape=in_tensor.shape,
         #     buffer_ptr=in_ort_tensor.data_ptr(),
         # )
@@ -223,7 +223,7 @@ class OnnxSession(GenericSession):
         #     name=self.output_name,
         #     device_type='cuda',
         #     device_id=0 if device in ('cpu', 'dml') else self.cuda_device_id,
-        #     element_type=IdtypeToNumpy[self.model.io_dtypes['output']],
+        #     element_type=HdtypeToNumpy[self.model.io_dtypes['output']],
         #     shape=out_tensor.shape,
         #     buffer_ptr=out_ort_tensor.data_ptr(),
         # )
@@ -237,8 +237,8 @@ class OnnxSession(GenericSession):
         # print("run")
         # print(self.device_type)
         # pprint(io_binding)
-        # print(IdtypeToNumpy[self.model.io_dtypes['input']])
-        # print(IdtypeToNumpy[self.model.io_dtypes['output']])
+        # print(HdtypeToNumpy[self.model.io_dtypes['input']])
+        # print(HdtypeToNumpy[self.model.io_dtypes['output']])
         # print(in_tensor.device)
         # print(in_tensor.dtype)
         # try:

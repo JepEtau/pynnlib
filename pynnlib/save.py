@@ -6,12 +6,12 @@ import re
 from .nn_onnx.archs.save import generate_onnx_basename
 
 from .architecture import NnTensorrtArchitecture
-from .nn_types import Idtype, ShapeStrategy
+from .nn_types import Hdtype, ShapeStrategy
 from .core import nn_lib as nnlib
 
 from .model import NnModel, OnnxModel, PyTorchModel, TrtModel
 from .framework import NnFrameworkType
-from hutils import (
+from hytils import (
     get_extension,
     path_split,
     path_basename,
@@ -73,7 +73,7 @@ def generate_out_model_fp(
     model: NnModel,
     to: NnFrameworkType,
     opset: int = 21,
-    dtype: Idtype = 'fp32',
+    dtype: Hdtype = 'fp32',
     force_weak_typing: bool = False,
     device: str = 'cpu',
     out_dir: str = "",

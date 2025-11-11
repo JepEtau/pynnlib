@@ -3,7 +3,7 @@ from argparse import (
     RawTextHelpFormatter,
 )
 import cv2
-from hutils import (
+from hytils import (
     absolute_path,
     path_split,
     lightcyan,
@@ -22,7 +22,7 @@ import sys
 import time
 from typing import Any
 
-from pynnlib.nn_types import Idtype
+from pynnlib.nn_types import Hdtype
 
 # logging.config.fileConfig('config.ini')
 # logger = logging.getLogger("pynnlib")
@@ -52,7 +52,7 @@ def convert_to_tensorrt(
     arguments: Any,
     model: NnModel,
     device: str,
-    dtype: Idtype = 'fp32',
+    dtype: Hdtype = 'fp32',
 ) -> TrtModel | None:
     trt_model: TrtModel | None = None
 
@@ -362,7 +362,7 @@ Fallback to float if the execution provider does not support it
     if fp16 and 'fp16' not in model.arch.dtypes:
         sys.exit(red("This model does not support Half datatype (fp16)."))
 
-    dtype: Idtype = 'fp32'
+    dtype: Hdtype = 'fp32'
     if fp16:
         dtype = 'fp16'
 

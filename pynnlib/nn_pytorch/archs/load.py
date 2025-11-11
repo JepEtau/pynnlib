@@ -1,5 +1,5 @@
 from __future__ import annotations
-from hutils import get_extension
+from hytils import get_extension
 import json
 from warnings import warn
 from safetensors.torch import load_file, safe_open

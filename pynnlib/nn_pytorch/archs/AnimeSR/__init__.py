@@ -1,4 +1,4 @@
-from hutils import red, yellow
+from hytils import red, yellow
 import math
 from pynnlib.architecture import (
     InferType,

@@ -2,7 +2,7 @@ from argparse import (
     ArgumentParser,
     RawTextHelpFormatter,
 )
-from hutils import (
+from hytils import (
     absolute_path,
     lightcyan,
     path_split,

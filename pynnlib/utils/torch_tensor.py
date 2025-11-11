@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from ..nn_types import Idtype
+from ..nn_types import Hdtype
 
 
 # https://github.com/pytorch/pytorch/blob/main/torch/testing/_internal/common_utils.py
@@ -55,18 +55,18 @@ torch_dtype_to_np: dict[torch.dtype, np.dtype] = {
 # })
 
 
-IdtypeToTorch: dict[Idtype, torch.dtype] = {
+HdtypeToTorch: dict[Hdtype, torch.dtype] = {
     'fp32': torch.float32,
     'fp16': torch.float16,
     'bf16': torch.bfloat16,
 }
-IdtypeToNumpy: dict[Idtype, torch.dtype] = {
+HdtypeToNumpy: dict[Hdtype, torch.dtype] = {
     'fp32': np.float32,
     'fp16': np.float16,
 }
-TorchDtypeToIdtype: dict[torch.dtype, Idtype] = {
+TorchDtypeToHdtype: dict[torch.dtype, Hdtype] = {
     value: key
-    for (key, value) in IdtypeToTorch.items()
+    for (key, value) in HdtypeToTorch.items()
 }
 
 def to_nchw(t: Tensor) -> Tensor:

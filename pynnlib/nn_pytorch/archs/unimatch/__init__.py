@@ -1,4 +1,4 @@
-from hutils import (
+from hytils import (
     red,
     yellow,
 )

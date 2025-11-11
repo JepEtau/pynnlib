@@ -1,10 +1,9 @@
 [project]
 name = "pynnlib"
-version = "0.1"
 description = "A library to load neural network models for SISR and videoSR"
 readme = "README.md"
 authors = [
-    {name = "Jep Etau", email = "jep.etau@gmail.com"},
+    {name = "Jep Etau"},
 ]
 requires-python = ">= 3.12"
 classifiers = [
@@ -13,27 +12,27 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",
 ]
-keywords = ["nn"]
 dependencies = [
-    "numpy>=2.2.6",
-    "opencv-python>=4.12",
-    "hutils @ git+https://github.com/JepEtau/hutils.git@main#egg=hutils",
+    "numpy",
+    "opencv-python",
+    "hytils",
 ]
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/JepEtau/pynnlib"
-Documentation = "https://github.com/JepEtau/pynnlib/README.md"
-Repository = "https://github.com/JepEtau/pynnlib"
-"Bug Tracker" = "https://github.com/JepEtau/pynnlib/issues"
 
 [build-system]
-requires = ["setuptools >= 77.0.3", "wheel"]
+requires = ["setuptools >= 80.9.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["pynnlib*"]
 exclude = ["tests*", "scripts"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pynnlib.__version__" }
 
 [tool.black]
 line-length = 90

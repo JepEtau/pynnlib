@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections.abc import Callable, Set
 from dataclasses import dataclass, field
-from hutils import absolute_path, path_split
+from hytils import absolute_path, path_split
 from importlib import util as importlib_util
 import inspect
 import os
@@ -24,7 +24,7 @@ from .model import (
 )
 from .logger import nnlogger
 from .nn_types import (
-    Idtype,
+    Hdtype,
     NnArchitectureType,
     ShapeStrategy,
     ShapeStrategyType,
@@ -65,7 +65,7 @@ class NnGenericArchitecture:
 
     # Supported datatypes for inference and conversion
     #   TODO: as it may differ, use a dataclass
-    dtypes: list[Idtype] = field(default_factory=list)
+    dtypes: list[Hdtype] = field(default_factory=list)
 
     size_constraint: SizeConstraint = None
 
@@ -114,7 +114,7 @@ class NnGenericArchitecture:
 
 @dataclass(slots=True)
 class OnnxConv:
-    dtypes: Set[Idtype] = field(
+    dtypes: Set[Hdtype] = field(
         # default_factory=lambda: {'fp32', 'fp16', 'bf16'}
         default_factory=set
     )
@@ -125,7 +125,7 @@ class OnnxConv:
     fct: Callable[
         [
             PyTorchModel,
-            Idtype,
+            Hdtype,
             int,    # opset
             bool,   # static
             torch.device | str,
@@ -140,7 +140,7 @@ class OnnxConv:
 class TensorRTConv:
     # Some archs don't support strong typing,
     #   caution: conversion might fail or slower inference
-    dtypes: Set[Idtype] = field(
+    dtypes: Set[Hdtype] = field(
         # default_factory=lambda: {'fp32', 'fp16', 'bf16'}
         default_factory=set
     )

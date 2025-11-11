@@ -17,7 +17,7 @@ from .model import NnModel
 from .capabilities import get_system_capabilities
 from .architecture import GetModelArchFct, NnArchitecture
 from .session import NnModelSession
-from hutils import swap_keys_values
+from hytils import swap_keys_values
 
 
 

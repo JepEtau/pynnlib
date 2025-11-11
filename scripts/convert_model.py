@@ -2,7 +2,7 @@ from argparse import (
     ArgumentParser,
     RawTextHelpFormatter,
 )
-from hutils import (
+from hytils import (
     absolute_path,
     path_split,
     red,
@@ -23,7 +23,7 @@ if not os.path.exists("pynnlib"):
         sys.path.append(root_path)
 
 from pynnlib import (
-    Idtype,
+    Hdtype,
     nnlib,
     NnModel,
     TrtModel,
@@ -44,7 +44,7 @@ def convert_to_tensorrt(
     arguments: Any,
     model: NnModel,
     device: str,
-    dtype: Idtype,
+    dtype: Hdtype,
     force_weak_typing: bool = False,
     force: bool = False,
     debug: Optional[bool] = False
@@ -318,7 +318,7 @@ def main():
     # bf16: bool = arguments.bf16 and 'bf16' in model.arch.dtypes
 
     # bf16 has the priority if multiple types are provided
-    c_dtype: Idtype = 'fp32'
+    c_dtype: Hdtype = 'fp32'
     if fp16:
         c_dtype = 'fp16'
     if bf16:

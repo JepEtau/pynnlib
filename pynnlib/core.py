@@ -1,6 +1,6 @@
 from __future__ import annotations
 import logging
-from hutils import (
+from hytils import (
     absolute_path,
     get_extension,
     path_basename,
@@ -45,7 +45,7 @@ from .model import (
     create_model,
 )
 from .nn_types import (
-    Idtype,
+    Hdtype,
     NnFrameworkType
 )
 from .session import NnModelSession
@@ -149,7 +149,7 @@ class NnLib:
         self,
         model: NnModel,
         opset: int = 20,
-        dtype: Idtype = 'fp32',
+        dtype: Hdtype = 'fp32',
         device: str = 'cpu',
         shape_strategy: ShapeStrategy | None = None,
         out_dir: str | Path = "",
@@ -160,7 +160,7 @@ class NnLib:
         Args:
             model: input model
             opset: onnx opset version
-            dtype: Idtype
+            dtype: Hdtype
             device: device used for this conversion. the converted model will not use fp16
                     if this device does not support it.
             outdir: directory to save the onnx model. If not set, the model is not saved
@@ -257,7 +257,7 @@ class NnLib:
     def convert_to_tensorrt(self,
         model: NnModel,
         shape_strategy: ShapeStrategy,
-        dtype: Idtype = 'fp32',
+        dtype: Hdtype = 'fp32',
         force_weak_typing: bool = False,
         optimization_level: int = 3,
         opset: int = 20,

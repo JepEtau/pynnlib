@@ -2,7 +2,7 @@ from argparse import (
     ArgumentParser,
     RawTextHelpFormatter,
 )
-from hutils import (
+from hytils import (
     absolute_path,
     path_split,
     red,
@@ -18,7 +18,7 @@ import time
 import cv2
 import numpy as np
 
-from pynnlib.utils.torch_tensor import TorchDtypeToIdtype
+from pynnlib.utils.torch_tensor import TorchDtypeToHdtype
 
 # logging.config.fileConfig('config.ini')
 # logger = logging.getLogger("pynnlib")
@@ -31,7 +31,7 @@ if not os.path.exists("pynnlib"):
         sys.path.append(root_path)
 
 from pynnlib import (
-    Idtype,
+    Hdtype,
     nnlogger,
     nnlib,
     NnModel,
@@ -293,7 +293,7 @@ Fallback to float if the execution provider does not support it
     if arguments.verbose:
         print(f"Initialize the session with device={device}")
 
-    i_dtype: Idtype = 'fp32'
+    i_dtype: Hdtype = 'fp32'
     if fp16:
         i_dtype = 'fp16'
     if bf16:
@@ -348,7 +348,7 @@ Fallback to float if the execution provider does not support it
             "",
             model.arch_name.replace("(", "_").replace(")", "_").replace(" ", "").replace("__", "_"),
             session.device.replace(":", ""),
-            TorchDtypeToIdtype[session.dtype],
+            TorchDtypeToHdtype[session.dtype],
         ]
         suffix = "_".join(suffix_array)
     out_img_fp: str = os.path.join(dir, f"{basename}{suffix}{ext}")

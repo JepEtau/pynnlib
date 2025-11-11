@@ -9,14 +9,14 @@ from pynnlib.architecture import (
     NnTensorrtArchitecture,
     detect_model_arch,
 )
-from pynnlib.nn_types import Idtype, ShapeStrategy
+from pynnlib.nn_types import Hdtype, ShapeStrategy
 from pynnlib.model import TrtModel
 from pynnlib.logger import nnlogger
 from ..trt_types import TrtEngine
 from ..inference.session import TRT_LOGGER
 
 
-TrtDType_to_Idtype: dict[TrtDType, str] = {
+TrtDType_to_Hdtype: dict[TrtDType, str] = {
     TrtDType.FLOAT: 'fp32',
     TrtDType.HALF: 'fp16',
     TrtDType.BF16: 'bf16',
@@ -109,13 +109,13 @@ def parse(model: TrtModel) -> None:
 
     # dtypes
     model.io_dtypes = {
-        'input': TrtDType_to_Idtype[in_dtype],
-        'output': TrtDType_to_Idtype[out_dtype],
+        'input': TrtDType_to_Hdtype[in_dtype],
+        'output': TrtDType_to_Hdtype[out_dtype],
     }
     if in_dtype != out_dtype:
         raise NotImplementedError("TensorRT: IO, dtypes are not the same")
 
-    dtypes: set[Idtype] = set()
+    dtypes: set[Hdtype] = set()
     if in_dtype == TrtDType.FLOAT:
         dtypes.add('fp32')
     elif in_dtype == TrtDType.HALF:

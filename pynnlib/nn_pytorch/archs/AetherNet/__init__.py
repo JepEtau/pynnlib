@@ -10,7 +10,7 @@ from pynnlib.architecture import (
     TensorRTConv,
 )
 from pynnlib.model import PyTorchModel
-from pynnlib.nn_types import Idtype, ShapeStrategy
+from pynnlib.nn_types import Hdtype, ShapeStrategy
 from ...torch_types import StateDict
 from ..helpers import (
     get_max_indice,
@@ -22,7 +22,7 @@ from pynnlib.logger import is_debugging
 
 def _to_onnx(
     model: PyTorchModel,
-    dtype: Idtype,
+    dtype: Hdtype,
     opset: int,
     shape_strategy: ShapeStrategy | None = None,
     device: str = 'cpu',

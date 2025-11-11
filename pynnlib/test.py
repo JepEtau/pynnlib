@@ -1,6 +1,6 @@
 from pynnlib.model import NnModel
 
-from hutils import path_split
+from hytils import path_split
 
 
 def save_as(model_fp: str, model: NnModel) -> None:

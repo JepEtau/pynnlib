@@ -1,5 +1,5 @@
 from __future__ import annotations
-from hutils import (
+from hytils import (
     red,
 )
 from io import BytesIO
@@ -12,8 +12,8 @@ import torch
 
 from pynnlib.architecture import SizeConstraint
 from pynnlib.import_libs import is_cuda_available
-from pynnlib.nn_types import Idtype, ShapeStrategy
-from pynnlib.utils.torch_tensor import IdtypeToTorch
+from pynnlib.nn_types import Hdtype, ShapeStrategy
+from pynnlib.utils.torch_tensor import HdtypeToTorch
 from ..inference.session import PyTorchSession
 if TYPE_CHECKING:
     from pynnlib.model import PyTorchModel
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 def to_onnx(
     model: PyTorchModel,
-    dtype: Idtype,
+    dtype: Hdtype,
     opset: int,
     shape_strategy: ShapeStrategy | None = None,
     device: str = 'cpu',
@@ -81,7 +81,7 @@ def to_onnx(
         size: SizeConstraint | None = model.size_constraint
         w, h = size.min if size is not None and size.min is not None else (32, 32)
 
-    tensor_dtype: torch.dtype = IdtypeToTorch[dtype]
+    tensor_dtype: torch.dtype = HdtypeToTorch[dtype]
     dummy_input = torch.rand(
         1, model.in_nc, h, w,
         dtype=tensor_dtype,

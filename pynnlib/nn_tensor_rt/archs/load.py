@@ -1,4 +1,4 @@
-from hutils import get_extension
+from hytils import get_extension
 import json
 import os
 from pprint import pprint
