@@ -30,6 +30,6 @@
         ]
     },
     "python.analysis.extraPaths": [
-        "../hutils"
+        "../hytils"
     ],
 }
