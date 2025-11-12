@@ -1,4 +1,6 @@
 hytils
+onnx
 onnxruntime
 onnxruntime-directml
+opencv-python
 
