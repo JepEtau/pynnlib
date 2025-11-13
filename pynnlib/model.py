@@ -291,6 +291,7 @@ def create_model(
         if not device.startswith("cuda"):
             nnlogger.debug("[W] wrong device to load a tensorRT model, use default cuda device")
             device = "cuda:0"
+
         model = TrtModel(
             filepath=nn_model_path,
             framework=framework,
@@ -307,11 +308,13 @@ def create_model(
     if logging.getLevelName(nnlogger.getEffectiveLevel()) == "DEBUG":
         # Don't catch the exception when in development
         model_arch.parse(model)
+
     else:
-        try:
-            model_arch.parse(model)
-        except Exception as e:
-            nnlogger.error(str(e))
-            raise ValueError(f"Exception while parsing the model: {str(e)}")
+        # try:
+        model_arch.parse(model)
+
+        # except Exception as e:
+        #     nnlogger.error(str(e))
+        #     raise ValueError(f"Exception while parsing the model: {str(e)}")
 
     return model
